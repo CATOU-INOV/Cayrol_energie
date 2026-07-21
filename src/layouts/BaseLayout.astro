@@ -2,7 +2,18 @@
 import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import { themes, energyThemeList } from "../data/themes";
+import { company } from "../data/company";
 import ServiceRail from "../components/ServiceRail.astro";
+
+// Maillage interne complet (SEO) : toutes les pages du site, utilisé en bas de footer — distinct
+// de `nav` (header) qui reste volontairement court pour ne pas surcharger la navigation.
+const allPages = [
+  { href: "/", label: "Accueil" },
+  ...energyThemeList.map((t) => ({ href: t.href, label: t.name })),
+  { href: "/autoconsommation-collective", label: "Autoconsommation collective" },
+  { href: "/societe", label: "Société" },
+  { href: "/contact", label: "Contact" },
+];
 
 interface Props {
   title: string;
@@ -10,6 +21,9 @@ interface Props {
   description?: string;
   /** Header transparent qui se fond dans la photo, se solidifie au scroll (page d'accueil). */
   transparentHeader?: boolean;
+  /** Masque le rail de navigation flottant (ServiceRail) — utile si la page propose déjà sa
+   * propre navigation vers les autres filières ailleurs dans son contenu. */
+  hideServiceRail?: boolean;
 }
 
 const {
@@ -17,6 +31,7 @@ const {
   theme = "societe",
   description = "Cayrol Energie — producteur indépendant d'énergies renouvelables.",
   transparentHeader = false,
+  hideServiceRail = false,
 } = Astro.props;
 
 // Les 4 filières (Hydro/PV/BESS/Biogaz) ne sont volontairement pas dans le header : elles sont
@@ -39,7 +54,10 @@ const nav = [
     <title>{title} · Cayrol Energie</title>
     <ClientRouter />
   </head>
-  <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
+  <body
+    class="flex min-h-screen flex-col text-neutral-900"
+    style="background-color: var(--theme-color-bg);"
+  >
     <header
       id="site-header"
       class:list={[
@@ -49,6 +67,7 @@ const nav = [
           : "border-b border-black/5 bg-white/90 backdrop-blur",
       ]}
     >
+      {!transparentHeader && <div class="h-1 w-full" style="background-color: var(--theme-color);" />}
       <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <a href="/" class="hdr-text flex items-center gap-2 font-extrabold tracking-tight">
           <img src="/logos/logo-orange.png" alt="Cayrol Energie" class="h-9 w-9" />
@@ -105,16 +124,105 @@ const nav = [
       <slot />
     </main>
 
-    <ServiceRail />
+    {!hideServiceRail && <ServiceRail />}
 
-    <footer class="border-t border-black/5 bg-white">
-      <div class="mx-auto max-w-6xl px-4 py-8 text-sm text-neutral-500">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div class="flex items-center gap-2">
-            <img src="/logos/logo-orange.png" alt="Cayrol Energie" class="h-6 w-6" />
-            <span class="font-semibold text-neutral-700">Cayrol Energie</span>
+    <footer class="border-t border-slate-300 bg-slate-50">
+      <!-- Bandeau CTA : teinté par la couleur du thème de la page courante, cohérent avec la
+           bande d'accent du header plutôt qu'une couleur de marque figée. -->
+      <div class="mx-auto max-w-6xl px-4 pt-12">
+        <div
+          class="flex flex-col items-start gap-4 rounded-2xl border p-8 md:flex-row md:items-center md:justify-between md:p-10"
+          style="border-color: var(--theme-color-light); background-color: var(--theme-color-bg);"
+        >
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 md:text-3xl">
+              Cayrol Energie vous accompagne dans vos projets d'avenir
+            </h2>
+            <p class="mt-2 max-w-xl text-sm text-slate-600 md:text-base">
+              Un projet de production ou d'autoconsommation d'énergie renouvelable ? Parlons-en.
+            </p>
           </div>
-          <p>Prototype de démonstration — contenu et visuels provisoires (voir TODO-CONTENT.md).</p>
+          <a
+            href="/contact"
+            class="shrink-0 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5"
+            style="background-color: var(--theme-color);"
+          >
+            Discutons de votre projet
+          </a>
+        </div>
+      </div>
+
+      <div class="mx-auto max-w-6xl px-4 py-12">
+        <div class="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
+          <div>
+            <div class="flex items-center gap-2">
+              <img src="/logos/logo-orange.png" alt="Cayrol Energie" class="h-8 w-8" />
+              <span class="font-brand text-lg text-slate-900">CAYROL ENERGIE</span>
+            </div>
+            <p class="mt-3 max-w-xs text-sm text-slate-500">
+              Producteur indépendant d'énergies renouvelables, à taille humaine et ancré dans ses territoires.
+            </p>
+            <div class="mt-4 flex flex-col gap-1.5 text-sm text-slate-600">
+              <a href={`tel:${company.telephone.replace(/[^+\d]/g, "")}`} class="hover:text-slate-900">
+                {company.telephone}
+              </a>
+              <a href={`mailto:${company.email}`} class="hover:text-slate-900">
+                {company.email}
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-900">Nos énergies</h3>
+            <ul class="mt-4 flex flex-col gap-2.5 text-sm">
+              {energyThemeList.map((t) => (
+                <li>
+                  <a href={t.href} class="flex items-center gap-2 text-slate-600 hover:text-slate-900">
+                    <span class="h-1.5 w-1.5 shrink-0 rounded-full" style={`background-color:${t.color}`} />
+                    {t.name}
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a href="/autoconsommation-collective" class="flex items-center gap-2 text-slate-600 hover:text-slate-900">
+                  <span class="h-1.5 w-1.5 shrink-0 rounded-full" style={`background-color:${themes.autoconsommation.color}`} />
+                  Autoconsommation collective
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-900">Entreprise</h3>
+            <ul class="mt-4 flex flex-col gap-2.5 text-sm">
+              <li><a href="/" class="text-slate-600 hover:text-slate-900">Accueil</a></li>
+              <li><a href="/societe" class="text-slate-600 hover:text-slate-900">Société</a></li>
+              <li><a href="/contact" class="text-slate-600 hover:text-slate-900">Contact</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-900">Adresse</h3>
+            <p class="mt-4 text-sm text-slate-600">{company.adresse}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maillage interne SEO : liste complète des pages, distincte de la navigation du header. -->
+      <div class="border-t border-slate-200">
+        <div class="mx-auto max-w-6xl px-4 py-5">
+          <nav aria-label="Plan du site" class="flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-400">
+            {allPages.map((p, i) => (
+              <>
+                <a href={p.href} class="hover:text-slate-600">{p.label}</a>
+                {i < allPages.length - 1 && <span aria-hidden="true">·</span>}
+              </>
+            ))}
+          </nav>
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+            <p>© {new Date().getFullYear()} Cayrol Energie. Tous droits réservés.</p>
+            <p>Prototype de démonstration — contenu et visuels provisoires (voir TODO-CONTENT.md).</p>
+          </div>
         </div>
       </div>
     </footer>

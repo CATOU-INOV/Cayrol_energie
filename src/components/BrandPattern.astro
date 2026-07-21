@@ -1,0 +1,47 @@
+---
+// Motif de marque Cayrol Energie : la couronne de 12 croissants du logo, reproduite en SVG
+// vectoriel pour servir de filigrane discret en fond de section (hero, bandeaux sombres) — extrait
+// de la forme du logo plutôt qu'une image bitmap, pour rester net à toute taille/opacité.
+// Positionné en absolute par l'appelant (voir usage : className gère position/taille/opacité).
+
+interface Props {
+  class?: string;
+  color?: string;
+  id?: string;
+}
+
+const { class: className = "", color = "currentColor", id = "brand-crescent-mask" } = Astro.props;
+
+const CX = 100;
+const CY = 100;
+const RING_R = 62; // rayon du cercle sur lequel sont disposés les 12 croissants
+const CRESCENT_R = 16; // rayon de chaque croissant
+const OFFSET = 6; // décalage du cercle "mordant" qui crée la forme de croissant
+
+const crescents = Array.from({ length: 12 }, (_, i) => {
+  const angle = (i * 360) / 12;
+  const rad = (angle * Math.PI) / 180;
+  const x = CX + RING_R * Math.cos(rad);
+  const y = CY + RING_R * Math.sin(rad);
+  // Le cercle qui "mord" est décalé vers l'extérieur, dans la continuité du rayon.
+  const bx = x + OFFSET * Math.cos(rad);
+  const by = y + OFFSET * Math.sin(rad);
+  return { x, y, bx, by };
+});
+---
+
+<svg viewBox="0 0 200 200" class={className} aria-hidden="true" focusable="false">
+  <defs>
+    <mask id={id}>
+      <rect x="0" y="0" width="200" height="200" fill="white" />
+      {crescents.map((c) => (
+        <circle cx={c.bx} cy={c.by} r={CRESCENT_R} fill="black" />
+      ))}
+    </mask>
+  </defs>
+  <g mask={`url(#${id})`}>
+    {crescents.map((c) => (
+      <circle cx={c.x} cy={c.y} r={CRESCENT_R} fill={color} />
+    ))}
+  </g>
+</svg>

@@ -12,6 +12,9 @@ import TimelineVertical from "./TimelineVertical";
 import TimelineProgress from "./TimelineProgress";
 import TimelineCards from "./TimelineCards";
 import ExpandingCardGrid from "./ExpandingCardGrid";
+import OrbitGallery from "./OrbitGallery";
+import ProjectShowcase from "./ProjectShowcase";
+import { ThematicIconTile } from "./ThematicIcons";
 
 // 4 rendus différents pour une même forme de données (steps + color) — volontaire pour la démo,
 // afin de montrer qu'on peut varier librement la présentation d'un onglet à l'autre sans rien
@@ -41,17 +44,29 @@ export interface ThematicProject {
   commune: string;
   power: string;
   description: string;
+  image?: string;
+  tags?: string[];
 }
 
 export interface ThematicTabProps {
   color: string;
-  tagline: string;
+  /** Optionnel : certaines pages fusionnent déjà l'accroche dans leur propre hero au-dessus, pas
+   * besoin de la répéter ici. */
+  tagline?: string;
   explanations: { title: string; body: string }[];
   stats?: ThematicStat[];
   categories?: ThematicCategory[];
+  /** "orbit" affiche une photo centrale (categoriesCenterImage) entourée des catégories en
+   * satellites reliés par des anneaux elliptiques, plutôt que la grille "expanding cards". */
+  categoriesLayout?: "grid" | "orbit";
+  categoriesCenterImage?: string;
+  categoriesCenterAlt?: string;
   timelineSteps?: TimelineStep[];
   timelineVariant?: TimelineVariant;
   projects?: ThematicProject[];
+  /** "showcase" affiche de grandes cartes photo (ProjectShowcase) plutôt que les petites cartes
+   * texte — nécessite que chaque projet fournisse une image. */
+  projectsLayout?: "list" | "showcase" | "showcase-carousel";
   atouts?: { title: string; body: string }[];
   extras?: ReactNode;
 }
@@ -62,16 +77,20 @@ export default function ThematicTab({
   explanations,
   stats,
   categories,
+  categoriesLayout = "grid",
+  categoriesCenterImage,
+  categoriesCenterAlt,
   timelineSteps,
   timelineVariant = "dots",
   projects,
+  projectsLayout = "list",
   atouts,
   extras,
 }: ThematicTabProps) {
   return (
     <div className="flex flex-col gap-16">
       {/* Phrase d'accroche */}
-      <p className="max-w-3xl text-lg text-neutral-700 md:text-xl">{tagline}</p>
+      {tagline && <p className="max-w-3xl text-lg text-neutral-700 md:text-xl">{tagline}</p>}
 
       {/* Stats clés */}
       {stats && stats.length > 0 && (
@@ -83,9 +102,13 @@ export default function ThematicTab({
       )}
 
       {/* Explications (Historique/Expérience ou Explications/Déroulement) */}
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {explanations.map((e, i) => (
-          <div key={i} className="rounded-2xl border p-6" style={{ borderColor: `${color}33` }}>
+          <div
+            key={i}
+            className="group rounded-xl border border-slate-300 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+          >
+            <ThematicIconTile icon="idea" color={color} />
             <h3 className="mb-2 text-lg font-bold" style={{ color }}>
               {e.title}
             </h3>
@@ -102,17 +125,26 @@ export default function ThematicTab({
           <h2 className="mb-4 text-xl font-bold" style={{ color }}>
             Nos types d'installations
           </h2>
-          <ExpandingCardGrid
-            items={categories.map((c, i) => ({
-              key: `${c.label}-${i}`,
-              label: c.label,
-              image: c.image,
-              description: c.description,
-              color,
-            }))}
-            perRow={2}
-            height="h-[360px] md:h-[420px]"
-          />
+          {categoriesLayout === "orbit" && categoriesCenterImage ? (
+            <OrbitGallery
+              color={color}
+              centerImage={categoriesCenterImage}
+              centerAlt={categoriesCenterAlt ?? ""}
+              items={categories.map((c) => ({ image: c.image, alt: c.label, label: c.label }))}
+            />
+          ) : (
+            <ExpandingCardGrid
+              items={categories.map((c, i) => ({
+                key: `${c.label}-${i}`,
+                label: c.label,
+                image: c.image,
+                description: c.description,
+                color,
+              }))}
+              perRow={2}
+              height="h-[360px] md:h-[420px]"
+            />
+          )}
         </div>
       )}
 
@@ -138,7 +170,11 @@ export default function ThematicTab({
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {atouts.map((a, i) => (
-              <div key={i} className="rounded-xl p-4" style={{ backgroundColor: `${color}0d` }}>
+              <div
+                key={i}
+                className="group rounded-xl border border-slate-300 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <ThematicIconTile icon="shield" color={color} />
                 <p className="text-sm font-bold" style={{ color }}>
                   {a.title}
                 </p>
@@ -155,17 +191,29 @@ export default function ThematicTab({
           <h2 className="mb-4 text-xl font-bold" style={{ color }}>
             Présentation de projets
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            {projects.map((p, i) => (
-              <div key={i} className="rounded-xl border p-4" style={{ borderColor: `${color}33` }}>
-                <p className="font-semibold" style={{ color }}>
-                  {p.name} <span className="font-normal text-neutral-500">— {p.commune}</span>
-                </p>
-                <p className="text-xs font-medium text-neutral-500">{p.power}</p>
-                <p className="mt-2 text-sm text-neutral-700">{p.description}</p>
-              </div>
-            ))}
-          </div>
+          {projectsLayout !== "list" && projects.every((p) => p.image) ? (
+            <ProjectShowcase
+              color={color}
+              projects={projects.map((p) => ({ ...p, image: p.image!, tags: p.tags ?? [p.power] }))}
+              layout={projectsLayout === "showcase-carousel" ? "carousel" : "grid"}
+            />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {projects.map((p, i) => (
+                <div
+                  key={i}
+                  className="group rounded-xl border border-slate-300 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <ThematicIconTile icon="building" color={color} />
+                  <p className="font-semibold" style={{ color }}>
+                    {p.name} <span className="font-normal text-neutral-500">— {p.commune}</span>
+                  </p>
+                  <p className="text-xs font-medium text-neutral-500">{p.power}</p>
+                  <p className="mt-2 text-sm text-neutral-700">{p.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

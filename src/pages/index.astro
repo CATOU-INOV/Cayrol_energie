@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import ProjectMap from "../components/ProjectMap.tsx";
 import ThemeSelector from "../components/ThemeSelector.tsx";
 import LogoMarquee from "../components/LogoMarquee.astro";
+import BrandPattern from "../components/BrandPattern.astro";
 import { photoUrl } from "../data/photos";
 import projects from "../data/projects.json";
 
@@ -48,6 +49,13 @@ const heroStats = [
     />
     <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" aria-hidden="true" />
 
+    <!-- Motif de marque en filigrane, coin supérieur droit -->
+    <BrandPattern
+      id="brand-hero"
+      color="white"
+      class="pointer-events-none absolute -right-16 -top-16 h-72 w-72 opacity-5 md:h-96 md:w-96"
+    />
+
     <!-- Texte, aligné à gauche, bien espacé -->
     <div class="relative z-10 flex min-h-screen flex-col justify-center gap-8 px-6 md:px-16 lg:px-24">
       <div class="max-w-2xl">
@@ -70,22 +78,37 @@ const heroStats = [
     </div>
   </section>
 
-  <!-- Bandeau de stats, une seule couleur (blanc) pour rester sobre — prolonge le dégradé du hero.
-       Les chiffres comptent de 0 jusqu'à leur valeur au moment où ils entrent dans l'écran. -->
-  <section class="bg-neutral-900">
-    <div class="mx-auto flex max-w-6xl flex-wrap justify-between gap-x-10 gap-y-6 px-6 py-8 md:px-16">
-      {heroStats.map((s) => (
-        <div>
-          <p
-            class="stat-number text-3xl font-extrabold text-white md:text-4xl"
-            data-target={s.target}
-            data-suffix={s.suffix}
+  <!-- Bandeau de stats : cartes bento sur fond clair, séparateurs verticaux visibles entre
+       chaque chiffre — les chiffres comptent de 0 jusqu'à leur valeur au moment où ils entrent
+       dans l'écran. -->
+  <section class="relative overflow-hidden bg-slate-50">
+    <BrandPattern
+      id="brand-stats"
+      color="#ea580c"
+      class="pointer-events-none absolute -right-10 -top-10 h-64 w-64 opacity-5"
+    />
+    <div class="relative mx-auto max-w-6xl px-4 py-10 md:px-8">
+      <div class="grid grid-cols-2 rounded-xl border border-slate-300 bg-white shadow-sm md:grid-cols-4">
+        {heroStats.map((s, i) => (
+          <div
+            class:list={[
+              "px-6 py-6 text-center",
+              i % 2 === 0 && "border-r border-slate-200",
+              i < heroStats.length - 1 && "md:border-r",
+              i >= 2 && "border-t border-slate-200 md:border-t-0",
+            ]}
           >
-            {s.target}{s.suffix}
-          </p>
-          <p class="mt-1 text-xs uppercase tracking-wide text-white/60 md:text-sm">{s.label}</p>
-        </div>
-      ))}
+            <p
+              class="stat-number text-3xl font-extrabold text-slate-900 md:text-4xl"
+              data-target={s.target}
+              data-suffix={s.suffix}
+            >
+              {s.target}{s.suffix}
+            </p>
+            <p class="mt-1 text-xs uppercase tracking-wide text-slate-500 md:text-sm">{s.label}</p>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -135,8 +158,8 @@ const heroStats = [
     document.addEventListener("astro:page-load", initStatCounters);
   </script>
 
-  <!-- Sélection des univers énergétiques -->
-  <section class="border-t border-black/5 bg-white">
+  <!-- Sélection des univers énergétiques : hero secondaire clair avec grille de points en fond -->
+  <section class="bg-dot-grid border-t border-slate-200/80 bg-slate-50">
     <div class="mx-auto max-w-6xl px-4 py-14">
       <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos filières d'expertise</h2>
       <p class="mb-8 text-neutral-600">Quatre énergies, une même exigence de qualité et d'ancrage local.</p>
@@ -145,7 +168,7 @@ const heroStats = [
   </section>
 
   <!-- Carte des implantations -->
-  <section class="border-t border-black/5 bg-white">
+  <section class="border-t border-slate-200/80 bg-white">
     <div class="mx-auto max-w-6xl px-4 py-14">
       <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos implantations en France</h2>
       <p class="mb-6 text-neutral-600">
@@ -156,7 +179,7 @@ const heroStats = [
   </section>
 
   <!-- Autoconsommation collective -->
-  <section class="border-t border-black/5" style="background-color: var(--theme-color-bg, #f0f9ff);">
+  <section class="border-t border-slate-200/80" style="background-color: var(--theme-color-bg, #f0f9ff);">
     <div class="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-14 md:flex-row md:items-center">
       <img src="/logos/logo-assoc.png" alt="Court Circuit" class="h-24 w-24 shrink-0 object-contain" />
       <div>
@@ -176,7 +199,7 @@ const heroStats = [
   </section>
 
   <!-- Ils nous font confiance : bandeau à défilement infini, pure CSS -->
-  <section class="border-t border-black/5 bg-white py-12">
+  <section class="border-t border-slate-200/80 bg-white py-12">
     <h2 class="mb-8 text-center text-sm font-semibold uppercase tracking-widest text-neutral-400">
       Ils nous font confiance
     </h2>

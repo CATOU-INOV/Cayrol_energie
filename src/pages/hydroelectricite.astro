@@ -12,7 +12,14 @@ const theme = themes.hydroelectricite;
 // TODO-CONTENT : demander au client une liste de projets 100% hydroélectriques.
 const hydroProjects = projects
   .filter((p) => p.energy === "hybride")
-  .map((p) => ({ name: p.name, commune: p.commune, power: p.power, description: p.description }));
+  .map((p) => ({
+    name: p.name,
+    commune: p.commune,
+    power: p.power,
+    description: p.description,
+    image: photoUrl("hydroBasseChute", { w: 900 }),
+    tags: [p.type, p.power],
+  }));
 
 // TODO-CONTENT : déroulé type générique (par analogie avec le photovoltaïque), à faire valider
 // ou remplacer par le vrai processus hydroélectrique du client (étude hydraulique, autorisation
@@ -32,6 +39,7 @@ const timelineSteps = [
     height="h-[320px] md:h-[420px]"
     rounded={false}
   />
+  <section class="bg-white">
   <div class="mx-auto max-w-6xl px-4 py-14">
     <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Hydroélectricité</h1>
 
@@ -68,6 +76,8 @@ const timelineSteps = [
       timelineSteps={timelineSteps}
       timelineVariant="cards"
       projects={hydroProjects}
+      projectsLayout="showcase"
     />
   </div>
+  </section>
 </BaseLayout>
