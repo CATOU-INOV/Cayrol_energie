@@ -1,0 +1,25 @@
+---
+// Bandeau "Ils nous font confiance" à défilement infini (pure CSS, pas de JS/hydratation).
+// Le contenu est dupliqué une fois et translaté de -50% : boucle parfaitement continue quel
+// que soit le nombre d'éléments, sans calcul de largeur en dur.
+
+interface Props {
+  items: string[];
+}
+
+const { items } = Astro.props;
+const looped = [...items, ...items];
+---
+
+<div class="marquee-mask relative overflow-hidden">
+  <div class="marquee-track flex w-max items-center gap-14 py-2">
+    {looped.map((label, i) => (
+      <span
+        class="shrink-0 whitespace-nowrap text-lg font-bold uppercase tracking-wide text-neutral-400 transition-colors hover:text-[var(--theme-color)] md:text-xl"
+        aria-hidden={i >= items.length ? "true" : undefined}
+      >
+        {label}
+      </span>
+    ))}
+  </div>
+</div>

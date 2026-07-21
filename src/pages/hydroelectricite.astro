@@ -1,0 +1,73 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PhotoBanner from "../components/PhotoBanner.astro";
+import ThematicTab from "../components/ThematicTab.tsx";
+import { themes } from "../data/themes";
+import { photoUrl } from "../data/photos";
+import projects from "../data/projects.json";
+
+const theme = themes.hydroelectricite;
+
+// Un seul projet hydro référencé dans les données actuelles (site hybride hydro + solaire).
+// TODO-CONTENT : demander au client une liste de projets 100% hydroélectriques.
+const hydroProjects = projects
+  .filter((p) => p.energy === "hybride")
+  .map((p) => ({ name: p.name, commune: p.commune, power: p.power, description: p.description }));
+
+// TODO-CONTENT : déroulé type générique (par analogie avec le photovoltaïque), à faire valider
+// ou remplacer par le vrai processus hydroélectrique du client (étude hydraulique, autorisation
+// environnementale/loi sur l'eau, etc. — probablement plus long qu'un projet PV).
+const timelineSteps = [
+  { date: "M0", label: "Étude hydraulique", description: "Analyse du débit, de la chute et du potentiel du site." },
+  { date: "M+3", label: "Autorisations", description: "Dossier loi sur l'eau et autorisations environnementales." },
+  { date: "M+12", label: "Construction", description: "Génie civil, turbines et raccordement électrique." },
+  { date: "M+15", label: "Mise en service", description: "Essais, réglages et démarrage de la production." },
+];
+---
+
+<BaseLayout title="Hydroélectricité" theme="hydroelectricite">
+  <PhotoBanner
+    src={photoUrl("hydroHauteChute")}
+    alt="Barrage hydroélectrique en montagne"
+    height="h-[320px] md:h-[420px]"
+    rounded={false}
+  />
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Hydroélectricité</h1>
+
+    <ThematicTab
+      client:visible
+      color={theme.color}
+      tagline="Pionnier de la production hydroélectrique, Cayrol Energie exploite aujourd'hui 11 centrales pour une puissance cumulée de 19,15 MW — un savoir-faire transmis depuis plusieurs générations."
+      stats={[
+        { value: "11", label: "centrales hydroélectriques" },
+        { value: "19,15 MW", label: "de puissance installée" },
+      ]}
+      explanations={[
+        {
+          title: "Historique",
+          body: "TODO-CONTENT : retracer l'historique familial de l'activité hydroélectrique (dates de reprise/construction des premières centrales, ancienneté du savoir-faire) — texte à fournir ou valider par le client.",
+        },
+        {
+          title: "Expérience",
+          body: "TODO-CONTENT : détailler l'expérience technique (types de turbines, gammes de puissance maîtrisées, zones géographiques d'intervention) — texte provisoire à valider par le client.",
+        },
+      ]}
+      categories={[
+        {
+          label: "Centrale haute chute",
+          image: photoUrl("hydroHauteChute", { w: 1400 }),
+          description: "Turbinage sous forte pression en montagne, pour une production concentrée sur un débit réduit.",
+        },
+        {
+          label: "Centrale basse chute",
+          image: photoUrl("hydroBasseChute", { w: 1400 }),
+          description: "Turbinage au fil de l'eau en vallée, pour une production continue sur un débit plus important.",
+        },
+      ]}
+      timelineSteps={timelineSteps}
+      timelineVariant="cards"
+      projects={hydroProjects}
+    />
+  </div>
+</BaseLayout>

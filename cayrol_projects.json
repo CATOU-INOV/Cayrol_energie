@@ -1,0 +1,156 @@
+[
+  {
+    "id": "bramafan",
+    "name": "Bramafan",
+    "commune": "Argentine",
+    "lat": 45.4550,
+    "lng": 6.2900,
+    "type": "Ombrières",
+    "energy": "photovoltaique",
+    "power": "250 kVA",
+    "description": "Construction de 3 ombrières photovoltaïques pour la commune d'Argentine."
+  },
+  {
+    "id": "besseges",
+    "name": "Bessèges",
+    "commune": "Bessèges",
+    "lat": 44.3010,
+    "lng": 4.1080,
+    "type": "Toiture solaire",
+    "energy": "photovoltaique",
+    "power": "220 kVA",
+    "description": "Construction d'une installation photovoltaïque sur toiture plate."
+  },
+  {
+    "id": "aiton",
+    "name": "Aiton",
+    "commune": "Aiton",
+    "lat": 45.5330,
+    "lng": 6.1330,
+    "type": "Toiture solaire",
+    "energy": "photovoltaique",
+    "power": "440 kVA",
+    "description": "Installation photovoltaïque en toiture d'un bâtiment agricole."
+  },
+  {
+    "id": "coise",
+    "name": "Coise",
+    "commune": "Coise",
+    "lat": 45.6220,
+    "lng": 4.4670,
+    "type": "Toiture solaire",
+    "energy": "photovoltaique",
+    "power": "250 kVA",
+    "description": "Installation photovoltaïque en toiture d'un centre équestre."
+  },
+  {
+    "id": "star-soleil",
+    "name": "Star Soleil",
+    "commune": "Saint Jean de Libron",
+    "lat": 43.3550,
+    "lng": 3.2650,
+    "type": "Ombrières",
+    "energy": "photovoltaique",
+    "power": "1610 kVA",
+    "description": "Parc photovoltaïque de 8116 panneaux, mis en service le 20 octobre 2011."
+  },
+  {
+    "id": "la-chambre",
+    "name": "La Chambre",
+    "commune": "La Chambre",
+    "lat": 45.3830,
+    "lng": 6.3170,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "100 kVA",
+    "description": "Modernisation d'un bâtiment industriel très bien accueilli par la commune."
+  },
+  {
+    "id": "bizanet",
+    "name": "Bizanet",
+    "commune": "Bizanet",
+    "lat": 43.1670,
+    "lng": 2.8830,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "216 kVA",
+    "description": "Remplacement intégral des toitures d'une cave coopérative."
+  },
+  {
+    "id": "agde",
+    "name": "Agde",
+    "commune": "Agde",
+    "lat": 43.3100,
+    "lng": 3.4750,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "90 kVA",
+    "description": "Vitrine commerciale pour un grossiste en matériel électrique."
+  },
+  {
+    "id": "olonzac",
+    "name": "Olonzac",
+    "commune": "Olonzac",
+    "lat": 43.2830,
+    "lng": 2.7500,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "65 kVA",
+    "description": "Bâtiment agricole qui a retrouvé de l'éclat."
+  },
+  {
+    "id": "portiragnes",
+    "name": "Portiragnes",
+    "commune": "Portiragnes",
+    "lat": 43.2830,
+    "lng": 3.3670,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "60 kVA",
+    "description": "Remplacement de la couverture vétuste existante."
+  },
+  {
+    "id": "sauvian",
+    "name": "Sauvian",
+    "commune": "Sauvian",
+    "lat": 43.2900,
+    "lng": 3.2670,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "245 kVA",
+    "description": "Le plein d'énergie pour une flotte d'ULM."
+  },
+  {
+    "id": "camps-la-source",
+    "name": "Camps-La-Source",
+    "commune": "Camps-La-Source",
+    "lat": 43.4330,
+    "lng": 6.1170,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "135 kVA",
+    "description": "630 panneaux, 11 onduleurs, mise en service le 25 juin 2012, dans le Var."
+  },
+  {
+    "id": "toulouges",
+    "name": "Toulouges",
+    "commune": "Toulouges",
+    "lat": 42.6420,
+    "lng": 2.8330,
+    "type": "Toiture intégrée",
+    "energy": "photovoltaique",
+    "power": "74 kVA",
+    "description": "Local industriel à proximité de Perpignan, réalisé en 2015."
+  },
+  {
+    "id": "la-combe",
+    "name": "La Combe",
+    "commune": "Argentine",
+    "lat": 45.4550,
+    "lng": 6.2900,
+    "type": "Toiture solaire + Hydroélectricité",
+    "energy": "hybride",
+    "power": "56 kVA",
+    "description": "Centrale hydroélectrique de Montartier équipée en toiture de panneaux solaires Photowatt."
+  }
+]

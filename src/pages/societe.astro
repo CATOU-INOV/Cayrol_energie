@@ -1,0 +1,103 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { themes, energyThemeList } from "../data/themes";
+
+const theme = themes.photovoltaique;
+
+// Contenu repris du site actuel cayrolenergie.com (pages Accueil et Société) — texte réel, pas
+// un placeholder. Chiffres volontairement omis ici : le client a demandé de garder les chiffres
+// du cadrage PDF (64 centrales PV, 11 centrales hydro, 19,15 MW) comme référence à jour plutôt
+// que ceux affichés sur le site actuel (20 MWc / 50 MWc en développement / 50 ans), donc pas de
+// répétition d'un chiffre d'ancienneté ici pour éviter toute contradiction entre les pages.
+const quiSommesNous =
+  "Cayrol Energie est une société du groupe familial Cayrol, producteur indépendant d'énergie renouvelable. " +
+  "Née pour répondre à une volonté locale d'indépendance énergétique des territoires, l'entreprise développe, " +
+  "construit et exploite des installations à taille humaine pour accompagner industriels, agriculteurs et " +
+  "collectivités dans la transition énergétique.";
+
+const valeurs = [
+  { title: "Accompagnement personnalisé", body: "Les projets sont étudiés au cas par cas par une équipe d'ingénieurs." },
+  { title: "Professionnalisme", body: "Réactivité et rigueur à chaque étape du projet." },
+  { title: "Suivi rigoureux", body: "Un contact unique de A à Z, du premier échange à la mise en service." },
+  { title: "Transparence", body: "Une démarche décisionnelle claire, partagée avec chaque partenaire." },
+  { title: "Expertise", body: "Un savoir-faire technique validé sur le terrain, projet après projet." },
+];
+
+// TODO-CONTENT : le site actuel ne détaille pas d'engagements environnementaux/sociétaux
+// au-delà des valeurs ci-dessus — texte à fournir par le client s'il souhaite une section dédiée.
+const engagements =
+  "TODO-CONTENT : engagements environnementaux et sociétaux (au-delà des valeurs ci-dessus) — texte à fournir par le client.";
+
+const partenaires = [
+  "Banque Populaire",
+  "Crédit Agricole",
+  "Collectivités de Savoie",
+  "Collectivités de l'Hérault",
+  "Exploitants agricoles partenaires (vignerons, pépiniéristes, apiculteurs...)",
+];
+---
+
+<BaseLayout title="Société" theme="societe">
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="mb-10 text-3xl font-extrabold" style={`color:${theme.color}`}>La société Cayrol Energie</h1>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
+        <h2 class="mb-2 text-lg font-bold" style={`color:${theme.color}`}>Qui sommes-nous</h2>
+        <p class="text-sm leading-relaxed text-neutral-700">{quiSommesNous}</p>
+      </div>
+      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
+        <h2 class="mb-2 text-lg font-bold" style={`color:${theme.color}`}>Nos engagements</h2>
+        <p class="text-sm leading-relaxed text-neutral-700">{engagements}</p>
+      </div>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Nos valeurs</h2>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {valeurs.map((v) => (
+          <div class="rounded-xl p-4" style={`background-color:${theme.color}0d`}>
+            <p class="text-sm font-bold" style={`color:${theme.color}`}>{v.title}</p>
+            <p class="mt-1 text-sm text-neutral-700">{v.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Nos partenaires</h2>
+      <div class="flex flex-wrap gap-3">
+        {partenaires.map((p) => (
+          <span class="rounded-full border px-4 py-2 text-sm font-medium text-neutral-600" style={`border-color:${theme.color}33`}>
+            {p}
+          </span>
+        ))}
+      </div>
+      <p class="mt-3 text-xs text-neutral-500">
+        TODO-CONTENT : logos réels des partenaires non fournis — affichage temporaire en texte.
+      </p>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Nos solutions</h2>
+      <div class="flex flex-wrap gap-3">
+        {energyThemeList.map((t) => (
+          <a
+            href={t.href}
+            class="rounded-full border px-4 py-2 text-sm font-semibold transition hover:opacity-70"
+            style={`border-color:${t.color}; color:${t.color}; background-color:${t.color}1a;`}
+          >
+            {t.name}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-10 rounded-2xl p-8 text-center" style={`background-color:${theme.color}0d`}>
+      <h2 class="mb-2 text-lg font-bold" style={`color:${theme.color}`}>Nous contacter</h2>
+      <a href="/contact" class="inline-block rounded-full px-5 py-2 text-sm font-semibold text-white" style={`background-color:${theme.color}`}>
+        Accéder au formulaire de contact
+      </a>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,52 @@
+/* Variables de couleur par univers énergétique.
+   Un wrapper porte la classe .theme-xxx et tous les descendants
+   peuvent consommer var(--theme-color), --theme-color-dark, --theme-color-light, --theme-color-bg. */
+
+:root {
+  --theme-color: #f97316;
+  --theme-color-dark: #c2410c;
+  --theme-color-light: #fdba74;
+  --theme-color-bg: #fff7ed;
+}
+
+.theme-hydroelectricite {
+  --theme-color: #1d4ed8;
+  --theme-color-dark: #1e3a8a;
+  --theme-color-light: #93c5fd;
+  --theme-color-bg: #eff6ff;
+}
+
+.theme-photovoltaique {
+  --theme-color: #f97316;
+  --theme-color-dark: #c2410c;
+  --theme-color-light: #fdba74;
+  --theme-color-bg: #fff7ed;
+}
+
+.theme-flexibilite-bess {
+  --theme-color: #dc2626;
+  --theme-color-dark: #991b1b;
+  --theme-color-light: #fca5a5;
+  --theme-color-bg: #fef2f2;
+}
+
+.theme-biogaz {
+  --theme-color: #16a34a;
+  --theme-color-dark: #14532d;
+  --theme-color-light: #86efac;
+  --theme-color-bg: #f0fdf4;
+}
+
+.theme-autoconsommation {
+  --theme-color: #0ea5e9;
+  --theme-color-dark: #1e3a8a;
+  --theme-color-light: #7dd3fc;
+  --theme-color-bg: #f0f9ff;
+}
+
+.theme-societe {
+  --theme-color: #f97316;
+  --theme-color-dark: #c2410c;
+  --theme-color-light: #fdba74;
+  --theme-color-bg: #fff7ed;
+}

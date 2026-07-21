@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@import "./themes.css";
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Header : transition douce entre l'état transparent (posé sur une photo plein écran) et l'état
+   solide (dès qu'on scrolle, ou sur toutes les pages qui n'ont pas de hero photo). */
+#site-header,
+#site-header .hdr-text,
+#site-header .hdr-text-muted {
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease,
+    color 300ms ease;
+}
+
+#site-header.header-transparent {
+  background-color: transparent;
+}
+
+#site-header.header-transparent .hdr-text {
+  color: white;
+}
+
+#site-header.header-transparent .hdr-text-muted {
+  color: rgb(255 255 255 / 0.85);
+}
+
+#site-header.header-transparent.is-scrolled {
+  background-color: rgb(255 255 255 / 0.9);
+  backdrop-filter: blur(8px);
+  border-color: rgb(0 0 0 / 0.05);
+}
+
+#site-header.header-transparent.is-scrolled .hdr-text {
+  color: rgb(23 23 23); /* neutral-900 */
+}
+
+#site-header.header-transparent.is-scrolled .hdr-text-muted {
+  color: rgb(82 82 82); /* neutral-600 */
+}
+
+/* Bandeau logos "Ils nous font confiance" : défilement infini en boucle, pause au survol,
+   fondu sur les bords pour un rendu propre plutôt qu'une coupure nette. */
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.marquee-track {
+  animation: marquee 28s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* Habillage des popups Leaflet (carte des implantations) pour matcher les coins arrondis et
+   l'ombre douce du reste du site plutôt que le rendu par défaut, anguleux. */
+.leaflet-popup-content-wrapper {
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 0.75rem 1rem;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}

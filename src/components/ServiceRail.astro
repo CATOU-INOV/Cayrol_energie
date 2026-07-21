@@ -1,0 +1,41 @@
+---
+// Rail de navigation rapide entre les 4 filières, fixé sur le côté de l'écran — compense le fait
+// qu'elles ne sont plus dans le header (cf. BaseLayout). Sur une page filière donnée, n'affiche
+// que les 3 autres (pas de lien vers la page où l'on se trouve déjà) : une manière originale de
+// suggérer les univers voisins plutôt qu'un simple sommaire.
+//
+// Au survol, le rond s'ouvre en pilule pour révéler le nom de la filière (transition de largeur,
+// pas de JS) et le logo effectue un tour complet — jolie touche vivante sur une icône déjà
+// circulaire. Ancré à droite (items-end) : la pilule s'ouvre vers le contenu, pas vers le bord.
+
+import { energyThemeList } from "../data/themes";
+
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
+const items = energyThemeList.filter((t) => t.href !== currentPath);
+---
+
+{items.length > 0 && (
+  <div class="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-3 md:flex lg:right-6">
+    {items.map((t) => (
+      <a
+        href={t.href}
+        aria-label={t.name}
+        class="service-rail-pill group flex h-12 max-w-[48px] items-center overflow-hidden rounded-full bg-white shadow-md ring-1 ring-black/5 transition-all duration-500 ease-out hover:max-w-[220px] hover:shadow-lg"
+      >
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center">
+          <img
+            src={t.logo}
+            alt=""
+            class="h-8 w-8 object-contain transition-transform duration-700 ease-out group-hover:rotate-[360deg]"
+          />
+        </span>
+        <span
+          class="whitespace-nowrap pr-5 text-sm font-semibold opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          style={{ color: t.colorDark, transitionDelay: "150ms" }}
+        >
+          {t.name}
+        </span>
+      </a>
+    ))}
+  </div>
+)}

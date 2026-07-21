@@ -1,0 +1,108 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PhotoBanner from "../components/PhotoBanner.astro";
+import ThematicTab from "../components/ThematicTab.tsx";
+import { themes } from "../data/themes";
+import { photoUrl } from "../data/photos";
+
+const theme = themes["flexibilite-bess"];
+
+// Contenu transcrit du support de cadrage client (chronologie, atouts, description du terrain).
+// TODO-CONTENT : la chronologie a été reconstituée à partir d'un schéma PDF dont les colonnes
+// se chevauchaient à l'extraction — à faire valider mot pour mot par le client avant mise en ligne.
+const timelineSteps = [
+  { date: "M-1", label: "Identification du projet", description: "Phase d'étude." },
+  { date: "M0", label: "Signature du compromis + dépôt du permis de construire", description: "Demande de raccordement." },
+  { date: "M+3", label: "Permis de construire obtenu", description: "Instruction de la demande de raccordement." },
+  { date: "M+6", label: "Demande de raccordement obtenue", description: "Développement du projet." },
+  { date: "M+8", label: "Signature de l'acte authentique", description: "Construction — rendez-vous chez le notaire." },
+];
+
+const atouts = [
+  {
+    title: "Optimisation de l'énergie",
+    body: "Le BESS permet de stocker la production lors des pics de production et de la restituer lors des pics de consommation.",
+  },
+  {
+    title: "Flexibilité et régulation des réseaux",
+    body: "Une installation BESS permet de soutenir le réseau électrique français lors des fortes demandes de consommation et de le délester lors des fortes productions.",
+  },
+  {
+    title: "Contribution à la transition énergétique",
+    body: "Consommer une énergie verte toute la journée et toute l'année.",
+  },
+  {
+    title: "Valorisation du foncier",
+    body: "Valoriser des parcelles inexploitées grâce à une démarche simplifiée, fondée sur la confiance et la transparence.",
+  },
+];
+
+const partenaires = [
+  "CA des Savoie",
+  "Communauté Val Cenis Savoie",
+  "Territoire d'énergie Savoie Mont-Blanc",
+  "Groupe Lauzière",
+  "CODEV Savoie",
+  "Savoiexpo",
+  "Terre de Maurienne",
+  "Porte de Maurienne",
+];
+---
+
+<BaseLayout title="Flexibilité / BESS" theme="flexibilite-bess">
+  <PhotoBanner
+    src={photoUrl("bessTerrain")}
+    alt="Conteneurs industriels, illustration d'un site BESS"
+    height="h-[320px] md:h-[420px]"
+    rounded={false}
+  />
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Flexibilité / BESS</h1>
+
+    <ThematicTab
+      client:visible
+      color={theme.color}
+      tagline="Le Battery Energy Storage System (BESS) permet de stocker l'électricité produite par nos centrales pour la restituer au moment où le réseau en a le plus besoin — une brique essentielle de la transition énergétique."
+      stats={[
+        { value: "64", label: "centrales photovoltaïques" },
+        { value: "11", label: "centrales hydroélectriques (19,15 MW)" },
+      ]}
+      explanations={[
+        {
+          title: "Ancrage territorial",
+          body: "Des projets construits en lien direct avec les collectivités et les acteurs économiques locaux.",
+        },
+        {
+          title: "Respect du patrimoine architectural local",
+          body: "Une intégration paysagère pensée avec les riverains et les services de l'urbanisme.",
+        },
+        {
+          title: "Savoir-faire historique",
+          body: "Plus de 20 ans d'expérience dans le développement et l'exploitation d'installations énergétiques.",
+        },
+        {
+          title: "À quoi ressemblera le terrain ?",
+          body: "2 conteneurs 20 pieds aménagés en parc batterie, 2 postes de refroidissement, 2 postes de transformation.",
+        },
+      ]}
+      timelineSteps={timelineSteps}
+      timelineVariant="vertical"
+      atouts={atouts}
+    />
+
+    <div class="mt-4">
+      <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Ils nous font confiance</h2>
+      <p class="mb-4 text-sm text-neutral-500">
+        TODO-CONTENT : logos partenaires non fournis dans les assets transmis — affichage temporaire en texte, à
+        remplacer par les logos réels.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        {partenaires.map((nom) => (
+          <span class="rounded-full border px-4 py-2 text-sm font-medium text-neutral-600" style={`border-color:${theme.color}33`}>
+            {nom}
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

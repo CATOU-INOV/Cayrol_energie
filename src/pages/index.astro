@@ -1,0 +1,185 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProjectMap from "../components/ProjectMap.tsx";
+import ThemeSelector from "../components/ThemeSelector.tsx";
+import LogoMarquee from "../components/LogoMarquee.astro";
+import { photoUrl } from "../data/photos";
+import projects from "../data/projects.json";
+
+// Liste confirmée par le site actuel cayrolenergie.com (page Société) pour les 3 premières
+// entrées (certifications réelles), complétée par les références du cadrage PDF (section "Ils
+// nous font confiance" de l'onglet BESS). Volontairement pas de logos d'entreprises sans lien
+// réel avec Cayrol Energie (Google, grandes marques...).
+const trustedBy = [
+  "QualiPV",
+  "La French Tech Green",
+  "La French Lab",
+  "Banque Populaire",
+  "Crédit Agricole",
+  "CA des Savoie",
+  "Territoire d'énergie Savoie Mont-Blanc",
+  "Groupe Lauzière",
+];
+
+const totalPower = projects.reduce((sum, p) => {
+  const match = p.power.match(/[\d.,]+/);
+  return sum + (match ? parseFloat(match[0].replace(",", ".")) : 0);
+}, 0);
+
+const communes = new Set(projects.map((p) => p.commune)).size;
+
+// target = valeur numérique animée en comptage, suffix = reste du texte affiché après le nombre.
+const heroStats = [
+  { target: projects.length, suffix: "+", label: "projets réalisés" },
+  { target: Math.round(totalPower), suffix: "+ kVA", label: "de puissance installée" },
+  { target: communes, suffix: "", label: "communes partenaires" },
+  { target: 4, suffix: "", label: "filières énergétiques" },
+];
+---
+
+<BaseLayout title="Accueil" theme="societe" transparentHeader>
+  <!-- Hero plein écran : photo pleine page, header transparent fondu dedans, texte centré -->
+  <section class="relative min-h-screen w-full overflow-hidden">
+    <img
+      src={photoUrl("heroAccueil", { w: 2400 })}
+      alt="Vue aérienne d'une centrale photovoltaïque Cayrol Energie"
+      class="absolute inset-0 h-full w-full object-cover"
+      loading="eager"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" aria-hidden="true" />
+
+    <!-- Texte, aligné à gauche, bien espacé -->
+    <div class="relative z-10 flex min-h-screen flex-col justify-center gap-8 px-6 md:px-16 lg:px-24">
+      <div class="max-w-2xl">
+        <h1 class="text-4xl font-extrabold leading-tight text-white drop-shadow-sm md:text-6xl">
+          Des territoires et des Hommes au cœur de la transition énergétique.
+        </h1>
+        <p class="mt-8 max-w-xl text-lg text-white/85 md:text-xl">
+          Nous développons, construisons et exploitons des installations à taille humaine, en lien
+          étroit avec nos territoires.
+        </p>
+      </div>
+    </div>
+
+    <!-- Repère de scroll -->
+    <div class="absolute inset-x-0 bottom-6 z-10 flex justify-center md:bottom-8" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 animate-bounce opacity-70">
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- Bandeau de stats, une seule couleur (blanc) pour rester sobre — prolonge le dégradé du hero.
+       Les chiffres comptent de 0 jusqu'à leur valeur au moment où ils entrent dans l'écran. -->
+  <section class="bg-neutral-900">
+    <div class="mx-auto flex max-w-6xl flex-wrap justify-between gap-x-10 gap-y-6 px-6 py-8 md:px-16">
+      {heroStats.map((s) => (
+        <div>
+          <p
+            class="stat-number text-3xl font-extrabold text-white md:text-4xl"
+            data-target={s.target}
+            data-suffix={s.suffix}
+          >
+            {s.target}{s.suffix}
+          </p>
+          <p class="mt-1 text-xs uppercase tracking-wide text-white/60 md:text-sm">{s.label}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <script>
+    // Compteur animé : déclenché une fois par élément quand le bandeau de stats entre dans
+    // l'écran. Réexécuté à chaque navigation (y compris le premier chargement) via
+    // astro:page-load pour rester compatible avec les transitions de page (ClientRouter).
+    let statsObserver: IntersectionObserver | null = null;
+
+    function animateStat(el: HTMLElement) {
+      const target = Number(el.dataset.target ?? "0");
+      const suffix = el.dataset.suffix ?? "";
+      const duration = 1400;
+      const start = performance.now();
+
+      function tick(now: number) {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        const current = Math.round(target * eased);
+        el.textContent = `${current}${suffix}`;
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function initStatCounters() {
+      statsObserver?.disconnect();
+
+      const stats = document.querySelectorAll<HTMLElement>(".stat-number");
+      if (stats.length === 0) return;
+
+      statsObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              animateStat(entry.target as HTMLElement);
+              statsObserver?.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.4 }
+      );
+
+      stats.forEach((el) => statsObserver?.observe(el));
+    }
+
+    document.addEventListener("astro:page-load", initStatCounters);
+  </script>
+
+  <!-- Sélection des univers énergétiques -->
+  <section class="border-t border-black/5 bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-14">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos filières d'expertise</h2>
+      <p class="mb-8 text-neutral-600">Quatre énergies, une même exigence de qualité et d'ancrage local.</p>
+      <ThemeSelector client:visible />
+    </div>
+  </section>
+
+  <!-- Carte des implantations -->
+  <section class="border-t border-black/5 bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-14">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos implantations en France</h2>
+      <p class="mb-6 text-neutral-600">
+        Découvrez nos centrales et installations à travers le territoire — cliquez sur un point pour en savoir plus.
+      </p>
+      <ProjectMap client:only="react" />
+    </div>
+  </section>
+
+  <!-- Autoconsommation collective -->
+  <section class="border-t border-black/5" style="background-color: var(--theme-color-bg, #f0f9ff);">
+    <div class="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-14 md:flex-row md:items-center">
+      <img src="/logos/logo-assoc.png" alt="Court Circuit" class="h-24 w-24 shrink-0 object-contain" />
+      <div>
+        <h2 class="mb-2 text-2xl font-bold text-sky-900">Autoconsommation collective</h2>
+        <p class="max-w-2xl text-neutral-700">
+          Avec l'association Court Circuit, Cayrol Energie accompagne les habitants et entreprises d'un même
+          territoire pour consommer localement l'électricité produite près de chez eux, en toute transparence.
+        </p>
+        <a
+          href="/autoconsommation-collective"
+          class="mt-4 inline-block rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
+        >
+          Découvrir Court Circuit
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ils nous font confiance : bandeau à défilement infini, pure CSS -->
+  <section class="border-t border-black/5 bg-white py-12">
+    <h2 class="mb-8 text-center text-sm font-semibold uppercase tracking-widest text-neutral-400">
+      Ils nous font confiance
+    </h2>
+    <LogoMarquee items={trustedBy} />
+  </section>
+</BaseLayout>

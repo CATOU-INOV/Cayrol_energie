@@ -1,0 +1,47 @@
+---
+// Bannière photo pleine largeur avec logo Cayrol Energie en overlay — reprend le format exact
+// de la page d'accueil du cadrage client (photo aérienne + logo superposé, dégradé pour la
+// lisibilité). Réutilisable sur toute page qui a besoin de ce traitement "hero".
+
+interface Props {
+  src: string;
+  alt: string;
+  logo?: string;
+  /** Si le logo porte déjà son propre texte (ex. Court Circuit), on n'ajoute pas le wordmark CAYROL ENERGIE. */
+  wordmark?: boolean;
+  height?: string;
+  class?: string;
+  /** false = bannière edge-to-edge (pleine largeur d'écran, sans coins arrondis). */
+  rounded?: boolean;
+}
+
+const {
+  src,
+  alt,
+  logo = "/logos/logo-orange.png",
+  wordmark = true,
+  height = "h-[380px] md:h-[480px]",
+  class: className = "",
+  rounded = true,
+} = Astro.props;
+---
+
+<div class={`relative overflow-hidden ${rounded ? "rounded-3xl" : ""} ${height} ${className}`}>
+  <img src={src} alt={alt} class="absolute inset-0 h-full w-full object-cover" loading="eager" />
+  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" aria-hidden="true" />
+  <div class="absolute inset-0 flex items-center justify-center md:justify-end md:pr-12">
+    {wordmark ? (
+      <div class="flex items-center gap-3 rounded-2xl bg-black/20 px-6 py-4 backdrop-blur-sm">
+        <img src={logo} alt="" class="h-14 w-14 md:h-16 md:w-16" />
+        <div class="leading-none">
+          <p class="text-2xl font-extrabold tracking-tight text-white md:text-3xl">CAYROL</p>
+          <p class="text-sm font-bold tracking-[0.3em] text-orange-400 md:text-base">ENERGIE</p>
+        </div>
+      </div>
+    ) : (
+      <div class="rounded-2xl bg-white/90 px-6 py-4 backdrop-blur-sm">
+        <img src={logo} alt="" class="h-16 md:h-20" />
+      </div>
+    )}
+  </div>
+</div>

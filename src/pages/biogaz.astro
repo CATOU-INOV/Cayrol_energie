@@ -1,0 +1,70 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PhotoBanner from "../components/PhotoBanner.astro";
+import ThematicTab from "../components/ThematicTab.tsx";
+import { themes } from "../data/themes";
+import { photoUrl } from "../data/photos";
+
+const theme = themes.biogaz;
+
+// TODO-CONTENT : le cadrage PDF ne détaille que les titres de section pour le biogaz
+// (Explications / Déroulement projet / Stats / Schéma explicatif / atouts) — tout le texte
+// ci-dessous est un contenu provisoire, à faire valider par le client.
+const timelineSteps = [
+  { date: "M0", label: "Étude de gisement", description: "Analyse des intrants agricoles disponibles localement." },
+  { date: "M+4", label: "Dépôt des autorisations", description: "Permis de construire et dossier ICPE." },
+  { date: "M+10", label: "Construction", description: "Génie civil, digesteurs, unité d'injection ou de cogénération." },
+  { date: "M+14", label: "Mise en service", description: "Démarrage de la méthanisation et injection dans le réseau." },
+];
+
+const atouts = [
+  {
+    title: "Valorisation des déchets agricoles",
+    body: "Le biogaz transforme les effluents et résidus agricoles locaux en énergie renouvelable.",
+  },
+  {
+    title: "Circuit court énergétique",
+    body: "Une production et une consommation ancrées sur le même territoire, au bénéfice des exploitations partenaires.",
+  },
+  {
+    title: "Complément de revenu agricole",
+    body: "Un modèle économique qui sécurise un revenu additionnel pour les agriculteurs partenaires.",
+  },
+];
+---
+
+<BaseLayout title="Biogaz" theme="biogaz">
+  <PhotoBanner
+    src={photoUrl("biogaz")}
+    alt="Silos agricoles, illustration provisoire d'un site biogaz"
+    height="h-[320px] md:h-[420px]"
+    rounded={false}
+  />
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Biogaz</h1>
+
+    <ThematicTab
+      client:visible
+      color={theme.color}
+      tagline="TODO-CONTENT : phrase d'accroche provisoire — Cayrol Energie développe des unités de méthanisation qui valorisent la matière organique locale en énergie renouvelable, au service des exploitations agricoles du territoire."
+      explanations={[
+        {
+          title: "Explications",
+          body: "TODO-CONTENT : présenter le principe de la méthanisation et son intérêt pour le territoire — texte à fournir par le client.",
+        },
+        {
+          title: "Déroulement projet",
+          body: "TODO-CONTENT : détailler les étapes clés du montage d'un projet biogaz (gisement, autorisations, construction, exploitation).",
+        },
+      ]}
+      timelineSteps={timelineSteps}
+      timelineVariant="progress"
+      atouts={atouts}
+    />
+
+    <p class="mt-10 text-sm text-neutral-500">
+      TODO-CONTENT : aucun projet biogaz référencé dans les données transmises — à compléter dès que des
+      réalisations seront disponibles.
+    </p>
+  </div>
+</BaseLayout>

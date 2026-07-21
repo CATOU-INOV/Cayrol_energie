@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PhotoBanner from "../components/PhotoBanner.astro";
+import StatBadge from "../components/StatBadge.tsx";
+import { themes } from "../data/themes";
+import { photoUrl } from "../data/photos";
+
+const theme = themes.autoconsommation;
+---
+
+<BaseLayout title="Autoconsommation collective" theme="autoconsommation">
+  <PhotoBanner
+    src={photoUrl("autoconsommation")}
+    alt="Toiture équipée de panneaux solaires, illustration de l'autoconsommation collective"
+    logo="/logos/logo-assoc.png"
+    wordmark={false}
+    height="h-[320px] md:h-[420px]"
+    rounded={false}
+  />
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.colorDark}`}>Autoconsommation collective</h1>
+
+    <p class="mb-10 max-w-3xl text-lg text-neutral-700">
+      TODO-CONTENT : phrase d'accroche provisoire — Court Circuit est l'association qui organise l'autoconsommation
+      collective autour des centrales Cayrol Energie : l'électricité produite localement est consommée par les
+      habitants et entreprises du même territoire, en circuit court.
+    </p>
+
+    <div class="mb-12 flex flex-wrap gap-4">
+      <StatBadge client:visible value="TODO" label="% d'économie moyen sur la facture" color={theme.color} />
+      <StatBadge client:visible value="TODO" label="foyers/entreprises membres" color={theme.colorDark} />
+    </div>
+
+    <div class="grid gap-8 md:grid-cols-2">
+      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
+        <h2 class="mb-2 text-lg font-bold" style={`color:${theme.colorDark}`}>Explications</h2>
+        <p class="text-sm leading-relaxed text-neutral-700">
+          TODO-CONTENT : expliquer le fonctionnement de l'autoconsommation collective (périmètre de proximité,
+          répartition de la production entre participants) — texte à fournir par le client.
+        </p>
+      </div>
+      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
+        <h2 class="mb-2 text-lg font-bold" style={`color:${theme.colorDark}`}>Transparence sur les contrats</h2>
+        <p class="text-sm leading-relaxed text-neutral-700">
+          TODO-CONTENT : détailler les modalités contractuelles proposées aux membres de Court Circuit — texte à
+          fournir par le client.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-10 rounded-2xl p-8 text-center text-sm text-neutral-500" style={`background-color:${theme.color}0d`}>
+      Schéma explicatif à intégrer (TODO-CONTENT)
+    </div>
+  </div>
+</BaseLayout>

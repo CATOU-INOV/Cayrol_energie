@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { themes } from "../data/themes";
+
+const theme = themes.photovoltaique;
+
+// Coordonnées réelles reprises du site actuel cayrolenergie.com (page Contact).
+const coordonnees = {
+  adresse: "170 route de la Combe, 73220 Argentine",
+  telephone: "+33 (0)4 67 49 45 70",
+  email: "contact@cayrolenergie.com",
+};
+---
+
+<BaseLayout title="Contact" theme="societe">
+  <div class="mx-auto max-w-5xl px-4 py-14">
+    <h1 class="mb-2 text-3xl font-extrabold" style={`color:${theme.color}`}>Contact</h1>
+    <p class="mb-10 text-neutral-600">
+      Une question, un projet ? Notre équipe vous répond.
+    </p>
+
+    <div class="grid gap-8 md:grid-cols-3">
+      <!-- Formulaire de démonstration, non fonctionnel (pas de back-end sur ce prototype). -->
+      <form class="grid gap-4 rounded-2xl border p-8 md:col-span-2" style={`border-color:${theme.color}33`}>
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="text-sm font-medium text-neutral-700">
+            Nom
+            <input type="text" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2" placeholder="Votre nom" />
+          </label>
+          <label class="text-sm font-medium text-neutral-700">
+            Email
+            <input type="email" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2" placeholder="vous@exemple.fr" />
+          </label>
+        </div>
+        <label class="text-sm font-medium text-neutral-700">
+          Sujet
+          <input type="text" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2" placeholder="Objet de votre message" />
+        </label>
+        <label class="text-sm font-medium text-neutral-700">
+          Message
+          <textarea rows="5" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2" placeholder="Votre message"></textarea>
+        </label>
+        <button
+          type="button"
+          class="mt-2 w-fit rounded-full px-6 py-2.5 text-sm font-semibold text-white"
+          style={`background-color:${theme.color}`}
+        >
+          Envoyer (démo — non fonctionnel)
+        </button>
+      </form>
+
+      <!-- Coordonnées réelles -->
+      <div class="rounded-2xl p-6" style={`background-color:${theme.color}0d`}>
+        <h2 class="mb-4 text-sm font-bold uppercase tracking-wide" style={`color:${theme.color}`}>
+          Nos coordonnées
+        </h2>
+        <div class="flex flex-col gap-4 text-sm text-neutral-700">
+          <div>
+            <p class="font-semibold text-neutral-900">Adresse</p>
+            <p>{coordonnees.adresse}</p>
+          </div>
+          <div>
+            <p class="font-semibold text-neutral-900">Téléphone</p>
+            <a href={`tel:${coordonnees.telephone.replace(/[^+\d]/g, "")}`} class="hover:underline" style={`color:${theme.color}`}>
+              {coordonnees.telephone}
+            </a>
+          </div>
+          <div>
+            <p class="font-semibold text-neutral-900">Email</p>
+            <a href={`mailto:${coordonnees.email}`} class="hover:underline" style={`color:${theme.color}`}>
+              {coordonnees.email}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="mt-8 text-sm text-neutral-500">
+      TODO-CONTENT : horaires d'ouverture (non précisés sur le site actuel) et intégration réelle
+      du formulaire (envoi d'email / CRM) à définir avec le client.
+    </p>
+  </div>
+</BaseLayout>

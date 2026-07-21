@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PhotoBanner from "../components/PhotoBanner.astro";
+import ThematicTab from "../components/ThematicTab.tsx";
+import { themes } from "../data/themes";
+import { photoUrl } from "../data/photos";
+import projects from "../data/projects.json";
+
+const theme = themes.photovoltaique;
+
+const isType = (p: (typeof projects)[number], keyword: string) => p.type.toLowerCase().includes(keyword);
+
+// Deux exemples par méthode de pose, tirés des données réelles quand elles existent.
+// TODO-CONTENT : aucun projet "Au sol" ni "Agrivoltaïsme" dans les données fournies — à compléter par le client.
+const toiture = projects.filter((p) => isType(p, "toiture")).slice(0, 2);
+const ombrieres = projects.filter((p) => isType(p, "ombrières")).slice(0, 2);
+
+const toProject = (p: (typeof projects)[number]) => ({
+  name: p.name,
+  commune: p.commune,
+  power: p.power,
+  description: p.description,
+});
+
+const timelineSteps = [
+  { date: "M0", label: "Étude de faisabilité", description: "Analyse technique et administrative du site." },
+  { date: "M+2", label: "Dépôt du permis de construire", description: "Constitution et dépôt du dossier." },
+  { date: "M+6", label: "Instruction & raccordement", description: "Instruction du permis, demande de raccordement." },
+  { date: "M+9", label: "Construction", description: "Installation des panneaux et du poste de livraison." },
+  { date: "M+10", label: "Mise en service", description: "Raccordement au réseau et démarrage de la production." },
+];
+---
+
+<BaseLayout title="Photovoltaïque" theme="photovoltaique">
+  <PhotoBanner
+    src={photoUrl("pvAuSol")}
+    alt="Centrale photovoltaïque au sol"
+    height="h-[320px] md:h-[420px]"
+    rounded={false}
+  />
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Photovoltaïque</h1>
+
+    <ThematicTab
+      client:visible
+      color={theme.color}
+      tagline="Depuis nos premières installations, nous avons développé plus de 64 centrales photovoltaïques : toitures, ombrières, centrales au sol et projets agrivoltaïques."
+      stats={[
+        { value: "64", label: "centrales photovoltaïques" },
+        { value: `${projects.filter((p) => p.energy === "photovoltaique").length}`, label: "projets détaillés sur ce site" },
+      ]}
+      explanations={[
+        {
+          title: "Une expertise multi-supports",
+          body: "Cayrol Energie conçoit, construit et exploite des installations photovoltaïques adaptées à chaque foncier — toiture ou hangar agricole, ombrière de parking, centrale au sol ou projet agrivoltaïque — pour valoriser des surfaces inexploitées, à taille humaine.",
+        },
+      ]}
+      categories={[
+        {
+          label: "Toiture",
+          image: photoUrl("pvToiture", { w: 1400 }),
+          description: "Valorisez une surface inexploitée : toitures et hangars de bâtiments agricoles ou industriels équipés sans emprise au sol supplémentaire.",
+        },
+        {
+          label: "Ombrières",
+          image: photoUrl("pvOmbrieres", { w: 1400 }),
+          description: "Couvrez vos parkings et valorisez ces espaces délaissés, tout en protégeant vos visiteurs des intempéries.",
+        },
+        {
+          label: "Au sol",
+          image: photoUrl("pvAuSol", { w: 1400 }),
+          description: "Valorisez des terrains inexploités ou dégradés (friches, carrières) en source d'énergie renouvelable.",
+        },
+        {
+          label: "Agrivoltaïsme",
+          image: photoUrl("pvAgrivoltaisme", { w: 1400 }),
+          description: "Serres et persiennes photovoltaïques : protégez vos cultures des aléas climatiques tout en produisant de l'énergie.",
+        },
+      ]}
+      timelineSteps={timelineSteps}
+      timelineVariant="dots"
+      projects={[...toiture, ...ombrieres].map(toProject)}
+    />
+
+    <p class="mt-10 text-sm text-neutral-500">
+      TODO-CONTENT : les catégories "Au sol" et "Agrivoltaïsme" n'ont pas d'exemple dans les données transmises —
+      merci de fournir 2 projets par catégorie pour compléter cette page. Par ailleurs, le site actuel de Cayrol
+      Energie distingue "Hangar photovoltaïque" (stockage agricole, ~1500 m²) comme 5ᵉ catégorie à part entière —
+      ici elle a été fondue dans "Toiture" pour garder une grille à 4 cases ; à séparer si le client préfère la
+      structure d'origine.
+    </p>
+  </div>
+</BaseLayout>
