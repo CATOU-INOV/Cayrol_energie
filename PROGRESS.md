@@ -4,7 +4,7 @@
 > sur CMS classique). Prototype fonctionnel à présenter en réunion jeudi. Stack : Astro + React
 > (îlots) + Tailwind CSS + Leaflet. Cadrage source : `ARCHITECHTURE SITE CAYROL ENERGIE.pdf`.
 
-Dernière mise à jour : 2026-07-20 (session 15 — pilules qui s'ouvrent sur le rail)
+Dernière mise à jour : 2026-07-21 (session 16 — formulaire Court Circuit, schéma sur-mesure, police du logo)
 
 ## Fait
 
@@ -331,9 +331,122 @@ d'ouvert, le nom apparaît de façon fluide, faire tourner le logo »)**
   + `astro check` au vert. (La rotation elle-même ne se voit qu'en vrai navigateur — un
   screenshot statique ne capture pas l'animation en cours.)
 
+**Session 16 — formulaire Court Circuit + schéma sur-mesure + police du logo (demandes : « ajouter
+un formulaire différent de contact, avec la conso annuelle par exemple, sur la section Court
+Circuit » ; « voici un exemple de schéma à mettre au-dessus du formulaire, le but reste de montrer
+qu'on est flexible et qu'on peut faire du sur-mesure » ; « voici le logo officiel, j'aimerais
+respecter la police du logo »)**
+
+- **Environnement** : Node passé de 20.20 à **22.23.1 LTS** (Astro 7 refuse de tourner sous Node
+  20 — `astro check` échouait immédiatement avec "Node.js v20.20.0 is not supported by Astro!").
+  Tentative initiale d'installer nvm-windows abandonnée : l'installeur, lancé via le compte admin
+  du support pour valider le prompt UAC, a écrit `NVM_HOME` dans le profil de ce compte
+  (`C:\Users\adm-jmackiewicz\AppData\Local\nvm`), inaccessible en lecture au compte utilisateur —
+  `nvm` restait introuvable malgré des variables d'environnement machine correctes. Résolu en
+  installant directement le MSI officiel Node 22 LTS (toujours posé dans `C:\Program Files\nodejs`,
+  accessible à tous les comptes, sans ce problème de permissions inter-comptes).
+- **Formulaire "Estimez votre éligibilité à Court Circuit"** (`src/pages/autoconsommation-collective.astro`) :
+  3 champs minimalistes (Nom, Email, Consommation annuelle en kWh), maquette non fonctionnelle
+  comme le formulaire de `/contact` (aucun back-end sur ce prototype), mais visuellement distinct
+  (encadré fond teinté couleur du thème "Court Circuit", pas fond blanc) — décision utilisateur
+  explicite de rester minimaliste plutôt que d'ajouter profil/type/commune ou une estimation
+  d'économie calculée en direct.
+- **Nouveau composant `AutoconsoFlowDiagram.tsx`** : reproduit en HTML/SVG natif (pas une image)
+  un schéma de référence fourni par le client (flux en 5 étapes : Production locale → Distribution
+  → Partage et consommation, avec Gestion du réseau et Bénéfices en points d'appui), icônes SVG
+  inline dans le même style outline que celui déjà utilisé sur la home (soleil, réseau, bâtiments,
+  graphique, pièces), couleur du thème passée en prop (pas de bleu figé comme sur l'image source).
+  Choix motivé par la demande explicite de démontrer le sur-mesure plutôt que d'incruster une image
+  statique — argument différenciant repris de plusieurs sessions précédentes (transitions SPA,
+  frises multiples...). Intégré juste au-dessus du nouveau formulaire.
+- **Police du logo officiel** : le client a fourni le logo officiel (`logo officiel.jpg`, fond
+  blanc). Fond retiré via un script Python/Pillow (alpha = distance au blanc, seuil dédié pour
+  garder le texte noir plein opaque) → `public/logos/logo-officiel.png` (transparent, vérifié pixel
+  par pixel qu'aucun carré blanc résiduel ne subsiste derrière le texte). Police du wordmark
+  identifiée par comparaison visuelle directe (captures Playwright de plusieurs candidats
+  Google Fonts géométriques côte à côte avec le logo) : **Questrial** retenue — meilleur match du
+  tracé du "R" (jambe droite partant du milieu de la panse), du "O" parfaitement circulaire et de
+  la graisse fine à poids unique. Importée via `@import` Google Fonts dans `global.css`
+  (`.font-brand`), appliquée au wordmark "CAYROL ENERGIE" du header (`BaseLayout.astro`) et du
+  bandeau `PhotoBanner` (poids ramené à `font-normal`/sans `font-extrabold` hérité, pour matcher la
+  graisse fine du logo). Décision utilisateur : ne pas encore utiliser l'image `logo-officiel.png`
+  elle-même ailleurs (icône + texte séparés restent en place) — seule la police a changé pour
+  l'instant.
+- Vérifié : `astro check` 0 erreur, `npm run build` 8 pages OK, captures Playwright du header
+  (`/societe`) et du bandeau `PhotoBanner` (`/photovoltaique`) confirmant le rendu Questrial, 0
+  erreur console. Outillage temporaire (Playwright npm, dossier `scratch/`) entièrement nettoyé
+  après usage (pas de dépendance ajoutée à `package.json`/`package-lock.json`).
+- **Logo mis en avant sur le hero d'accueil, en fondu au scroll** (demande : « pouvons-nous mettre
+  en avant le logo sur la landing, apparaître au scroll sur la droite en transition fondue ? ») :
+  `logo-officiel.png` positionné en `absolute`, centré verticalement sur le bord droit du hero
+  (`src/pages/index.astro`), masqué au chargement (`opacity-0`) puis révélé en fondu + léger
+  glissement horizontal au fil du scroll. Opacité pilotée en continu par `window.scrollY / (hauteur
+  du hero / 2)` (pas un déclenchement ponctuel façon compteurs) — effet réversible : le logo
+  disparaît de nouveau si on remonte en haut de page, cohérent avec la transition douce déjà
+  utilisée sur le header transparent→opaque.
+- **Conflit résolu avec `ServiceRail`** (le rail de logos filières, lui aussi ancré sur le bord
+  droit en `position: fixed` sur toutes les pages) : les deux se chevauchaient visuellement pendant
+  le hero. Le rail reçoit maintenant un id (`service-rail`) et son opacité suit le complément
+  inverse de celle du logo **uniquement sur la page d'accueil** (le script du hero le pilote) — les
+  deux ne sont jamais visibles en même temps ; sur les autres pages le rail garde son comportement
+  inchangé (le script restaure `opacity: ""` s'il ne trouve pas les éléments du hero).
+- **Correctif du comportement (retour utilisateur : « le logo apparaît pleinement seulement
+  lorsqu'on ne voit plus la landing, j'aimerais qu'on descende en dessous une fois qu'il est
+  pleinement apparu »)** : dans la première version, le logo était en `position: absolute` à
+  l'intérieur de la section hero (`min-h-screen`) — centré sur la hauteur de la *section*, donc il
+  défilait hors du viewport en même temps que son opacité augmentait, et n'était réellement visible
+  qu'au moment de quitter la section. Corrigé en repassant le logo en `position: fixed` en
+  permanence (ancré à l'écran, pas à la section qui défile) : un fondu d'entrée sur les premiers
+  40% de la hauteur du *viewport* (pas de la section) l'amène à pleine opacité tôt et rapidement,
+  puis un second fondu de sortie sur les derniers 30% du viewport avant la fin du hero le ramène à
+  0 — `progress = min(fadeIn, fadeOut)` donne un plateau à pleine opacité entre les deux, sans
+  jamais laisser le logo visible par-dessus les sections suivantes.
+  - Bug intermédiaire rencontré puis corrigé pendant la mise au point : comparer `scrollY` à
+    `heroHeight - innerHeight` pour détecter la sortie du hero échoue quand la section fait
+    `min-h-screen` (donc `heroHeight ≈ innerHeight` sur beaucoup d'écrans) — la condition devenait
+    vraie dès le premier pixel de scroll. Remplacé par une seconde rampe de fondu (sortie) plutôt
+    qu'un simple booléen "dans/hors du hero".
+- **Deuxième correctif, changement d'approche (retour utilisateur : « on reste sur la vue de
+  l'image, le scroll fait juste apparaître le logo, une fois apparu ça montre le reste de la
+  landing ») :** la version précédente laissait la page défiler librement pendant le fondu — ce
+  n'était pas le bon modèle d'interaction. Remplacé par un **scroll-jacking le temps de
+  l'apparition** : au chargement (`scrollY === 0`), le scroll est verrouillé — un handler `wheel`
+  (desktop/trackpad, `preventDefault`) et un handler `touchmove` (mobile, distance verticale du
+  doigt) interceptent le geste et l'utilisent pour faire progresser l'opacité du logo (0→1) au lieu
+  de faire défiler la page. Dès que l'opacité atteint 1, le verrou se lève et le scroll natif
+  reprend normalement vers le reste du site. Reverrouillé automatiquement si on revient tout en
+  haut de page, pour rester rejouable.
+  - Verrouillage implémenté via une classe `.hero-lock` sur `<html>` (`overflow: hidden` +
+    `overscroll-behavior: none`, dans `global.css`) plutôt qu'en bloquant seulement du JS, pour
+    couper aussi le scroll clavier/barre de défilement pendant la phase verrouillée.
+  - Bug intermédiaire corrigé pendant la mise au point : le verrou (`setLocked(true)`) n'était
+    posé qu'au moment de le lever (`setLocked(false)`), jamais à l'initialisation — la classe
+    `hero-lock` n'était donc jamais appliquée en pratique bien que la logique de progression
+    fonctionnait déjà. Corrigé en appelant explicitement `setLocked(true)` dès `initHeroLogo` si
+    `scrollY === 0`.
+- Vérifié via Playwright (simulation de coups de molette avec `page.mouse.wheel`) : `scrollY` reste
+  bloqué à 0 tant que l'opacité progresse (0 → 0.375 → 0.75 → 1 sur 3 coups de molette), le scroll
+  réel ne reprend qu'une fois l'opacité à 1, `hero-lock` bien présent/retiré sur `<html>` au bon
+  moment, captures confirmant qu'on reste visuellement sur la photo du hero pendant toute
+  l'apparition puis qu'on défile normalement ensuite, 0 erreur console. Build + `astro check` au
+  vert.
+- **Retiré (retour utilisateur : « supprime ce logo et sa logique, c'est trop compliqué, on va
+  s'en passer pour la démo »)** : le logo animé sur le hero et tout le scroll-jacking associé ont
+  été entièrement retirés de `src/pages/index.astro` (image + script `initHeroLogo`), ainsi que la
+  classe `.hero-lock` dans `global.css` et l'id/la transition d'opacité ajoutés à `ServiceRail.astro`
+  pour gérer le conflit visuel avec ce logo (plus nécessaires, le rail retrouve son comportement
+  d'origine, toujours visible en permanence). Fichier `public/logos/logo-officiel.png` (fond
+  transparent) supprimé, plus aucune référence dans le code. Le hero d'accueil est revenu à son état
+  de la session 15 (pas de logo dans le hero, seul le header transparent porte le logo). La police
+  Questrial (session 16, wordmark "CAYROL ENERGIE" du header/`PhotoBanner`) et le formulaire/schéma
+  Court Circuit restent en place — seul le logo animé du hero est concerné par ce retrait.
+
 ## En cours
 
-- Rien en cours activement — prototype dans un état stable et démontrable.
+- Rien en cours activement — prototype dans un état stable et démontrable. Reste ouvert du
+  `README.md` : styles/animations différenciés supplémentaires par page filière, menu déroulant
+  "Nos métiers" (Hydro/PV/BESS/Biogaz) dans le header. Le point "logo plus en avant sur la
+  landing" est traité (session 16) mais bridé par la résolution du fichier source — voir Blocages.
 
 ## Décisions prises
 
@@ -381,6 +494,15 @@ d'ouvert, le nom apparaît de façon fluide, faire tourner le logo »)**
   que la logique transparent/scroll se réexécute correctement à chaque navigation SPA induite par
   `ClientRouter`, tout en fonctionnant aussi au tout premier chargement (l'événement se déclenche
   dans les deux cas).
+- **Questrial (Google Fonts) plutôt que la police exacte du logo** : la police maison du logo
+  officiel n'est pas fournie (pas de fichier de police, juste une image). Questrial est le meilleur
+  match visuel trouvé parmi les polices géométriques libres testées côte à côte — à reconsidérer
+  si le client fournit un jour le fichier de police d'origine.
+- **Schéma "flux Court Circuit" en composant HTML/SVG plutôt qu'image intégrée telle quelle** :
+  le client a fourni une image de référence, mais l'objectif explicite était de démontrer le
+  sur-mesure (argument central du projet face aux concurrents CMS) — un schéma recréé en code
+  reste net à toute résolution, suit la couleur du thème dynamiquement, et est éditable sans
+  outil de design.
 
 ## À faire
 
@@ -411,3 +533,8 @@ d'ouvert, le nom apparaît de façon fluide, faire tourner le logo »)**
   imparfaits faute de mieux en banque libre (basse chute, BESS, biogaz, agrivoltaïsme,
   autoconsommation) — voir détail dans `TODO-CONTENT.md`. À remplacer en priorité par de vraies
   photos de projets Cayrol Energie dès qu'elles seront disponibles.
+- Point de vigilance (non bloquant) : le fichier logo officiel fourni par le client
+  (`public/logos/logo-officiel.png`) ne fait que 200×200px — visiblement flou dès qu'affiché en
+  grand. Sa taille sur le hero d'accueil a été volontairement limitée (~112px de large) pour
+  rester net ; demander au client un export en plus haute résolution (800px+ ou SVG) avant de le
+  mettre plus en avant.

@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PhotoBanner from "../components/PhotoBanner.astro";
 import StatBadge from "../components/StatBadge.tsx";
+import AutoconsoFlowDiagram from "../components/AutoconsoFlowDiagram.tsx";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
 
@@ -48,8 +49,57 @@ const theme = themes.autoconsommation;
       </div>
     </div>
 
-    <div class="mt-10 rounded-2xl p-8 text-center text-sm text-neutral-500" style={`background-color:${theme.color}0d`}>
-      Schéma explicatif à intégrer (TODO-CONTENT)
+    <div class="mt-14">
+      <h2 class="mb-6 text-xl font-extrabold" style={`color:${theme.colorDark}`}>
+        Comment fonctionne l'autoconsommation collective
+      </h2>
+      <AutoconsoFlowDiagram client:visible color={theme.color} colorDark={theme.colorDark} />
+    </div>
+
+    <div class="mt-14 rounded-2xl p-8 md:p-10" style={`background-color:${theme.color}0d; border: 1px solid ${theme.color}33`}>
+      <h2 class="mb-2 text-xl font-extrabold" style={`color:${theme.colorDark}`}>
+        Estimez votre éligibilité à Court Circuit
+      </h2>
+      <p class="mb-6 max-w-2xl text-sm text-neutral-700">
+        Indiquez votre consommation annuelle : un membre de l'association vous recontacte pour
+        étudier votre participation à l'autoconsommation collective.
+      </p>
+      <!-- Formulaire de démonstration, non fonctionnel (pas de back-end sur ce prototype). -->
+      <form class="grid max-w-xl gap-4">
+        <label class="text-sm font-medium text-neutral-700">
+          Nom
+          <input
+            type="text"
+            class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+            placeholder="Votre nom"
+          />
+        </label>
+        <label class="text-sm font-medium text-neutral-700">
+          Email
+          <input
+            type="email"
+            class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+            placeholder="vous@exemple.fr"
+          />
+        </label>
+        <label class="text-sm font-medium text-neutral-700">
+          Consommation annuelle (kWh)
+          <input
+            type="number"
+            min="0"
+            step="100"
+            class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+            placeholder="Ex : 4500"
+          />
+        </label>
+        <button
+          type="button"
+          class="mt-2 w-fit rounded-full px-6 py-2.5 text-sm font-semibold text-white"
+          style={`background-color:${theme.color}`}
+        >
+          Envoyer (démo — non fonctionnel)
+        </button>
+      </form>
     </div>
   </div>
 </BaseLayout>

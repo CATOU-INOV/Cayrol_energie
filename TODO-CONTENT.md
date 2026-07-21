@@ -113,7 +113,10 @@ Défilement infini de wordmarks texte (pas d'images de logo — voir choix ci-de
   Atouts) sans détail — tout le texte de cette page est rédigé à titre d'exemple.
 - **Autoconsommation collective (Court Circuit)** : explications, statistiques d'économies et
   transparence contractuelle sont des textes/chiffres placeholders (`TODO` visibles dans les
-  StatBadge).
+  StatBadge). Formulaire "Estimez votre éligibilité" ajouté (nom/email/consommation annuelle
+  kWh) — maquette non fonctionnelle comme le formulaire de `/contact`, aucun envoi réel ni calcul
+  d'estimation ne sont branchés ; à connecter à un vrai traitement (email/CRM) avant mise en
+  production.
 - **Société** : les 6 blocs (Qui sommes-nous, Nos valeurs, Nos engagements, Nos partenaires,
   Nos solutions, Nous contacter) sont provisoires, sauf "Nos solutions" qui pointe déjà vers les
   vraies pages thématiques.

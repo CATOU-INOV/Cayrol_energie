@@ -8,4 +8,6 @@ Faire en sorte d'avoir des "styles différent, une image avec un fondu, qqch qui
 
 Pour finir ajouter une section "nos métiers" dans le header (menu) sous forme de menu déroulant avec (hydro/photo/BESS/Biogaz)
 
+ajouter le détail de un ou deux projets extrait de http://www.cayrolinternational.com/ en guise d'exemple
+
 Après ça on devrait être bon.
