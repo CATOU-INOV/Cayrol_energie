@@ -9,13 +9,13 @@ const theme = themes["flexibilite-bess"];
 
 // Contenu transcrit du support de cadrage client (chronologie, atouts, description du terrain).
 // TODO-CONTENT : la chronologie a été reconstituée à partir d'un schéma PDF dont les colonnes
-// se chevauchaient à l'extraction — à faire valider mot pour mot par le client avant mise en ligne.
+// se chevauchaient à l'extraction, à faire valider mot pour mot par le client avant mise en ligne.
 const timelineSteps = [
   { date: "M-1", label: "Identification du projet", description: "Phase d'étude." },
   { date: "M0", label: "Signature du compromis + dépôt du permis de construire", description: "Demande de raccordement." },
   { date: "M+3", label: "Permis de construire obtenu", description: "Instruction de la demande de raccordement." },
   { date: "M+6", label: "Demande de raccordement obtenue", description: "Développement du projet." },
-  { date: "M+8", label: "Signature de l'acte authentique", description: "Construction — rendez-vous chez le notaire." },
+  { date: "M+8", label: "Signature de l'acte authentique", description: "Construction, rendez-vous chez le notaire." },
 ];
 
 const atouts = [
@@ -62,7 +62,7 @@ const partenaires = [
     <ThematicTab
       client:visible
       color={theme.color}
-      tagline="Le Battery Energy Storage System (BESS) permet de stocker l'électricité produite par nos centrales pour la restituer au moment où le réseau en a le plus besoin — une brique essentielle de la transition énergétique."
+      tagline="Le Battery Energy Storage System (BESS) permet de stocker l'électricité produite par nos centrales pour la restituer au moment où le réseau en a le plus besoin, une brique essentielle de la transition énergétique."
       stats={[
         { value: "64", label: "centrales photovoltaïques" },
         { value: "11", label: "centrales hydroélectriques (19,15 MW)" },
@@ -86,14 +86,14 @@ const partenaires = [
         },
       ]}
       timelineSteps={timelineSteps}
-      timelineVariant="vertical"
+      timelineVariant="dots"
       atouts={atouts}
     />
 
     <div class="mt-4">
       <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Ils nous font confiance</h2>
       <p class="mb-4 text-sm text-neutral-500">
-        TODO-CONTENT : logos partenaires non fournis dans les assets transmis — affichage temporaire en texte, à
+        TODO-CONTENT : logos partenaires non fournis dans les assets transmis, affichage temporaire en texte, à
         remplacer par les logos réels.
       </p>
       <div class="flex flex-wrap gap-3">

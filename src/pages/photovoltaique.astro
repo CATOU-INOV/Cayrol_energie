@@ -15,11 +15,14 @@ const isType = (p: (typeof projects)[number], keyword: string) => p.type.toLower
 const toiture = projects.filter((p) => isType(p, "toiture")).slice(0, 2);
 const ombrieres = projects.filter((p) => isType(p, "ombrières")).slice(0, 2);
 
+// Star Soleil a une fiche détaillée en démo (photos + description complète) : voir
+// src/pages/projets/star-soleil.astro — les autres projets restent de simples encarts.
 const toProject = (p: (typeof projects)[number]) => ({
   name: p.name,
   commune: p.commune,
   power: p.power,
   description: p.description,
+  href: p.id === "star-soleil" ? "/projets/star-soleil" : undefined,
 });
 
 const timelineSteps = [
@@ -52,7 +55,7 @@ const timelineSteps = [
       explanations={[
         {
           title: "Une expertise multi-supports",
-          body: "Cayrol Energie conçoit, construit et exploite des installations photovoltaïques adaptées à chaque foncier — toiture ou hangar agricole, ombrière de parking, centrale au sol ou projet agrivoltaïque — pour valoriser des surfaces inexploitées, à taille humaine.",
+          body: "Cayrol Energie conçoit, construit et exploite des installations photovoltaïques adaptées à chaque foncier (toiture ou hangar agricole, ombrière de parking, centrale au sol ou projet agrivoltaïque) pour valoriser des surfaces inexploitées, à taille humaine.",
         },
       ]}
       categories={[
