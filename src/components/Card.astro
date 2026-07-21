@@ -1,0 +1,39 @@
+---
+// Carte partagée du design system B2B : bordure fine, ombre douce, coins arrondis, hover
+// discret — utilisée partout où une page affiche un bloc de contenu encadré (explications,
+// projets, atouts, coordonnées...) pour que ces blocs se comportent et se ressentent pareil
+// d'une page à l'autre, quelle que soit la couleur de thème appliquée par-dessus.
+// Astro.props.style / Astro.props.class restent libres : Card ne fixe pas la couleur de bordure
+// ni le fond, seulement la structure (radius/ombre/transition), pour rester compatible avec le
+// style inline par thème déjà utilisé sur les pages (border-color: ${theme.color}33 etc.).
+
+interface Props {
+  class?: string;
+  style?: string;
+  as?: "div" | "article" | "section" | "form";
+}
+
+const { class: className = "", style, as: Tag = "div" } = Astro.props;
+---
+
+<Tag class:list={["card-b2b", className]} style={style}>
+  <slot />
+</Tag>
+
+<style>
+  .card-b2b {
+    background-color: #fff; /* bg-white, si aucun fond de thème n'est fourni en style inline */
+    border-radius: 0.75rem; /* rounded-xl */
+    border-width: 1px;
+    border-style: solid;
+    border-color: #cbd5e1; /* slate-300, si aucune couleur de thème n'est fournie */
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+    transition: box-shadow 200ms ease;
+  }
+
+  .card-b2b:hover {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1); /* shadow-lg */
+  }
+</style>

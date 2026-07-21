@@ -80,6 +80,27 @@ html {
   }
 }
 
+/* Grille de points en filigrane pour les sections hero claires (bg-slate-50) du design system
+   B2B — motif discret en background-image pur, pas de SVG inline à dupliquer sur chaque page. */
+.bg-dot-grid {
+  background-image: radial-gradient(rgb(100 116 139 / 0.25) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Tuile d'icône colorée façon carte "service" (ThematicIconTile) : fond teinté clair au repos,
+   se remplit de la couleur pleine au survol de la carte parente (.group), icône blanche —
+   variables posées en style inline par le composant pour rester paramétrable par couleur de
+   thème sans dupliquer la règle CSS pour chaque filière. */
+.thematic-tile {
+  background-color: var(--tile-bg);
+  color: var(--tile-fg);
+}
+
+.group:hover .thematic-tile {
+  background-color: var(--tile-bg-hover);
+  color: var(--tile-fg-hover);
+}
+
 /* Habillage des popups Leaflet (carte des implantations) pour matcher les coins arrondis et
    l'ombre douce du reste du site plutôt que le rendu par défaut, anguleux. */
 .leaflet-popup-content-wrapper {

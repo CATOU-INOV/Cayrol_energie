@@ -44,9 +44,11 @@
   --theme-color-bg: #f0f9ff;
 }
 
+/* Identité de marque Cayrol Energie (Accueil / Société / Contact uniquement — les 4 filières et
+   Court Circuit gardent leur couleur de thème propre, non affectée par ce bloc). */
 .theme-societe {
-  --theme-color: #f97316;
-  --theme-color-dark: #c2410c;
+  --theme-color: #ea580c; /* orange-600, orange solaire du logo */
+  --theme-color-dark: #0f172a; /* slate-900, contraste/structure de marque */
   --theme-color-light: #fdba74;
-  --theme-color-bg: #fff7ed;
+  --theme-color-bg: #f8fafc; /* slate-50 */
 }

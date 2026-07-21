@@ -2,11 +2,12 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PhotoBanner from "../components/PhotoBanner.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
-import { themes } from "../data/themes";
+import { themes, energyThemeList } from "../data/themes";
 import { photoUrl } from "../data/photos";
 import projects from "../data/projects.json";
 
 const theme = themes.photovoltaique;
+const pvProjectsCount = projects.filter((p) => p.energy === "photovoltaique").length;
 
 const isType = (p: (typeof projects)[number], keyword: string) => p.type.toLowerCase().includes(keyword);
 
@@ -15,11 +16,16 @@ const isType = (p: (typeof projects)[number], keyword: string) => p.type.toLower
 const toiture = projects.filter((p) => isType(p, "toiture")).slice(0, 2);
 const ombrieres = projects.filter((p) => isType(p, "ombrières")).slice(0, 2);
 
+// Chaque carte "showcase" affiche la photo de la catégorie du projet (pas de photo par site
+// individuel dans les données actuelles) — cohérent avec les mêmes visuels que la grille
+// "Nos types d'installations" juste au-dessus, pour ne pas introduire une 3ᵉ source d'images.
 const toProject = (p: (typeof projects)[number]) => ({
   name: p.name,
   commune: p.commune,
   power: p.power,
   description: p.description,
+  image: isType(p, "toiture") ? photoUrl("pvToiture", { w: 900 }) : photoUrl("pvOmbrieres", { w: 900 }),
+  tags: [p.type, p.power],
 });
 
 const timelineSteps = [
@@ -31,24 +37,87 @@ const timelineSteps = [
 ];
 ---
 
-<BaseLayout title="Photovoltaïque" theme="photovoltaique">
+<BaseLayout title="Photovoltaïque" theme="photovoltaique" hideServiceRail>
   <PhotoBanner
     src={photoUrl("pvAuSol")}
     alt="Centrale photovoltaïque au sol"
     height="h-[320px] md:h-[420px]"
     rounded={false}
   />
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Photovoltaïque</h1>
 
+  <!-- Hero secondaire : une seule grande carte blanche regroupant titre, accroche, chiffres clés
+       et photo, plutôt qu'un fond texturé avec du contenu qui flotte dessus. -->
+  <section class="bg-slate-50 py-14 lg:py-20">
+    <div class="mx-auto max-w-6xl rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl">
+      <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <span class="mb-3 inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-800">
+            Énergie solaire
+          </span>
+          <h1 class="mb-4 text-3xl font-bold text-slate-900">Photovoltaïque</h1>
+          <p class="mb-6 text-base leading-relaxed text-slate-600">
+            Depuis nos premières installations, nous avons développé plus de 64 centrales photovoltaïques —
+            toitures, ombrières, centrales au sol et projets agrivoltaïques — conçues sur-mesure pour valoriser
+            chaque foncier, à taille humaine.
+          </p>
+
+          <div class="mb-6 grid grid-cols-2 gap-4">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+              <p class="text-2xl font-extrabold text-slate-900">64</p>
+              <p class="mt-1 text-xs text-slate-500">centrales photovoltaïques</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+              <p class="text-2xl font-extrabold text-slate-900">{pvProjectsCount}</p>
+              <p class="mt-1 text-xs text-slate-500">projets détaillés sur ce site</p>
+            </div>
+          </div>
+
+          <a
+            href="#realisations"
+            class="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-700"
+          >
+            Découvrir nos réalisations
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="h-64 overflow-hidden rounded-2xl border border-slate-200 shadow-md lg:h-full">
+            <img
+              src={photoUrl("pvToiture", { w: 1200 })}
+              alt="Panneaux photovoltaïques installés sur une toiture industrielle"
+              class="h-full w-full object-cover"
+              loading="eager"
+            />
+          </div>
+
+          <!-- Barre d'onglets vers les 4 métiers, remplace le rail de cercles flottants
+               (ServiceRail, masqué sur cette page via hideServiceRail) -->
+          <nav aria-label="Nos autres métiers" class="mt-4 grid grid-cols-4 overflow-hidden rounded-xl border border-slate-200 text-xs font-semibold">
+            {energyThemeList.map((t) => (
+              <a
+                href={t.href}
+                class:list={[
+                  "px-2 py-2.5 text-center transition",
+                  t.key === "photovoltaique" ? "bg-orange-50 text-orange-800" : "bg-white text-slate-500 hover:bg-slate-50",
+                ]}
+              >
+                {t.shortName}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="realisations">
+  <div class="mx-auto max-w-6xl px-4 py-14">
     <ThematicTab
       client:visible
       color={theme.color}
-      tagline="Depuis nos premières installations, nous avons développé plus de 64 centrales photovoltaïques : toitures, ombrières, centrales au sol et projets agrivoltaïques."
-      stats={[
-        { value: "64", label: "centrales photovoltaïques" },
-        { value: `${projects.filter((p) => p.energy === "photovoltaique").length}`, label: "projets détaillés sur ce site" },
-      ]}
       explanations={[
         {
           title: "Une expertise multi-supports",
@@ -80,6 +149,7 @@ const timelineSteps = [
       timelineSteps={timelineSteps}
       timelineVariant="dots"
       projects={[...toiture, ...ombrieres].map(toProject)}
+      projectsLayout="showcase-carousel"
     />
 
     <p class="mt-10 text-sm text-neutral-500">
@@ -90,4 +160,5 @@ const timelineSteps = [
       structure d'origine.
     </p>
   </div>
+  </section>
 </BaseLayout>

@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PhotoBanner from "../components/PhotoBanner.astro";
+import HeroAutoconsommation from "../components/HeroAutoconsommation.astro";
+import Card from "../components/Card.astro";
 import StatBadge from "../components/StatBadge.tsx";
 import AutoconsoFlowDiagram from "../components/AutoconsoFlowDiagram.tsx";
+import BoucleLocaleInteractive from "../components/BoucleLocaleInteractive.astro";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
 
@@ -10,96 +12,111 @@ const theme = themes.autoconsommation;
 ---
 
 <BaseLayout title="Autoconsommation collective" theme="autoconsommation">
-  <PhotoBanner
-    src={photoUrl("autoconsommation")}
-    alt="Toiture équipée de panneaux solaires, illustration de l'autoconsommation collective"
-    logo="/logos/logo-assoc.png"
-    wordmark={false}
-    height="h-[320px] md:h-[420px]"
-    rounded={false}
+  <HeroAutoconsommation
+    photoSrc={photoUrl("autoconsommation")}
+    photoAlt="Toiture équipée de panneaux solaires, illustration de l'autoconsommation collective"
   />
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.colorDark}`}>Autoconsommation collective</h1>
 
-    <p class="mb-10 max-w-3xl text-lg text-neutral-700">
-      TODO-CONTENT : phrase d'accroche provisoire — Court Circuit est l'association qui organise l'autoconsommation
-      collective autour des centrales Cayrol Energie : l'électricité produite localement est consommée par les
-      habitants et entreprises du même territoire, en circuit court.
-    </p>
-
-    <div class="mb-12 flex flex-wrap gap-4">
-      <StatBadge client:visible value="TODO" label="% d'économie moyen sur la facture" color={theme.color} />
-      <StatBadge client:visible value="TODO" label="foyers/entreprises membres" color={theme.colorDark} />
-    </div>
-
-    <div class="grid gap-8 md:grid-cols-2">
-      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
-        <h2 class="mb-2 text-lg font-bold" style={`color:${theme.colorDark}`}>Explications</h2>
-        <p class="text-sm leading-relaxed text-neutral-700">
-          TODO-CONTENT : expliquer le fonctionnement de l'autoconsommation collective (périmètre de proximité,
-          répartition de la production entre participants) — texte à fournir par le client.
-        </p>
+  <section class="bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-14">
+      <div class="mb-12 flex flex-wrap gap-4">
+        <StatBadge client:visible value="TODO" label="% d'économie moyen sur la facture" color={theme.color} />
+        <StatBadge client:visible value="TODO" label="foyers/entreprises membres" color={theme.colorDark} />
       </div>
-      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
-        <h2 class="mb-2 text-lg font-bold" style={`color:${theme.colorDark}`}>Transparence sur les contrats</h2>
-        <p class="text-sm leading-relaxed text-neutral-700">
-          TODO-CONTENT : détailler les modalités contractuelles proposées aux membres de Court Circuit — texte à
-          fournir par le client.
-        </p>
+
+      <div class="grid gap-8 md:grid-cols-2">
+        <Card class="p-6" style={`border-color:${theme.color}33`}>
+          <h2 class="mb-2 text-lg font-bold" style={`color:${theme.colorDark}`}>Explications</h2>
+          <p class="text-sm leading-relaxed text-neutral-700">
+            TODO-CONTENT : expliquer le fonctionnement de l'autoconsommation collective (périmètre de proximité,
+            répartition de la production entre participants) — texte à fournir par le client.
+          </p>
+        </Card>
+        <Card class="p-6" style={`border-color:${theme.color}33`}>
+          <h2 class="mb-2 text-lg font-bold" style={`color:${theme.colorDark}`}>Transparence sur les contrats</h2>
+          <p class="text-sm leading-relaxed text-neutral-700">
+            TODO-CONTENT : détailler les modalités contractuelles proposées aux membres de Court Circuit — texte à
+            fournir par le client.
+          </p>
+        </Card>
       </div>
     </div>
+  </section>
 
-    <div class="mt-14">
+  <section class="bg-slate-50">
+    <div id="boucle-locale" class="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">
+      <div class="rounded-xl border border-slate-300 bg-white p-6 shadow-sm md:p-8">
+        <span
+          class="mb-3 inline-block rounded-md border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-800"
+        >
+          Simulateur
+        </span>
+        <h2 class="mb-1 text-xl font-extrabold text-slate-900">Boucle locale en temps réel</h2>
+        <p class="mb-6 max-w-2xl text-sm text-slate-600">
+          Une démonstration technique pour visualiser la répartition de l'électricité produite entre les
+          participants de la boucle, heure par heure.
+        </p>
+        <BoucleLocaleInteractive />
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white">
+    <div class="mx-auto max-w-6xl px-4 pb-14">
       <h2 class="mb-6 text-xl font-extrabold" style={`color:${theme.colorDark}`}>
         Comment fonctionne l'autoconsommation collective
       </h2>
       <AutoconsoFlowDiagram client:visible color={theme.color} colorDark={theme.colorDark} />
     </div>
+  </section>
 
-    <div class="mt-14 rounded-2xl p-8 md:p-10" style={`background-color:${theme.color}0d; border: 1px solid ${theme.color}33`}>
-      <h2 class="mb-2 text-xl font-extrabold" style={`color:${theme.colorDark}`}>
-        Estimez votre éligibilité à Court Circuit
-      </h2>
-      <p class="mb-6 max-w-2xl text-sm text-neutral-700">
-        Indiquez votre consommation annuelle : un membre de l'association vous recontacte pour
-        étudier votre participation à l'autoconsommation collective.
-      </p>
-      <!-- Formulaire de démonstration, non fonctionnel (pas de back-end sur ce prototype). -->
-      <form class="grid max-w-xl gap-4">
-        <label class="text-sm font-medium text-neutral-700">
-          Nom
-          <input
-            type="text"
-            class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
-            placeholder="Votre nom"
-          />
-        </label>
-        <label class="text-sm font-medium text-neutral-700">
-          Email
-          <input
-            type="email"
-            class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
-            placeholder="vous@exemple.fr"
-          />
-        </label>
-        <label class="text-sm font-medium text-neutral-700">
-          Consommation annuelle (kWh)
-          <input
-            type="number"
-            min="0"
-            step="100"
-            class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
-            placeholder="Ex : 4500"
-          />
-        </label>
-        <button
-          type="button"
-          class="mt-2 w-fit rounded-full px-6 py-2.5 text-sm font-semibold text-white"
-          style={`background-color:${theme.color}`}
-        >
-          Envoyer (démo — non fonctionnel)
-        </button>
-      </form>
+  <section class="bg-slate-50">
+    <div class="mx-auto max-w-6xl px-4 py-14">
+      <Card class="p-8 md:p-10" style={`background-color:${theme.color}0d; border-color:${theme.color}33`}>
+        <h2 class="mb-2 text-xl font-extrabold" style={`color:${theme.colorDark}`}>
+          Estimez votre éligibilité à Court Circuit
+        </h2>
+        <p class="mb-6 max-w-2xl text-sm text-neutral-700">
+          Indiquez votre consommation annuelle : un membre de l'association vous recontacte pour
+          étudier votre participation à l'autoconsommation collective.
+        </p>
+        <!-- Formulaire de démonstration, non fonctionnel (pas de back-end sur ce prototype). -->
+        <form class="grid max-w-xl gap-4">
+          <label class="text-sm font-medium text-neutral-700">
+            Nom
+            <input
+              type="text"
+              class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+              placeholder="Votre nom"
+            />
+          </label>
+          <label class="text-sm font-medium text-neutral-700">
+            Email
+            <input
+              type="email"
+              class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+              placeholder="vous@exemple.fr"
+            />
+          </label>
+          <label class="text-sm font-medium text-neutral-700">
+            Consommation annuelle (kWh)
+            <input
+              type="number"
+              min="0"
+              step="100"
+              class="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+              placeholder="Ex : 4500"
+            />
+          </label>
+          <button
+            type="button"
+            class="mt-2 w-fit rounded-full px-6 py-2.5 text-sm font-semibold text-white"
+            style={`background-color:${theme.color}`}
+          >
+            Envoyer (démo — non fonctionnel)
+          </button>
+        </form>
+      </Card>
     </div>
-  </div>
+  </section>
 </BaseLayout>
