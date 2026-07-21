@@ -1,8 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PhotoBanner from "../components/PhotoBanner.astro";
+import HeroAutoconsommation from "../components/HeroAutoconsommation.astro";
 import StatBadge from "../components/StatBadge.tsx";
 import AutoconsoFlowDiagram from "../components/AutoconsoFlowDiagram.tsx";
+import BoucleLocaleInteractive from "../components/BoucleLocaleInteractive.astro";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
 
@@ -10,26 +11,18 @@ const theme = themes.autoconsommation;
 ---
 
 <BaseLayout title="Autoconsommation collective" theme="autoconsommation">
-  <PhotoBanner
-    src={photoUrl("autoconsommation")}
-    alt="Toiture équipée de panneaux solaires, illustration de l'autoconsommation collective"
-    logo="/logos/logo-assoc.png"
-    wordmark={false}
-    height="h-[320px] md:h-[420px]"
-    rounded={false}
+  <HeroAutoconsommation
+    photoSrc={photoUrl("autoconsommation")}
+    photoAlt="Toiture équipée de panneaux solaires, illustration de l'autoconsommation collective"
   />
   <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.colorDark}`}>Autoconsommation collective</h1>
-
-    <p class="mb-10 max-w-3xl text-lg text-neutral-700">
-      TODO-CONTENT : phrase d'accroche provisoire — Court Circuit est l'association qui organise l'autoconsommation
-      collective autour des centrales Cayrol Energie : l'électricité produite localement est consommée par les
-      habitants et entreprises du même territoire, en circuit court.
-    </p>
-
     <div class="mb-12 flex flex-wrap gap-4">
       <StatBadge client:visible value="TODO" label="% d'économie moyen sur la facture" color={theme.color} />
       <StatBadge client:visible value="TODO" label="foyers/entreprises membres" color={theme.colorDark} />
+    </div>
+
+    <div id="boucle-locale" class="mb-14 scroll-mt-24">
+      <BoucleLocaleInteractive />
     </div>
 
     <div class="grid gap-8 md:grid-cols-2">

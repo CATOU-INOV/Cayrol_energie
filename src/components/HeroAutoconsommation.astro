@@ -1,0 +1,226 @@
+---
+// Hero dédié à la page Autoconsommation collective : layout split SaaS/B2B (contenu + visuel),
+// distinct de PhotoBanner (bannière pleine largeur partagée par les 4 autres pages thématiques,
+// à ne pas toucher). Palette propre à ce hero (bleu roi / vert émeraude), indépendante du thème
+// bleu clair de la page pour rester cohérente avec BoucleLocaleInteractive plus bas.
+
+interface Props {
+  photoSrc: string;
+  photoAlt: string;
+}
+
+const { photoSrc, photoAlt } = Astro.props;
+
+const reassurance = [
+  { label: "2 à 20 km", detail: "Périmètre de proximité" },
+  { label: "Comptage certifié", detail: "Suivi Enedis" },
+  { label: "0€", detail: "Frais réseau extra" },
+];
+---
+
+<section class="hero-autoconso not-prose">
+  <div class="hero-autoconso__grid">
+    <div class="hero-autoconso__content">
+      <h1 class="hero-autoconso__title">L'Autoconsommation Collective pour vos territoires</h1>
+
+      <p class="hero-autoconso__lead">
+        Le surplus d'électricité photovoltaïque produit localement est partagé, dans un périmètre de
+        2 à 20 km, entre collectivités, entreprises et riverains d'un même territoire — un circuit
+        court d'énergie, sans intermédiaire superflu.
+      </p>
+
+      <div class="hero-autoconso__actions">
+        <a href="#boucle-locale" class="hero-autoconso__cta hero-autoconso__cta--primary">
+          Simuler une boucle locale
+        </a>
+        <a href="/contact" class="hero-autoconso__cta hero-autoconso__cta--secondary"> Cadre réglementaire </a>
+      </div>
+
+      <p class="hero-autoconso__partner">En partenariat avec l'Association Court Circuit</p>
+
+      <dl class="hero-autoconso__reassurance">
+        {reassurance.map((item) => (
+          <div class="hero-autoconso__reassurance-item">
+            <dt>{item.label}</dt>
+            <dd>{item.detail}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
+    <div class="hero-autoconso__visual">
+      <div class="hero-autoconso__photo-card">
+        <img src={photoSrc} alt={photoAlt} class="hero-autoconso__photo" loading="eager" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-autoconso {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    background: #f8fafc;
+  }
+
+  .hero-autoconso__grid {
+    display: grid;
+    gap: 2.5rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .hero-autoconso__grid {
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-autoconso__grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 3.5rem;
+      padding: 2.5rem 2rem;
+    }
+  }
+
+  .hero-autoconso__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
+  }
+
+  .hero-autoconso__title {
+    font-size: 2rem;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .hero-autoconso__title {
+      font-size: 2.65rem;
+    }
+  }
+
+  .hero-autoconso__lead {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #475569;
+    margin: 0;
+    max-width: 42rem;
+  }
+
+  .hero-autoconso__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 0.25rem;
+  }
+
+  .hero-autoconso__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.8rem 1.5rem;
+    border-radius: 0.7rem;
+    text-decoration: none;
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      transform 150ms ease;
+  }
+
+  .hero-autoconso__cta:hover {
+    transform: translateY(-1px);
+  }
+
+  .hero-autoconso__cta--primary {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 8px 20px -8px rgb(37 99 235 / 0.5);
+  }
+
+  .hero-autoconso__cta--primary:hover {
+    background: #1d4ed8;
+  }
+
+  .hero-autoconso__cta--secondary {
+    background: #fff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+
+  .hero-autoconso__cta--secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  @media (max-width: 480px) {
+    .hero-autoconso__actions {
+      flex-direction: column;
+    }
+
+    .hero-autoconso__cta {
+      width: 100%;
+    }
+  }
+
+  .hero-autoconso__partner {
+    font-size: 0.8rem;
+    color: #475569;
+    margin: -0.5rem 0 0;
+  }
+
+  .hero-autoconso__reassurance {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1.25rem;
+    margin: 0.75rem 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .hero-autoconso__reassurance-item dt {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #2563eb;
+    margin: 0;
+  }
+
+  .hero-autoconso__reassurance-item dd {
+    font-size: 0.78rem;
+    color: #475569;
+    margin: 0.15rem 0 0;
+  }
+
+  .hero-autoconso__visual {
+    min-width: 0;
+  }
+
+  .hero-autoconso__photo-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgb(226 232 240 / 0.8);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .hero-autoconso__photo {
+    display: block;
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+  }
+
+  @media (min-width: 1024px) {
+    .hero-autoconso__photo {
+      height: 450px;
+    }
+  }
+</style>
