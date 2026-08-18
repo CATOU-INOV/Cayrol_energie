@@ -7,7 +7,8 @@ export type ThemeKey =
   | "photovoltaique"
   | "flexibilite-bess"
   | "biogaz"
-  | "autoconsommation";
+  | "autoconsommation"
+  | "societe";
 
 export interface ThemeConfig {
   key: ThemeKey;
@@ -76,6 +77,20 @@ export const themes: Record<ThemeKey, ThemeConfig> = {
     href: "/autoconsommation-collective",
     logo: "/logos/logo-assoc.png",
     tagline: "L'association Court Circuit, l'énergie en circuit court",
+  },
+  // Identité de marque Cayrol Energie (Accueil / Société / Contact) : orange solaire du logo +
+  // slate-900 en contraste, distincte de photovoltaique pour ne pas propager un changement de
+  // marque sur la page filière photovoltaïque si l'un des deux évolue plus tard.
+  societe: {
+    key: "societe",
+    name: "Cayrol Energie",
+    shortName: "Cayrol Energie",
+    color: "#ea580c",
+    colorDark: "#0f172a",
+    colorLight: "#fdba74",
+    href: "/societe",
+    logo: "/logos/logo-orange.png",
+    tagline: "Des territoires et des Hommes au cœur de la transition énergétique",
   },
 };
 

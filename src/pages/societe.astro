@@ -1,8 +1,26 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Card from "../components/Card.astro";
 import { themes, energyThemeList } from "../data/themes";
+import { photoUrl } from "../data/photos";
 
-const theme = themes.photovoltaique;
+const theme = themes.societe;
+
+// Pas de photo d'équipe Cayrol Energie disponible dans les assets fournis : le collage du hero
+// s'appuie donc sur des photos de sites/installations (déjà utilisées ailleurs sur le site) plutôt
+// que d'inventer des visages, pour rester honnête sur le contenu de cette démo.
+const heroBadges = [
+  {
+    icon: "M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5l-8-3Z M9 12l2 2 4-4",
+    label: "20+ ans d'expérience",
+    caption: "Un savoir-faire familial, projet après projet.",
+  },
+  {
+    icon: "M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17h6v-2.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2Z",
+    label: "Suivi de A à Z",
+    caption: "Un contact unique, du premier échange à la mise en service.",
+  },
+];
 
 // Contenu repris du site actuel cayrolenergie.com (pages Accueil et Société) — texte réel, pas
 // un placeholder. Chiffres volontairement omis ici : le client a demandé de garder les chiffres
@@ -38,28 +56,81 @@ const partenaires = [
 ---
 
 <BaseLayout title="Société" theme="societe">
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="mb-10 text-3xl font-extrabold" style={`color:${theme.color}`}>La société Cayrol Energie</h1>
+  <section class="relative overflow-hidden bg-white">
+    <div class="bg-dot-grid pointer-events-none absolute inset-0 opacity-70" aria-hidden="true"></div>
 
+    <div class="relative mx-auto grid max-w-6xl gap-10 px-4 py-14 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:py-20">
+      <!-- Collage de photos de sites, pas de photo d'équipe disponible -->
+      <div class="relative mx-auto aspect-4/5 w-full max-w-sm lg:mx-8">
+        <div class="absolute inset-0 overflow-hidden rounded-2xl border border-slate-300 shadow-xl">
+          <img
+            src={photoUrl("pvAuSol", { w: 900 })}
+            alt="Centrale photovoltaïque au sol Cayrol Energie"
+            class="h-full w-full object-cover"
+            loading="eager"
+          />
+        </div>
+        <div class="absolute -bottom-6 -left-6 w-2/3 overflow-hidden rounded-2xl border-4 border-white shadow-xl lg:-left-16">
+          <img
+            src={photoUrl("hydroHauteChute", { w: 700 })}
+            alt="Centrale hydroélectrique Cayrol Energie en montagne"
+            class="aspect-4/3 w-full object-cover"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h1 class="mb-4 text-3xl font-extrabold text-slate-900 md:text-4xl">La société Cayrol Energie</h1>
+        <p class="max-w-xl text-base leading-relaxed text-neutral-700 md:text-lg">
+          Cayrol Energie développe, construit et exploite des installations d'énergie renouvelable à taille
+          humaine, aux côtés des territoires et de leurs acteurs.
+        </p>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2">
+          {heroBadges.map((b) => (
+            <div class="flex items-start gap-3">
+              <span
+                class="flex size-11 shrink-0 items-center justify-center rounded-xl"
+                style={`background-color:${theme.color}1a; color:${theme.color}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5">
+                  <path d={b.icon} />
+                </svg>
+              </span>
+              <div>
+                <p class="text-sm font-bold text-slate-900">{b.label}</p>
+                <p class="mt-0.5 text-xs text-slate-500">{b.caption}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="mx-auto max-w-6xl px-4 py-14">
     <div class="grid gap-6 md:grid-cols-2">
-      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
+      <Card class="p-6" style={`border-color:${theme.color}33`}>
         <h2 class="mb-2 text-lg font-bold" style={`color:${theme.color}`}>Qui sommes-nous</h2>
         <p class="text-sm leading-relaxed text-neutral-700">{quiSommesNous}</p>
-      </div>
-      <div class="rounded-2xl border p-6" style={`border-color:${theme.color}33`}>
+      </Card>
+      <Card class="p-6" style={`border-color:${theme.color}33`}>
         <h2 class="mb-2 text-lg font-bold" style={`color:${theme.color}`}>Nos engagements</h2>
         <p class="text-sm leading-relaxed text-neutral-700">{engagements}</p>
-      </div>
+      </Card>
     </div>
 
     <div class="mt-10">
       <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Nos valeurs</h2>
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {valeurs.map((v) => (
-          <div class="rounded-xl p-4" style={`background-color:${theme.color}0d`}>
-            <p class="text-sm font-bold" style={`color:${theme.color}`}>{v.title}</p>
+          <Card class="p-4" style={`background-color:${theme.color}0d`}>
+            <p class="flex items-center gap-2 text-sm font-bold" style={`color:${theme.color}`}>
+              <span class="h-1.5 w-1.5 shrink-0 rounded-full" style={`background-color:${theme.color}`}></span>
+              {v.title}
+            </p>
             <p class="mt-1 text-sm text-neutral-700">{v.body}</p>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
@@ -68,7 +139,10 @@ const partenaires = [
       <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Nos partenaires</h2>
       <div class="flex flex-wrap gap-3">
         {partenaires.map((p) => (
-          <span class="rounded-full border px-4 py-2 text-sm font-medium text-neutral-600" style={`border-color:${theme.color}33`}>
+          <span
+            class="rounded-full border px-4 py-2 text-sm font-medium text-neutral-600 shadow-sm transition-shadow hover:shadow-lg"
+            style={`border-color:${theme.color}33`}
+          >
             {p}
           </span>
         ))}
@@ -84,7 +158,7 @@ const partenaires = [
         {energyThemeList.map((t) => (
           <a
             href={t.href}
-            class="rounded-full border px-4 py-2 text-sm font-semibold transition hover:opacity-70"
+            class="rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-shadow hover:shadow-lg"
             style={`border-color:${t.color}; color:${t.color}; background-color:${t.color}1a;`}
           >
             {t.name}
@@ -93,11 +167,11 @@ const partenaires = [
       </div>
     </div>
 
-    <div class="mt-10 rounded-2xl p-8 text-center" style={`background-color:${theme.color}0d`}>
+    <Card class="mt-10 p-8 text-center" style={`background-color:${theme.color}0d`}>
       <h2 class="mb-2 text-lg font-bold" style={`color:${theme.color}`}>Nous contacter</h2>
       <a href="/contact" class="inline-block rounded-full px-5 py-2 text-sm font-semibold text-white" style={`background-color:${theme.color}`}>
         Accéder au formulaire de contact
       </a>
-    </div>
+    </Card>
   </div>
 </BaseLayout>
