@@ -1,8 +1,16 @@
 @import "tailwindcss";
 @import "./themes.css";
+@import url("https://fonts.googleapis.com/css2?family=Questrial&display=swap");
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Police du logo officiel Cayrol Energie (Questrial, le match libre le plus proche de la police
+   maison du logo) — utilisée uniquement pour le wordmark "CAYROL ENERGIE" (header, PhotoBanner),
+   pas pour le reste du site qui garde la police système par défaut. */
+.font-brand {
+  font-family: "Questrial", sans-serif;
 }
 
 /* Header : transition douce entre l'état transparent (posé sur une photo plein écran) et l'état
