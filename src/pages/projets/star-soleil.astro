@@ -1,0 +1,91 @@
+---
+// Page de démo "fiche projet" — contenu réel (texte + 9 photos) repris de la fiche Star Soleil
+// sur cayrolinternational.com (site du groupe), scrappé le 2026-07-21 :
+// http://www.cayrolinternational.com/star-soleil-y130.html
+// Photos téléchargées dans public/projets/star-soleil/ plutôt que hotlinkées : le serveur d'origine
+// sert en HTTP avec un certificat HTTPS invalide (mismatch constaté), ce qui aurait cassé le
+// chargement des images sur notre site en HTTPS.
+//
+// Démo ponctuelle pour un seul projet (pas encore une route dynamique /projets/[id] généralisée
+// à tous les projets de projects.json) : sert à valider le rendu avant de généraliser.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PhotoBanner from "../../components/PhotoBanner.astro";
+import { themes } from "../../data/themes";
+
+const theme = themes.photovoltaique;
+
+const project = {
+  name: "Star Soleil",
+  tagline: "Une parfaite harmonie entre EnR et activité agricole",
+  type: "Ombrières",
+  commune: "Saint Jean de Libron",
+  power: "1610 kVA",
+  description:
+    "Implantée sur le domaine de Saint Jean de Libron, le parc photovoltaïque de Star Soleil se compose de deux bâtiments de 1500 m² chacun et de 29 boxes de 360 m² par unité. L'installation comporte 68 onduleurs de 20 et 35 kVA reliés à 8116 panneaux pour une puissance de 1610 kVA.",
+  descriptionSuite:
+    "La réalisation a été faite en 9 mois et il aura nécessité l'emploi de près de 30 Kms de câble solaire pour relier l'ensemble. L'exploitation du site a débuté le 20 octobre 2011.",
+};
+
+const gallery = [
+  "/projets/star-soleil/principale.jpg",
+  "/projets/star-soleil/galerie-3.jpg",
+  "/projets/star-soleil/galerie-4.jpg",
+  "/projets/star-soleil/galerie-6.jpg",
+  "/projets/star-soleil/galerie-7.jpg",
+  "/projets/star-soleil/galerie-8.jpg",
+  "/projets/star-soleil/galerie-9.jpg",
+  "/projets/star-soleil/galerie-10.jpg",
+];
+---
+
+<BaseLayout title={project.name} theme="photovoltaique" description={project.tagline}>
+  <PhotoBanner
+    src="/projets/star-soleil/galerie-5.jpg"
+    alt="Vue aérienne du parc photovoltaïque Star Soleil"
+    height="h-[380px] md:h-[480px]"
+    rounded={false}
+  />
+
+  <div class="mx-auto max-w-5xl px-4 py-14">
+    <a href="/photovoltaique" class="text-sm font-medium text-neutral-500 transition-colors hover:text-[var(--theme-color)]">
+      ← Retour Photovoltaïque
+    </a>
+
+    <h1 class="mt-4 text-3xl font-extrabold md:text-4xl" style={`color:${theme.color}`}>{project.name}</h1>
+    <p class="mt-2 text-lg text-neutral-600">{project.tagline}</p>
+
+    <!-- Caractéristiques : liste éditoriale, pas des tuiles KPI encadrées — cohérent avec le
+         reste du site où on évite le motif "carte blanche + ombre" pour ce genre d'info courte. -->
+    <div class="mt-8 flex flex-wrap gap-x-8 gap-y-3 border-y py-4" style={`border-color:${theme.color}33`}>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Type</p>
+        <p class="font-semibold text-neutral-900">{project.type}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Commune</p>
+        <p class="font-semibold text-neutral-900">{project.commune}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Puissance</p>
+        <p class="font-semibold" style={`color:${theme.color}`}>{project.power}</p>
+      </div>
+    </div>
+
+    <div class="mt-8 max-w-3xl text-neutral-700">
+      <p class="leading-relaxed">{project.description}</p>
+      <p class="mt-4 leading-relaxed">{project.descriptionSuite}</p>
+    </div>
+
+    <h2 class="mb-4 mt-14 text-xl font-bold" style={`color:${theme.color}`}>Le site en images</h2>
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {gallery.map((src, i) => (
+        <img
+          src={src}
+          alt={`Photo ${i + 1} du parc photovoltaïque Star Soleil`}
+          class="aspect-[4/3] w-full rounded-xl object-cover"
+          loading="lazy"
+        />
+      ))}
+    </div>
+  </div>
+</BaseLayout>

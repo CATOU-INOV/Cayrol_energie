@@ -19,6 +19,8 @@ const ombrieres = projects.filter((p) => isType(p, "ombrières")).slice(0, 2);
 // Chaque carte "showcase" affiche la photo de la catégorie du projet (pas de photo par site
 // individuel dans les données actuelles) — cohérent avec les mêmes visuels que la grille
 // "Nos types d'installations" juste au-dessus, pour ne pas introduire une 3ᵉ source d'images.
+// Star Soleil a en plus une fiche détaillée en démo (photos + description complète) : voir
+// src/pages/projets/star-soleil.astro — les autres projets restent de simples encarts.
 const toProject = (p: (typeof projects)[number]) => ({
   name: p.name,
   commune: p.commune,
@@ -26,6 +28,7 @@ const toProject = (p: (typeof projects)[number]) => ({
   description: p.description,
   image: isType(p, "toiture") ? photoUrl("pvToiture", { w: 900 }) : photoUrl("pvOmbrieres", { w: 900 }),
   tags: [p.type, p.power],
+  href: p.id === "star-soleil" ? "/projets/star-soleil" : undefined,
 });
 
 const timelineSteps = [
@@ -121,7 +124,7 @@ const timelineSteps = [
       explanations={[
         {
           title: "Une expertise multi-supports",
-          body: "Cayrol Energie conçoit, construit et exploite des installations photovoltaïques adaptées à chaque foncier — toiture ou hangar agricole, ombrière de parking, centrale au sol ou projet agrivoltaïque — pour valoriser des surfaces inexploitées, à taille humaine.",
+          body: "Cayrol Energie conçoit, construit et exploite des installations photovoltaïques adaptées à chaque foncier (toiture ou hangar agricole, ombrière de parking, centrale au sol ou projet agrivoltaïque) pour valoriser des surfaces inexploitées, à taille humaine.",
         },
       ]}
       categories={[

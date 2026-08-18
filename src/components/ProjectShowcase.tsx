@@ -12,6 +12,8 @@ export interface ShowcaseProject {
   description: string;
   image: string;
   tags: string[];
+  /** Si fourni, la carte devient un lien vers la fiche projet détaillée (ex. démo Star Soleil). */
+  href?: string;
 }
 
 export interface ProjectShowcaseProps {
@@ -21,8 +23,10 @@ export interface ProjectShowcaseProps {
 }
 
 function ShowcaseCard({ p, color, className = "" }: { p: ShowcaseProject; color: string; className?: string }) {
+  const Tag = p.href ? "a" : "article";
   return (
-    <article
+    <Tag
+      {...(p.href ? { href: p.href } : {})}
       className={`group relative flex h-72 flex-col justify-end overflow-hidden rounded-2xl border border-slate-300 shadow-sm transition-shadow hover:shadow-lg ${className}`}
     >
       <img
@@ -52,7 +56,7 @@ function ShowcaseCard({ p, color, className = "" }: { p: ShowcaseProject; color:
           </span>
         </div>
       </div>
-    </article>
+    </Tag>
   );
 }
 
