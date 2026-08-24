@@ -1,0 +1,156 @@
+---
+// Bandeau d'accroche "Envie de découvrir nos projets" : un trait SVG se dessine progressivement
+// au fil du scroll (stroke-dashoffset piloté par la position de la section dans le viewport),
+// même esprit qu'un composant "svg-follow-scroll" vu en référence (à base de framer-motion côté
+// React/Next), reproduit ici en JS vanilla + scroll listener classique pour rester cohérent avec
+// le reste du site (aucune dépendance d'animation ajoutée jusqu'ici — hero color-reveal, roue qui
+// roule, etc. sont tous en vanilla). Remplace la carte Leaflet "Nos implantations en France" :
+// la vraie exploration cartographique vit maintenant dans ScrollProjectMap juste en dessous.
+//
+// Le trait n'est plus un décor confiné au-dessus du titre (dans le bloc sticky) : il occupe
+// maintenant toute la hauteur de la section (fond, position absolute), en partant du tout haut —
+// juste sous le bandeau orange "15 centrales..." qui précède ce composant — pour serpenter
+// (courbes fluides façon "nœud") jusqu'à s'arrêter juste au-dessus du titre, qui lui reste seul
+// dans le bloc sticky centré. Le trait entier se dessine (stroke-dashoffset) sur toute la
+// traversée de la section, donnant l'impression qu'il "sort" du bandeau du dessus et vient
+// pointer vers le titre au fil du scroll, plutôt que d'apparaître déjà fait au-dessus du texte.
+
+interface Props {
+  color?: string;
+}
+
+const { color = "#ea580c" } = Astro.props;
+---
+
+<section id="scroll-drawn-path" class="relative h-[220vh] overflow-hidden bg-slate-50">
+  <!-- Trait de fond : couvre les 70% supérieurs de la section, part du haut (sous le bandeau
+       orange) et serpente jusqu'à la zone du titre (juste en dessous). Le viewBox est recalculé
+       en JS (voir script) pour correspondre exactement au ratio largeur/hauteur réel du cadre à
+       tout instant — pas de preserveAspectRatio="none" ici : un étirement non-uniforme déformait
+       le tracé (courbes aplaties/"écrasées") et pouvait faire sortir des portions du chemin du
+       cadre visible selon la largeur d'écran. Le chemin lui-même reste défini une fois pour
+       toutes en coordonnées relatives à un viewBox de référence 400×1200 (voir PATH_VIEWBOX_*
+       dans le script), que JS reprojette pour matcher le cadre réel sans jamais changer les
+       proportions du dessin. -->
+  <svg
+    id="scroll-drawn-svg"
+    viewBox="0 0 400 1200"
+    class="pointer-events-none absolute inset-x-0 top-0 h-[70%] w-full"
+    aria-hidden="true"
+  >
+    <path
+      id="scroll-drawn-line"
+      d="M 200 0
+         C 200 60, 60 90, 90 170
+         C 120 250, 320 230, 300 320
+         C 280 410, 90 400, 100 500
+         C 110 600, 310 610, 260 710
+         C 220 785, 130 760, 150 850
+         C 165 915, 250 900, 220 980
+         C 195 1045, 130 1040, 160 1120
+         C 178 1165, 195 1180, 200 1200"
+      fill="none"
+      stroke={color}
+      stroke-width="6"
+      stroke-linecap="round"
+    />
+    <!-- Pointe de flèche fixe à l'extrémité du trait, désignant le titre juste en dessous. -->
+    <path
+      id="scroll-drawn-arrowhead"
+      d="M 182 1182 L 200 1200 L 218 1182"
+      fill="none"
+      stroke={color}
+      stroke-width="6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0"
+    />
+  </svg>
+
+  <div class="sticky top-0 flex h-screen w-full flex-col items-center overflow-hidden pt-[76%]">
+    <div class="relative flex w-full flex-col items-center px-4 text-center">
+      <h2 class="text-4xl font-extrabold leading-tight text-neutral-900 md:text-6xl">
+        Envie de découvrir <br /> nos projets ?
+      </h2>
+      <p class="mt-6 max-w-xl text-lg text-neutral-600">
+        Faites défiler pour suivre le fil de nos réalisations, région par région.
+      </p>
+      <a
+        href="#scroll-project-map"
+        class="mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5"
+        style={`background-color:${color}`}
+      >
+        Voir la carte
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+          <path d="M12 5v14M19 12l-7 7-7-7" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Fait progresser stroke-dashoffset (trait invisible → complet) du tracé de fond au fil du
+  // scroll dans la section : le trait "sort" du haut (bandeau orange) et vient pointer vers le
+  // titre, qui lui reste fixe au centre de l'écran une fois le bloc sticky figé.
+  // Dimensions du viewBox de référence dans lequel le chemin est dessiné (voir l'attribut "d" du
+  // path ci-dessus) : sert de base pour recalculer un viewBox qui matche le ratio réel du cadre
+  // sans jamais étirer le tracé de façon non-uniforme.
+  const PATH_VIEWBOX_WIDTH = 400;
+  const PATH_VIEWBOX_HEIGHT = 1200;
+
+  function initScrollDrawnPath() {
+    const section = document.getElementById("scroll-drawn-path");
+    const svg = document.getElementById("scroll-drawn-svg") as SVGSVGElement | null;
+    const path = document.getElementById("scroll-drawn-line") as SVGPathElement | null;
+    const arrowhead = document.getElementById("scroll-drawn-arrowhead") as SVGPathElement | null;
+    if (!section || !svg || !path || !arrowhead) return;
+
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = String(length);
+
+    // Recale le viewBox sur le ratio réel du cadre (largeur/hauteur affichées en pixels) en
+    // n'ajustant QUE la largeur visible autour du tracé, jamais sa hauteur — le tracé garde donc
+    // toujours ses proportions d'origine (aucun écrasement), quitte à afficher un peu plus ou
+    // moins de marge horizontale de part et d'autre selon la largeur d'écran.
+    function updateViewBox() {
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      const targetWidth = PATH_VIEWBOX_HEIGHT * (rect.width / rect.height);
+      const xOffset = (PATH_VIEWBOX_WIDTH - targetWidth) / 2;
+      svg.setAttribute("viewBox", `${xOffset} 0 ${targetWidth} ${PATH_VIEWBOX_HEIGHT}`);
+    }
+
+    function onScroll() {
+      if (!section || !path || !arrowhead) return;
+      const rect = section.getBoundingClientRect();
+      // progress = 0 quand le haut de la section touche le haut du viewport (le trait commence
+      // tout juste à apparaître, aligné sur l'arrivée du bandeau orange au-dessus), 1 une fois la
+      // portion défilable de la section (hauteur totale − un écran, consommée par le sticky)
+      // parcourue — le trait est donc complet pile au moment où le titre finit sa propre lecture,
+      // avant que la section ne libère son sticky.
+      const scrollable = rect.height - window.innerHeight;
+      const progress = scrollable > 0 ? Math.min(Math.max(-rect.top / scrollable, 0), 1) : 1;
+
+      path.style.strokeDashoffset = String(length * (1 - progress));
+      // La pointe de flèche apparaît en fondu continu sur les 15 derniers % de la progression,
+      // plutôt qu'un seuil binaire (risque de rester bloquée invisible si progress plafonne juste
+      // sous le seuil à cause d'arrondis) — et plutôt que dès le début, où elle serait détachée,
+      // en avance sur le trait qui la rejoint.
+      const arrowFadeStart = 0.85;
+      arrowhead.style.opacity = String(Math.min(Math.max((progress - arrowFadeStart) / (1 - arrowFadeStart), 0), 1));
+    }
+
+    updateViewBox();
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", () => {
+      updateViewBox();
+      onScroll();
+    });
+  }
+
+  document.addEventListener("astro:page-load", initScrollDrawnPath);
+</script>

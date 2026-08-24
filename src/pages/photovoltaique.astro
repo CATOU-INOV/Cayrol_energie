@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PhotoBanner from "../components/PhotoBanner.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
+import ScrollStepGallery from "../components/ScrollStepGallery.tsx";
 import { themes, energyThemeList } from "../data/themes";
 import { photoUrl } from "../data/photos";
 import projects from "../data/projects.json";
@@ -37,6 +38,19 @@ const timelineSteps = [
   { date: "M+6", label: "Instruction & raccordement", description: "Instruction du permis, demande de raccordement." },
   { date: "M+9", label: "Construction", description: "Installation des panneaux et du poste de livraison." },
   { date: "M+10", label: "Mise en service", description: "Raccordement au réseau et démarrage de la production." },
+];
+
+// Même déroulé que timelineSteps, avec une photo par étape pour la démo ScrollStepGallery —
+// TODO-CONTENT : réemploi des 4 photos de catégories + la photo hero faute de photos dédiées à
+// chaque étape du chantier dans les données actuelles ; à remplacer par de vraies photos de
+// chantier (étude terrain, dépôt de dossier, tranchée de raccordement, pose des panneaux, mise en
+// service) si le client peut en fournir.
+const scrollGallerySteps = [
+  { ...timelineSteps[0], image: photoUrl("pvAuSol", { w: 1400 }), icon: "idea" as const },
+  { ...timelineSteps[1], image: photoUrl("heroAccueil", { w: 1400 }), icon: "building" as const },
+  { ...timelineSteps[2], image: photoUrl("pvOmbrieres", { w: 1400 }), icon: "bolt" as const },
+  { ...timelineSteps[3], image: photoUrl("pvToiture", { w: 1400 }), icon: "shield" as const },
+  { ...timelineSteps[4], image: photoUrl("pvAgrivoltaisme", { w: 1400 }), icon: "chart" as const },
 ];
 ---
 
@@ -163,5 +177,15 @@ const timelineSteps = [
       structure d'origine.
     </p>
   </div>
+  </section>
+
+  <!-- Déroulé d'un projet type, variante scroll immersif façon business.nrg.com — posée en plus
+       de la frise "dots" ci-dessus (dans ThematicTab) le temps de comparer les deux rendus. -->
+  <section class="border-t border-slate-200/80 bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-14">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Déroulement d'un projet type (variante scroll)</h2>
+      <p class="mb-10 text-neutral-600">Faites défiler pour suivre les grandes étapes, de l'étude à la mise en service.</p>
+      <ScrollStepGallery client:visible steps={scrollGallerySteps} color={theme.color} />
+    </div>
   </section>
 </BaseLayout>

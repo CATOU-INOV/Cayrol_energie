@@ -1,11 +1,90 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ProjectMap from "../components/ProjectMap.tsx";
+import { ContainerScroll } from "../components/ContainerScroll.tsx";
+import FilieresMosaic from "../components/FilieresMosaic.tsx";
+import { HeroParallax } from "../components/HeroParallax.tsx";
+import ScrollProjectMap from "../components/ScrollProjectMap.tsx";
 import ThemeSelector from "../components/ThemeSelector.tsx";
+import EnergyShowcase from "../components/EnergyShowcase.tsx";
+import PetalArc from "../components/PetalArc.tsx";
+import PetalWheel from "../components/PetalWheel.tsx";
 import LogoMarquee from "../components/LogoMarquee.astro";
 import BrandPattern from "../components/BrandPattern.astro";
 import { photoUrl } from "../data/photos";
+import { energyThemeList, themes, type ThemeKey } from "../data/themes";
 import projects from "../data/projects.json";
+
+const ENERGY_TO_THEME: Record<string, ThemeKey> = {
+  photovoltaique: "photovoltaique",
+  hydroelectricite: "hydroelectricite",
+  "flexibilite-bess": "flexibilite-bess",
+  biogaz: "biogaz",
+  hybride: "photovoltaique",
+};
+
+// Dédoublonne par commune (le composant présente une carte, pas une liste exhaustive de sites —
+// Bramafan/Argentine apparaît deux fois dans projects.json, TODO-CONTENT probablement une entrée
+// à corriger côté données) et ne garde que les champs utiles au scrollytelling.
+const dedupedProjects = Array.from(new Map(projects.map((p) => [p.commune, p])).values());
+
+// DEMO — TODO-CONTENT : les projets #5 à #8 (index 4 à 7, ordre d'affichage) sont forcés en
+// filière "hydroelectricite" pour montrer le changement de couleur de fond de la carte au scroll
+// (bleu Hydro au lieu du orange Photovoltaïque par défaut) — aucun de ces projets n'est réellement
+// hydroélectrique dans les données actuelles. À retirer dès que de vrais projets multi-filières
+// seront disponibles ; energy garde sa vraie valeur, seul l'override d'affichage ci-dessous change.
+const DEMO_HYDRO_OVERRIDE_INDICES = new Set([4, 5, 6, 7]);
+
+const scrollMapItems = dedupedProjects.map((p, i) => {
+  const themeKey = DEMO_HYDRO_OVERRIDE_INDICES.has(i) ? "hydroelectricite" : (ENERGY_TO_THEME[p.energy] ?? "photovoltaique");
+  const theme = themes[themeKey];
+  return {
+    id: p.id,
+    name: p.name,
+    commune: p.commune,
+    lat: p.lat,
+    lng: p.lng,
+    type: p.type,
+    power: p.power,
+    description: p.description,
+    color: theme.color,
+    energyKey: theme.key,
+    energyLabel: theme.shortName,
+  };
+});
+
+const THEME_PHOTOS: Record<string, Parameters<typeof photoUrl>[0]> = {
+  hydroelectricite: "hydroHauteChute",
+  photovoltaique: "pvAuSol",
+  "flexibilite-bess": "bessTerrain",
+  biogaz: "biogaz",
+};
+
+const showcaseItems = energyThemeList.map((theme) => ({
+  key: theme.key,
+  label: theme.name,
+  tagline: theme.tagline,
+  image: photoUrl(THEME_PHOTOS[theme.key], { w: 900 }),
+  color: theme.colorDark,
+  logo: theme.logo,
+  href: theme.href,
+}));
+
+// 15 projets = exactement 3 rangées de 5 pour HeroParallax (bandeau "Vous souhaitez découvrir nos
+// projets"). Pas de photo par site individuel dans les données actuelles (cf. photovoltaique.astro)
+// : alterne toiture/ombrières selon le type du projet, cohérent avec les visuels déjà utilisés
+// ailleurs sur le site plutôt que d'introduire une 3ᵉ source d'images.
+const heroParallaxProducts = projects.map((p) => ({
+  title: `${p.name} — ${p.commune}`,
+  link: p.id === "star-soleil" ? "/projets/star-soleil" : "/photovoltaique",
+  thumbnail: photoUrl(p.type.toLowerCase().includes("ombrières") ? "pvOmbrieres" : "pvToiture", { w: 900 }),
+}));
+
+const petalItems = energyThemeList.map((theme) => ({
+  key: theme.key,
+  label: theme.shortName,
+  color: theme.color,
+  href: theme.href,
+}));
 
 // Liste confirmée par le site actuel cayrolenergie.com (page Société) pour les 3 premières
 // entrées (certifications réelles), complétée par les références du cadrage PDF (section "Ils
@@ -39,44 +118,120 @@ const heroStats = [
 ---
 
 <BaseLayout title="Accueil" theme="societe" transparentHeader>
-  <!-- Hero plein écran : photo pleine page, header transparent fondu dedans, texte centré -->
-  <section id="hero-section" class="relative min-h-screen w-full overflow-hidden">
-    <img
-      src={photoUrl("heroAccueil", { w: 2400 })}
-      alt="Vue aérienne d'une centrale photovoltaïque Cayrol Energie"
-      class="absolute inset-0 h-full w-full object-cover"
-      loading="eager"
-    />
-    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" aria-hidden="true" />
+  <!-- Hero plein écran : photo pleine page, header transparent fondu dedans, texte centré.
+       Le titre se colore mot par mot au fil du scroll (gris → orange), fond figé (sticky) tant
+       que la lecture n'est pas terminée — même principe que la section scroll-reveal étudiée sur
+       business.nrg.com (fond pinned + texte qui se colore en fonction de la progression de
+       scroll), adapté ici au titre du hero plutôt qu'à un déroulé en plusieurs phases. La section
+       fait 200vh de haut : le texte finit de se colorer à HERO_COLOR_VH de scroll (voir script),
+       puis le fond reste figé encore jusqu'à 100vh — pause volontaire avant que le sticky ne se
+       libère, pour éviter que la page ne se mette à défiler juste au moment où le texte finit de
+       se colorer (transition trop brusque sinon) — les 100vh suivants laissent le hero défiler
+       normalement hors de l'écran une fois le texte entièrement coloré. -->
+  <section id="hero-section" class="relative h-[200vh] w-full">
+    <div class="sticky top-0 h-screen w-full overflow-hidden">
+      <img
+        src={photoUrl("heroAccueil", { w: 2400 })}
+        alt="Vue aérienne d'une centrale photovoltaïque Cayrol Energie"
+        class="absolute inset-0 h-full w-full object-cover"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" aria-hidden="true" />
 
-    <!-- Motif de marque en filigrane, coin supérieur droit -->
-    <BrandPattern
-      id="brand-hero"
-      color="white"
-      class="pointer-events-none absolute -right-16 -top-16 h-72 w-72 opacity-5 md:h-96 md:w-96"
-    />
+      <!-- Motif de marque en filigrane, coin supérieur droit -->
+      <BrandPattern
+        id="brand-hero"
+        color="white"
+        class="pointer-events-none absolute -right-16 -top-16 h-72 w-72 opacity-5 md:h-96 md:w-96"
+      />
 
-    <!-- Texte, aligné à gauche, bien espacé -->
-    <div class="relative z-10 flex min-h-screen flex-col justify-center gap-8 px-6 md:px-16 lg:px-24">
-      <div class="max-w-2xl">
-        <h1 class="text-4xl font-extrabold leading-tight text-white drop-shadow-sm md:text-6xl">
-          Des territoires et des Hommes au cœur de la transition énergétique.
-        </h1>
-        <p class="mt-8 max-w-xl text-lg text-white/85 md:text-xl">
-          Nous développons, construisons et exploitons des installations à taille humaine, en lien
-          étroit avec nos territoires.
-        </p>
+      <!-- Texte, aligné à gauche, bien espacé -->
+      <div class="relative z-10 flex h-screen flex-col justify-center gap-8 px-6 md:px-16 lg:px-24">
+        <div class="max-w-2xl">
+          <h1 id="hero-title" class="text-4xl font-extrabold leading-tight text-white drop-shadow-sm md:text-6xl">
+            {"Des territoires et des Hommes au cœur de la transition énergétique.".split(" ").map((word) => (
+              <span class="hero-word mr-[0.3em] inline-block" data-word>{word}</span>
+            ))}
+          </h1>
+          <p class="mt-8 max-w-xl text-lg text-white/85 md:text-xl">
+            Nous développons, construisons et exploitons des installations à taille humaine, en lien
+            étroit avec nos territoires.
+          </p>
+        </div>
+      </div>
+
+      <!-- Repère de scroll -->
+      <div class="absolute inset-x-0 bottom-6 z-10 flex justify-center md:bottom-8" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 animate-bounce opacity-70">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </div>
     </div>
-
-    <!-- Repère de scroll -->
-    <div class="absolute inset-x-0 bottom-6 z-10 flex justify-center md:bottom-8" aria-hidden="true">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 animate-bounce opacity-70">
-        <path d="M6 9l6 6 6-6" />
-      </svg>
-    </div>
   </section>
+
+  <style>
+    /* Couleur de repos (avant lecture) : blanc légèrement translucide, cohérent avec le sous-titre
+       — la variable --word-progress (0 à 1, posée en JS ci-dessous) pilote le mélange vers
+       l'orange de marque au fil du scroll. */
+    .hero-word {
+      color: color-mix(in srgb, white calc(100% - var(--word-progress, 0) * 100%), #f97316 calc(var(--word-progress, 0) * 100%));
+      transition: color 80ms linear;
+    }
+  </style>
+
+  <script>
+    // Colore le titre du hero mot par mot en fonction de la position de scroll dans la section
+    // #hero-section (200vh) : les HERO_COLOR_VH premiers vh de scroll font progresser
+    // --word-progress de chaque mot de 0 à 1, en cascade (le mot N atteint sa couleur pleine
+    // légèrement avant N+1), pour un effet de lecture progressive plutôt qu'un bloc qui change
+    // d'un coup. Volontairement < 1 (100vh, la distance réelle avant que le sticky ne se libère) :
+    // laisse une pause figée entre la fin de la coloration et le début du défilement de la page,
+    // plutôt qu'un enchaînement immédiat qui donnait l'impression que la page "partait" en même
+    // temps que le texte finissait de se colorer.
+    const HERO_COLOR_VH = 0.6;
+
+    function initHeroColorReveal() {
+      const section = document.getElementById("hero-section");
+      const header = document.getElementById("site-header");
+      const words = Array.from(document.querySelectorAll<HTMLElement>("#hero-title .hero-word"));
+      if (!section || words.length === 0) return;
+
+      // Header masqué par défaut au chargement de cette page (posé ici plutôt qu'en dur dans le
+      // markup du header, pour ne rester spécifique qu'à l'accueil) — retiré une fois la lecture
+      // du titre terminée.
+      header?.classList.add("header-hidden");
+
+      function onScroll() {
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        // progress = 0 en haut de la section, 1 une fois HERO_COLOR_VH consommés (donc avant que
+        // le sticky ne se libère à 100vh, et bien avant que la section (200vh) n'ait fini de
+        // défiler dans son ensemble).
+        const scrolled = -rect.top;
+        const progress = Math.min(Math.max(scrolled / (window.innerHeight * HERO_COLOR_VH), 0), 1);
+
+        words.forEach((word, i) => {
+          // Chaque mot occupe une tranche de la progression totale, avec un léger chevauchement
+          // (overlap) entre mots consécutifs pour une transition douce plutôt qu'un pas-à-pas net.
+          // wordEnd est explicitement clampé à 1 (Math.min) : sans ça, le dernier mot visait un
+          // seuil > 1 jamais atteignable (puisque progress est lui-même plafonné à 1) et restait
+          // bloqué à mi-course — la section se libérait avant que le texte soit fini de colorer.
+          const wordStart = i / words.length;
+          const wordEnd = Math.min((i + 1.6) / words.length, 1);
+          const wordProgress = (progress - wordStart) / (wordEnd - wordStart);
+          word.style.setProperty("--word-progress", String(Math.min(Math.max(wordProgress, 0), 1)));
+        });
+
+        header?.classList.toggle("header-hidden", progress < 1);
+      }
+
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+    }
+
+    document.addEventListener("astro:page-load", initHeroColorReveal);
+  </script>
 
   <!-- Bandeau de stats : cartes bento sur fond clair, séparateurs verticaux visibles entre
        chaque chiffre — les chiffres comptent de 0 jusqu'à leur valeur au moment où ils entrent
@@ -158,7 +313,28 @@ const heroStats = [
     document.addEventListener("astro:page-load", initStatCounters);
   </script>
 
-  <!-- Sélection des univers énergétiques : hero secondaire clair avec grille de points en fond -->
+  <!-- Nos filières, variante B — timeline + cartes empilées façon tuta.com/fr, posée juste
+       au-dessus de la version grille pour comparer les deux avant de trancher. Fond teinté
+       (orange très clair, couleur de marque) plutôt que blanc plat : premier maillon d'un rythme
+       de couleur plus marqué sur la page (cf. bandeau CTA plein orange plus bas). -->
+  <section class="relative overflow-hidden border-t border-slate-200/80 bg-orange-50/60">
+    <BrandPattern
+      id="brand-showcase"
+      color="#ea580c"
+      class="pointer-events-none absolute -left-16 -bottom-16 h-72 w-72 opacity-10"
+    />
+    <div class="relative mx-auto max-w-6xl px-4 py-20 md:py-28">
+      <h2 class="mb-3 text-3xl font-bold text-neutral-900 md:text-4xl">Nos filières d'expertise (variante B)</h2>
+      <p class="mb-14 text-lg text-neutral-600">Quatre énergies, une même exigence de qualité et d'ancrage local.</p>
+      <EnergyShowcase client:visible items={showcaseItems} />
+    </div>
+  </section>
+
+  <!-- Sélection des univers énergétiques : hero secondaire clair avec grille de points en fond
+       (variante grille "expanding cards", via ThemeSelector) — mise de côté au profit de la
+       variante B (EnergyShowcase, timeline + cartes empilées) juste au-dessus, gardée en commentaire
+       plutôt que supprimée le temps de confirmer que la variante B est bien celle qu'on garde. -->
+  <!--
   <section class="bg-dot-grid border-t border-slate-200/80 bg-slate-50">
     <div class="mx-auto max-w-6xl px-4 py-14">
       <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos filières d'expertise</h2>
@@ -166,15 +342,111 @@ const heroStats = [
       <ThemeSelector client:visible />
     </div>
   </section>
+  -->
 
-  <!-- Carte des implantations -->
-  <section class="border-t border-slate-200/80 bg-white">
-    <div class="mx-auto max-w-6xl px-4 py-14">
-      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos implantations en France</h2>
-      <p class="mb-6 text-neutral-600">
-        Découvrez nos centrales et installations à travers le territoire, cliquez sur un point pour en savoir plus.
+  <!-- Bandeau d'accroche en couleur pleine : rompt franchement le rythme clair/blanc de la page,
+       plutôt qu'une nuance de plus — sert aussi de transition entre "nos filières" et "nos
+       implantations" avec un vrai temps fort visuel. La roue du logo traverse le bandeau de
+       gauche à droite en tournant sur elle-même (comme une roue qui roule) au fil du scroll
+       normal de la page — pas de sticky/scroll-jacking ici : le bandeau garde une hauteur de
+       contenu normale, la roue avance simplement en suivant la position de la section dans le
+       viewport pendant qu'on la traverse. -->
+  <section id="wheel-banner" class="relative overflow-hidden bg-orange-600 py-16 text-center">
+    <BrandPattern
+      id="brand-cta"
+      color="white"
+      class="pointer-events-none absolute -right-20 -top-20 h-80 w-80 opacity-10"
+    />
+
+    <!-- Piste de roulement de la roue : pleine largeur, au-dessus du texte pour ne pas le
+         chevaucher pendant la traversée. -->
+    <div id="wheel-track" class="pointer-events-none absolute inset-x-0 top-6 h-16 md:h-20">
+      <div id="wheel-mover" class="absolute top-0 h-full w-16 md:w-20" style="left: -10%;">
+        <PetalWheel client:visible color="white" className="h-full w-full" />
+      </div>
+    </div>
+
+    <div class="relative z-10 mx-auto max-w-3xl px-4">
+      <p class="text-2xl font-extrabold text-white md:text-3xl">
+        15 centrales, 4 filières, une même exigence de proximité.
       </p>
-      <ProjectMap client:only="react" />
+      <p class="mt-3 text-orange-50">
+        Découvrez où nous intervenons et comment nous accompagnons chaque territoire.
+      </p>
+    </div>
+  </section>
+
+  <script>
+    // Fait rouler la roue (#wheel-mover) de gauche à droite dans le bandeau en suivant la
+    // position de #wheel-banner dans le viewport pendant le scroll normal de la page (pas de
+    // scroll-jacking) : la roue entre par la gauche quand le bandeau apparaît en bas de l'écran,
+    // et sort par la droite quand il quitte l'écran par le haut — translation et rotation liées
+    // au même progrès pour simuler un vrai roulement physique.
+    function initWheelBanner() {
+      const section = document.getElementById("wheel-banner");
+      const mover = document.getElementById("wheel-mover");
+      const track = document.getElementById("wheel-track");
+      if (!section || !mover || !track) return;
+
+      function onScroll() {
+        if (!section || !mover || !track) return;
+        const rect = section.getBoundingClientRect();
+        // progress = 0 quand le haut du bandeau touche le bas du viewport (il vient d'apparaître),
+        // 1 quand le bas du bandeau touche le haut du viewport (il vient de disparaître) — couvre
+        // donc exactement la plage où le bandeau est visible à l'écran.
+        const travel = window.innerHeight + rect.height;
+        const progress = Math.min(Math.max((window.innerHeight - rect.top) / travel, 0), 1);
+
+        const trackWidth = track.clientWidth;
+        const wheelWidth = mover.clientWidth;
+        // De -1 diamètre (hors champ à gauche) à +1 diamètre au-delà du bord droit (sort
+        // complètement du cadre), pour une entrée/sortie franches plutôt qu'un arrêt pile au bord.
+        const startX = -wheelWidth;
+        const endX = trackWidth + wheelWidth;
+        const x = startX + progress * (endX - startX);
+
+        // Roulement physique : angle parcouru = distance / rayon (en radians), converti en degrés
+        // — une roue qui a avancé d'une circonférence complète a tourné de 360°.
+        const wheelRadius = wheelWidth / 2;
+        const distanceTravelled = x - startX;
+        const rotationDeg = (distanceTravelled / wheelRadius) * (180 / Math.PI);
+
+        mover.style.transform = `translateX(${x}px) rotate(${rotationDeg}deg)`;
+      }
+
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    }
+
+    document.addEventListener("astro:page-load", initWheelBanner);
+  </script>
+
+  <!-- Bandeau d'accroche "Vous souhaitez découvrir nos projets" : pattern "Hero Parallax"
+       (3 rangées de projets qui défilent horizontalement en sens opposés pendant que la scène
+       pivote en 3D au scroll), remplace le précédent essai ContainerScroll — jugé redondant une
+       fois rempli de la mosaïque des 4 filières, déjà montrées juste au-dessus (EnergyShowcase).
+       ContainerScroll et FilieresMosaic restent disponibles (imports conservés) pour un usage
+       ailleurs sur le site (pages métier notamment). L'exploration cartographique vit toujours
+       entièrement dans ScrollProjectMap juste en dessous (id="scroll-project-map"). -->
+  <section class="border-t border-slate-200/80 bg-slate-50">
+    <HeroParallax
+      client:visible
+      title="Vous souhaitez découvrir nos projets ?"
+      description="15 réalisations, région par région — faites défiler pour explorer, ou suivez le fil jusqu'à la carte."
+      products={heroParallaxProducts}
+    />
+  </section>
+
+  <!-- Nos implantations, variante scrollytelling façon featured.undp.org/digital-goals : carte
+       figée à gauche, projets qui défilent en texte à droite, un seul point actif à la fois.
+       id="scroll-project-map" ciblé par le bouton "Voir la carte" du bandeau ScrollDrawnPath
+       juste au-dessus. -->
+  <section id="scroll-project-map" class="scroll-mt-24 border-t border-slate-200/80 bg-slate-50">
+    <div class="mx-auto max-w-6xl px-4 py-14">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos implantations en France (variante scroll)</h2>
+      <p class="mb-10 text-neutral-600">Faites défiler pour découvrir nos réalisations, région par région.</p>
+      <ScrollProjectMap client:visible items={scrollMapItems} />
     </div>
   </section>
 
@@ -195,6 +467,17 @@ const heroStats = [
           Découvrir Court Circuit
         </a>
       </div>
+    </div>
+  </section>
+
+  <!-- Arc de pétales du logo, repris comme sélecteur de filières — premier essai pour explorer
+       comment réutiliser un élément de la marque ailleurs que dans le header. Cliquer un pétale
+       l'agrandit et le fait légèrement pivoter avant de naviguer vers sa page filière. -->
+  <section class="border-t border-slate-200/80 bg-white py-16">
+    <div class="mx-auto max-w-6xl px-4 text-center">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos filières, en un coup d'œil</h2>
+      <p class="mb-10 text-neutral-600">Cliquez sur un pétale pour découvrir la filière.</p>
+      <PetalArc client:visible items={petalItems} />
     </div>
   </section>
 

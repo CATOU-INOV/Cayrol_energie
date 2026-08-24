@@ -21,7 +21,16 @@ html {
   transition:
     background-color 300ms ease,
     border-color 300ms ease,
-    color 300ms ease;
+    color 300ms ease,
+    opacity 300ms ease;
+}
+
+/* Écran d'accueil pur (hero color-reveal) : header entièrement invisible tant que le titre n'a
+   pas fini de se colorer, pour une immersion complète sans aucune UI de navigation en surimpression
+   du premier écran — retiré en JS une fois la lecture terminée (voir script du hero, index.astro). */
+#site-header.header-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 #site-header.header-transparent {
@@ -114,4 +123,18 @@ html {
 
 .leaflet-container {
   font-family: inherit;
+}
+
+/* ScrollProjectMap : recentre la carte dans la vraie zone colorée à 50vw (voir ce composant),
+   qui déborde du conteneur mx-auto max-w-6xl de la page — sans ce correctif, la colonne de grid
+   (centrée dans la moitié gauche du conteneur, pas dans les 50vw réels) paraît décalée vers la
+   droite par rapport au fond. Formule à deux régimes : sous 1152px (max-w-6xl encore égal à
+   100vw), l'écart est fixe à 16px (24px de padding de colonne − 8px de demi-gap) ; au-delà,
+   max-w-6xl se fige à 1152px alors que le fond continue de suivre le viewport, donc l'écart croît
+   linéairement avec la largeur d'écran — min() choisit automatiquement la bonne branche à toute
+   taille, sans à-coup au passage du breakpoint. */
+@media (min-width: 768px) {
+  .scroll-map-card-offset {
+    margin-left: min(16px, 304px - 25vw);
+  }
 }
