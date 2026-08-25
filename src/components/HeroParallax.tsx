@@ -29,7 +29,6 @@ export interface HeroParallaxProps {
 export function HeroParallax({ products, title, description }: HeroParallaxProps) {
   const firstRow = products.slice(0, 5);
   const secondRow = products.slice(5, 10);
-  const thirdRow = products.slice(10, 15);
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
@@ -40,28 +39,29 @@ export function HeroParallax({ products, title, description }: HeroParallaxProps
   const rotateX = useSpring(useTransform(scrollYProgress, [0, 0.2], [15, 0]), springConfig);
   const opacity = useSpring(useTransform(scrollYProgress, [0, 0.2], [0.2, 1]), springConfig);
   const rotateZ = useSpring(useTransform(scrollYProgress, [0, 0.2], [20, 0]), springConfig);
-  const translateY = useSpring(useTransform(scrollYProgress, [0, 0.2], [-700, 500]), springConfig);
+  // Plus de translateY : avec seulement 2 rangées (au lieu des 3 du calibrage d'origine), la scène
+  // est plus compacte et ce déplacement vertical de plusieurs centaines de px suffisait à faire
+  // sortir une rangée du cadre avant que le scroll de la section ne soit terminé, ou à laisser un
+  // grand vide en bas une fois la translation achevée — l'amplitude n'avait plus aucune valeur
+  // stable une fois le nombre de rangées changé. Les rangées restent maintenant à une position
+  // verticale fixe ; seuls le défilement horizontal croisé et la légère rotation 3D d'entrée
+  // suffisent à l'effet.
 
   return (
     <div
       ref={ref}
-      className="relative flex h-[300vh] flex-col self-auto overflow-hidden py-40 antialiased [perspective:1000px] [transform-style:preserve-3d]"
+      className="relative flex min-h-[140vh] flex-col self-auto overflow-hidden py-20 antialiased [perspective:1000px] [transform-style:preserve-3d]"
     >
       <Header title={title} description={description} />
-      <motion.div style={{ rotateX, rotateZ, translateY, opacity }}>
+      <motion.div style={{ rotateX, rotateZ, opacity }}>
         <motion.div className="mb-20 flex flex-row-reverse space-x-20 space-x-reverse">
           {firstRow.map((product) => (
             <ProductCard product={product} translate={translateX} key={product.title} />
           ))}
         </motion.div>
-        <motion.div className="mb-20 flex flex-row space-x-20">
+        <motion.div className="flex flex-row space-x-20">
           {secondRow.map((product) => (
             <ProductCard product={product} translate={translateXReverse} key={product.title} />
-          ))}
-        </motion.div>
-        <motion.div className="flex flex-row-reverse space-x-20 space-x-reverse">
-          {thirdRow.map((product) => (
-            <ProductCard product={product} translate={translateX} key={product.title} />
           ))}
         </motion.div>
       </motion.div>
@@ -71,7 +71,7 @@ export function HeroParallax({ products, title, description }: HeroParallaxProps
 
 function Header({ title, description }: { title: string; description: string }) {
   return (
-    <div className="relative left-0 top-0 mx-auto w-full max-w-7xl px-4 py-20 md:py-40">
+    <div className="relative left-0 top-0 mx-auto w-full max-w-7xl px-4 py-10 md:py-16">
       <h1 className="text-2xl font-bold text-neutral-900 md:text-7xl">{title}</h1>
       <p className="mt-8 max-w-2xl text-base text-neutral-600 md:text-xl">{description}</p>
     </div>

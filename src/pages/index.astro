@@ -187,8 +187,11 @@ const heroStats = [
     // d'un coup. Volontairement < 1 (100vh, la distance réelle avant que le sticky ne se libère) :
     // laisse une pause figée entre la fin de la coloration et le début du défilement de la page,
     // plutôt qu'un enchaînement immédiat qui donnait l'impression que la page "partait" en même
-    // temps que le texte finissait de se colorer.
-    const HERO_COLOR_VH = 0.6;
+    // temps que le texte finissait de se colorer. Plafonné à 0.85 plutôt que rapproché encore de 1 :
+    // il faut garder une marge avant la libération du sticky, sinon la pause figée disparaît. Ne
+    // pas agrandir la section pour aller plus loin (ex. 260vh) : ça allongerait d'autant le temps
+    // passé sur le hero avant d'atteindre le reste de la page, effet indésirable.
+    const HERO_COLOR_VH = 0.85;
 
     function initHeroColorReveal() {
       const section = document.getElementById("hero-section");
@@ -227,6 +230,35 @@ const heroStats = [
 
       onScroll();
       window.addEventListener("scroll", onScroll, { passive: true });
+
+      // Calibre la molette pour qu'un scroll "3 tours" (deltaY cumulé ≈ 3 crans standard, environ
+      // 110px chacun) amène tout juste à la fin de la fenêtre de coloration — pas moins (le texte
+      // finirait de se colorer avant que l'utilisateur ait fini de scroller, sans lien perceptible
+      // entre le mouvement et l'effet), pas plus (l'ancien essai à 0.55, plus lent que le scroll
+      // natif, donnait une sensation de lourdeur). Le multiplicateur est donc > 1 : il *accélère*
+      // légèrement le scroll natif dans cette zone plutôt que de le freiner. Ne s'applique qu'à
+      // l'intérieur de la fenêtre de coloration ; au-delà, le scroll redevient natif jusqu'à la
+      // sortie du hero.
+      const WHEEL_TURNS_TO_COLOR_END = 3;
+      const PX_PER_WHEEL_TURN = 110;
+
+      function onWheel(e: WheelEvent) {
+        if (!section) return;
+        const colorEndY = window.innerHeight * HERO_COLOR_VH;
+        if (window.scrollY >= colorEndY) return;
+        e.preventDefault();
+        const damping = colorEndY / (WHEEL_TURNS_TO_COLOR_END * PX_PER_WHEEL_TURN);
+        // Pas de clamp à colorEndY ici : un wheel qui dépasse le seuil doit pouvoir le franchir
+        // (sinon le scroll s'immobilise pile dessus — chaque event suivant se voit intercepté par
+        // la condition ci-dessus sans jamais avoir de delta suffisant pour repasser au-delà, et
+        // preventDefault empêche le scroll natif de prendre le relais : blocage total après la fin
+        // de la coloration). Le seul clamp nécessaire reste la borne basse (0), pour ne pas remonter
+        // au-dessus du haut de page sur un scroll vers le haut.
+        const next = Math.max(window.scrollY + e.deltaY * damping, 0);
+        window.scrollTo(0, next);
+      }
+
+      window.addEventListener("wheel", onWheel, { passive: false });
     }
 
     document.addEventListener("astro:page-load", initHeroColorReveal);
