@@ -208,7 +208,7 @@ function StepText({
   return (
     <div
       ref={ref}
-      className="border-l-2 py-10 pl-6 transition-colors duration-300 md:py-16"
+      className="group border-l-2 py-10 pl-6 transition-colors duration-300 md:py-16"
       style={{ borderColor: active ? item.color : "#e2e8f0" }}
     >
       <span
@@ -230,6 +230,32 @@ function StepText({
         {item.type} — {item.power}
       </p>
       <p className="mt-3 max-w-md text-sm leading-relaxed text-neutral-600">{item.description}</p>
+
+      {/* Bande de couleur dégradée (pleine à gauche vers transparente à droite) portant le bouton
+          "Voir le détail" — même couleur que la filière du projet, cohérente avec le badge et le
+          point actif sur la carte. href retombe sur "#" tant que la fiche projet dédiée n'existe
+          pas (seul Star Soleil en a une aujourd'hui) : lien visuel prêt, câblage réel à faire
+          projet par projet. Masquée par défaut et révélée au survol du bloc projet — uniquement
+          sur desktop (md:), car le hover n'a pas de sens sur tactile : là, la bande reste visible
+          en permanence pour ne pas cacher le CTA. Le fond (scale-x depuis origin-left) et le
+          contenu (opacité, légèrement retardée) sont animés séparément pour un vrai effet de
+          balayage gauche→droite plutôt qu'un simple fondu sur place. */}
+      <a
+        href={item.href ?? "#"}
+        className="relative mt-5 flex h-12 max-w-md items-center justify-end overflow-hidden rounded-full pr-1.5"
+      >
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 origin-left scale-x-100 transition-transform duration-500 ease-out md:scale-x-0 md:group-hover:scale-x-100 md:group-focus-within:scale-x-100"
+          style={{ background: `linear-gradient(to right, ${item.color}, ${item.color}00)` }}
+        />
+        <span className="group/cta relative flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold opacity-100 shadow-sm transition-opacity delay-150 duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100" style={{ color: item.color }}>
+          Voir le détail
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </span>
+      </a>
     </div>
   );
 }
