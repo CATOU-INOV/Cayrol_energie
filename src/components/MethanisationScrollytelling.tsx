@@ -14,6 +14,11 @@ const SEG_OF_STEP = [0, 1, 2, -1, 3, 4, 5, 6, 7, 8];
 const STEP_VH = 85;
 const SMOOTHING = 0.16;
 const DIM_LEVEL = 0.22;
+// Pause en fin de parcours (en vh de scroll supplémentaire) pendant laquelle le diagramme reste
+// figé, complet et sans aucune popup à l'écran, avant que la section ne libère le scroll normal —
+// sans ça, dès que la dernière carte a fini de s'effacer (prog=1) le sticky se libère
+// immédiatement, sans laisser le temps de voir le schéma dans son ensemble.
+const END_PAUSE_VH = 60;
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -34,12 +39,12 @@ const NODES: NodeDef[] = [
   { key: "n2", label: "Déchets ménagers", left: 10.91, top: 50, width: 18, size: 8.4, fontSize: 3.4 },
   { key: "n3", label: "Boues d'épuration", left: 10.91, top: 82.26, width: 18, size: 8.4, fontSize: 3.4 },
   { key: "n4", label: "Digesteur", left: 49.09, top: 22.58, width: 22, size: 11, fontSize: 4.4, primary: true },
-  { key: "n5", label: "Épandage du digestat", left: 84.55, top: 14.52, width: 18, size: 8.4, fontSize: 3.4 },
+  { key: "n5", label: "Épandage du digestat", left: 84.55, top: 22.58, width: 18, size: 8.4, fontSize: 3.4 },
   { key: "n6", label: "Épuration du biogaz", left: 49.09, top: 53.23, width: 18, size: 8.4, fontSize: 3.4 },
   { key: "n7", label: "Injection réseau", left: 81.82, top: 53.23, width: 18, size: 8.4, fontSize: 3.4 },
-  { key: "n8", label: "Résidentiel & tertiaire", left: 34.55, top: 85.48, width: 18, size: 8.4, fontSize: 3.4 },
+  { key: "n8", label: "Résidentiel & tertiaire", left: 78.18, top: 85.48, width: 18, size: 8.4, fontSize: 3.4 },
   { key: "n9", label: "Industriels", left: 56.36, top: 85.48, width: 18, size: 8.4, fontSize: 3.4 },
-  { key: "n10", label: "Mobilité", left: 78.18, top: 85.48, width: 18, size: 8.4, fontSize: 3.4 },
+  { key: "n10", label: "Mobilité", left: 34.55, top: 85.48, width: 18, size: 8.4, fontSize: 3.4 },
 ];
 
 interface CardDef {
@@ -56,7 +61,7 @@ interface CardDef {
 
 const CARDS: CardDef[] = [
   {
-    key: "c1", left: 20, top: 4, accent: "#65a30d", eyebrowColor: "#4d7c0f",
+    key: "c1", left: 20, top: 20, accent: "#65a30d", eyebrowColor: "#4d7c0f",
     eyebrow: "Les intrants · 01", title: "Résidus de l'agriculture et de l'agro-alimentaire",
     body: "Effluents d'élevage, résidus de cultures et coproduits industriels sont collectés dans un rayon court autour de l'unité de méthanisation.",
     image: "/illus/intrants.svg",
@@ -98,7 +103,7 @@ const CARDS: CardDef[] = [
     image: "/illus/injection.svg",
   },
   {
-    key: "c8", left: 14, top: 36, accent: "#16a34a", eyebrowColor: "#16a34a",
+    key: "c8", left: 68, top: 34, accent: "#16a34a", eyebrowColor: "#16a34a",
     eyebrow: "Les usages · 08", title: "Résidentiels et tertiaires",
     body: "Chauffage, eau chaude et cuisson : une énergie renouvelable livrée par le réseau existant, sans changer les équipements des bâtiments.",
     image: "/illus/residentiel.svg",
@@ -110,7 +115,7 @@ const CARDS: CardDef[] = [
     image: "/illus/industriels.svg",
   },
   {
-    key: "c10", left: 62, top: 32, accent: "#16a34a", eyebrowColor: "#16a34a",
+    key: "c10", left: 14, top: 36, accent: "#16a34a", eyebrowColor: "#16a34a",
     eyebrow: "Les usages · 10", title: "Mobilité",
     body: "En bioGNV, il alimente bus, bennes à ordures et poids lourds, avec une empreinte carbone très inférieure à celle d'un carburant fossile.",
     image: "/illus/mobilite.svg",
@@ -121,7 +126,7 @@ const BG_PATHS = [
   "M170,110 H236 Q250,110 250,124 V126 Q250,140 264,140 H484",
   "M170,310 H206 Q220,310 220,296 V154 Q220,140 234,140 H484",
   "M170,510 H176 Q190,510 190,496 V154 Q190,140 204,140 H484",
-  "M596,140 H770 Q784,140 784,126 V104 Q784,90 798,90 H884",
+  "M596,140 H884",
   "M540,196 V284",
   "M586,330 H854",
   "M900,376 V450 Q900,464 886,464 H394 Q380,464 380,478 V484",
@@ -183,13 +188,16 @@ export default function MethanisationScrollytelling() {
     const wrap = wrapRef.current;
     if (!wrap) return;
 
-    wrap.style.height = `${N * STEP_VH + 100}vh`;
+    wrap.style.height = `${N * STEP_VH + 100 + END_PAUSE_VH}vh`;
 
     function measure() {
       if (!wrap) return;
       const r = wrap.getBoundingClientRect();
       const vh = window.innerHeight;
-      const total = r.height - vh;
+      // La pause finale (END_PAUSE_VH) est retirée du dénominateur : prog atteint 1 avant que le
+      // scroll disponible ne soit épuisé, et reste bloqué à 1 (clamp) pendant les vh restants —
+      // le diagramme reste donc figé, complet, sans popup, tant que le sticky ne s'est pas libéré.
+      const total = r.height - vh - (END_PAUSE_VH / 100) * vh;
       targetRef.current = total > 0 ? clamp(-r.top / total, 0, 1) : 0;
     }
 
@@ -243,7 +251,7 @@ export default function MethanisationScrollytelling() {
       const settle = i === N - 1 ? 0 : clamp((r - 0.82) / 0.18, 0, 1);
       no["n" + (i + 1)] = DIM_LEVEL + (1 - DIM_LEVEL) * up - 0.22 * settle * up;
       const cin = clamp((r - 0.08) / 0.16, 0, 1);
-      const cout = i === N - 1 ? 1 : clamp((1 - r) / 0.13, 0, 1);
+      const cout = clamp((1 - r) / 0.13, 0, 1);
       const c = Math.min(cin, cout);
       cp["c" + (i + 1)] = c;
       cy["c" + (i + 1)] = Math.round((1 - c) * 14);
@@ -327,8 +335,27 @@ export default function MethanisationScrollytelling() {
       `}</style>
 
       <div ref={wrapRef} style={{ position: "relative", height: "950vh" }}>
-        <div style={{ position: "sticky", top: 0, height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 4vw", boxSizing: "border-box" }}>
-          <div style={{ width: "100%", maxWidth: 1180, margin: "0 auto", position: "relative", aspectRatio: "1100/620", containerType: "inline-size" } as React.CSSProperties}>
+        <div style={{ position: "sticky", top: 0, height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "36px 4vw", boxSizing: "border-box" }}>
+          <div
+            style={{
+              width: "100%",
+              // Le diagramme (ratio 1100/620) doit toujours tenir entièrement dans la hauteur de
+              // viewport disponible pour le sticky, sinon il déborde et est rogné sur un écran bas
+              // (laptop 16:9 ~700-800px de haut) — une largeur calée uniquement sur max-width ne
+              // garantit pas ça puisque hauteur = largeur / ratio peut dépasser le viewport. On
+              // réserve donc explicitement l'espace du padding sticky (36px * 2 — le nœud 05, très
+              // proche du haut du diagramme à top:14.52%, a besoin de cette marge pour ne pas être
+              // rogné par le bord du conteneur) et du rail de progression sous le diagramme (~70px,
+              // marge + texte) avant de calculer la largeur max à partir de la hauteur restante ;
+              // tout le contenu (cercles, texte, cartes) est en unités cqw et rétrécit avec le
+              // conteneur.
+              maxWidth: "min(1180px, calc((100vh - 142px) * (1100 / 620)))",
+              margin: "0 auto",
+              position: "relative",
+              aspectRatio: "1100/620",
+              containerType: "inline-size",
+            } as React.CSSProperties}
+          >
 
             <svg ref={svgRef} viewBox="0 0 1100 620" fill="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}>
               <g stroke="rgba(15,23,42,.13)" strokeWidth={2} strokeLinecap="round">
@@ -361,9 +388,9 @@ export default function MethanisationScrollytelling() {
                 <circle className="metha-puff" cx={610} cy={316} r={6} style={{ animationDelay: "2.55s" }} />
               </g>
 
-              <FlameGlyph cx={380} opacity={vals.fl8} delay={0} />
+              <FlameGlyph cx={860} opacity={vals.fl8} delay={0} />
               <FlameGlyph cx={620} opacity={vals.fl9} delay={0.2} />
-              <FlameGlyph cx={860} opacity={vals.fl10} delay={0.35} />
+              <FlameGlyph cx={380} opacity={vals.fl10} delay={0.35} />
             </svg>
 
             {NODES.map((node) => (
@@ -429,7 +456,8 @@ export default function MethanisationScrollytelling() {
                   left: `${card.left}%`,
                   top: `${card.top}%`,
                   width: "29%",
-                  minWidth: 230,
+                  minWidth: 190,
+                  maxWidth: 300,
                   pointerEvents: "none",
                   opacity: vals.cp[card.key],
                   transform: `translate(0,${vals.cy[card.key]}px)`,
@@ -473,7 +501,7 @@ export default function MethanisationScrollytelling() {
         </div>
       </div>
 
-      <p style={{ margin: "0 auto", maxWidth: "80ch", fontSize: 14, lineHeight: 1.7, color: "#64748b" }}>
+      <p style={{ margin: "24px auto 0", maxWidth: "80ch", fontSize: 14, lineHeight: 1.7, color: "#64748b" }}>
         * La méthanisation est la dégradation de la partie fermentescible des intrants, en l'absence d'oxygène, pour produire du biogaz.
       </p>
     </div>
