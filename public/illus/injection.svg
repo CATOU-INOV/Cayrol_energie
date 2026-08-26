@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" width="600" height="420" role="img"><title>injection</title>
+<ellipse cx="300" cy="386" rx="252" ry="15" fill="#e6e6e6"></ellipse>
+<path d="M0 340h600v10H0z" fill="#e6e6e6"></path>
+<path d="M40 300h100v14H40zM40 300h14v50H40z" fill="#16a34a"></path>
+<path d="M124 214h140v152H124z" fill="#f2f2f2"></path><path d="M236 214h28v152h-28z" fill="#e6e6e6"></path>
+<path d="M114 200h160v16H114z" fill="#3f3d56"></path><path d="M114 366h160v14H114z" fill="#3f3d56"></path>
+<path d="M150 240h58v40h-58z" fill="#fff" stroke="#3f3d56" stroke-width="6"></path><path d="M160 256h38v6h-38zM160 268h24v6h-24z" fill="#16a34a"></path>
+<circle cx="180" cy="316" r="22" fill="#fff" stroke="#3f3d56" stroke-width="6"></circle><path d="M180 316l12-10" stroke="#3f3d56" stroke-width="5" stroke-linecap="round"></path>
+<path d="M140 300h14v50h-14z" fill="#16a34a"></path>
+<path d="M264 268h96v14h-96z" fill="#16a34a"></path><path d="M300 200h14v82h-14z" fill="#16a34a"></path>
+<circle cx="307" cy="188" r="20" fill="none" stroke="#3f3d56" stroke-width="9"></circle>
+<path d="M346 268h14v82h-14z" fill="#16a34a"></path>
+<path d="M360 300h190v14H360z" fill="#16a34a"></path>
+<path d="M394 246h44v54h-44z" fill="#3f3d56"></path><path d="M382 246l34-30 34 30z" fill="#16a34a"></path><path d="M406 268h20v32h-20z" fill="#f2f2f2"></path>
+<path d="M470 214h12v86h-12zM520 214h12v86h-12zM470 214h62v12h-62zM470 254h62v10h-62z" fill="#3f3d56"></path>
+<path d="M486 274h30v26h-30z" fill="#fff" stroke="#3f3d56" stroke-width="5"></path>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" width="600" height="420" role="img"><title>epuration</title>
+<ellipse cx="300" cy="386" rx="252" ry="15" fill="#e6e6e6"></ellipse>
+<path d="M186 150h230v10H186z" fill="#3f3d56"></path>
+<path d="M212 160h44v206h-44zM290 160h44v206h-44zM368 160h44v206h-44z" fill="#f2f2f2"></path>
+<path d="M242 160h14v206h-14zM320 160h14v206h-14zM398 160h14v206h-14z" fill="#e6e6e6"></path>
+<path d="M212 160h44v18h-44zM290 160h44v18h-44zM368 160h44v18h-44z" fill="#16a34a"></path>
+<path d="M212 214h44v10h-44zM290 214h44v10h-44zM368 214h44v10h-44zM212 292h44v10h-44zM290 292h44v10h-44zM368 292h44v10h-44z" fill="#e6e6e6"></path>
+<path d="M202 366h220v14H202z" fill="#3f3d56"></path>
+<path d="M186 118h12v42h-12zM412 118h12v42h-12zM186 118h238v12H186z" fill="#3f3d56"></path>
+<path d="M298 74h12v50h-12z" fill="#16a34a"></path><path d="M298 74h84v12h-84z" fill="#16a34a"></path>
+<circle cx="388" cy="80" r="18" fill="none" stroke="#3f3d56" stroke-width="8"></circle>
+<path d="M156 236h56v12h-56z" fill="#16a34a"></path><path d="M156 236h12v104h-12z" fill="#16a34a"></path>
+<circle cx="162" cy="196" r="26" fill="#fff" stroke="#3f3d56" stroke-width="7"></circle><path d="M162 196l14-11" stroke="#3f3d56" stroke-width="6" stroke-linecap="round"></path><path d="M162 174v6m22 22h-6" stroke="#3f3d56" stroke-width="5" stroke-linecap="round"></path>
+<path d="M132 340h60v40h-60z" fill="#e6e6e6"></path><path d="M132 340h60v10h-60z" fill="#3f3d56"></path>
+<path d="M424 268h56v12h-56z" fill="#16a34a"></path><path d="M468 268h12v72h-12z" fill="#16a34a"></path>
+<path d="M446 340h56v26h-56z" fill="#fff" stroke="#3f3d56" stroke-width="5"></path>
+</svg>

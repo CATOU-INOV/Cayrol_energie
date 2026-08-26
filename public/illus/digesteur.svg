@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" width="600" height="420" role="img"><title>digesteur</title>
+<ellipse cx="300" cy="386" rx="252" ry="15" fill="#e6e6e6"></ellipse>
+<path d="M148 300h44v82h-44z" fill="#3f3d56"></path><path d="M148 292h44v10h-44z" fill="#16a34a"></path>
+<path d="M192 352h60v10h-60z" fill="#3f3d56"></path>
+<path d="M240 178h190v204H240z" fill="#f2f2f2"></path><path d="M388 178h42v204h-42z" fill="#e6e6e6"></path>
+<path d="M240 178c0-52.5 42.5-95 95-95s95 42.5 95 95z" fill="#16a34a"></path>
+<path d="M388 92.6A95 95 0 0 1 430 178h-42a137 137 0 0 0-19-73.8Z" fill="#15803d"></path>
+<path d="M319 74h32v14h-32z" fill="#3f3d56"></path><path d="M326 46h18v30h-18z" fill="#3f3d56"></path><circle cx="335" cy="40" r="12" fill="#16a34a"></circle>
+<path d="M240 236h190v8H240zM240 302h190v8H240z" fill="#e6e6e6"></path>
+<path d="M234 372h202v14H234z" fill="#3f3d56"></path>
+<path d="M456 178h10v168h-10z" fill="#3f3d56"></path><path d="M466 178h44v10h-44zM466 214h44v10h-44zM466 250h44v10h-44zM466 286h44v10h-44zM466 322h44v10h-44z" fill="#3f3d56"></path><path d="M500 178h10v168h-10z" fill="#3f3d56"></path>
+<path d="M430 200h72v12h-72z" fill="#16a34a"></path><path d="M490 140h12v72h-12z" fill="#16a34a"></path><circle cx="496" cy="132" r="16" fill="none" stroke="#3f3d56" stroke-width="8"></circle>
+<path d="M192 264h48v12h-48z" fill="#16a34a"></path>
+<circle cx="170" cy="268" r="19" fill="#fff" stroke="#3f3d56" stroke-width="6"></circle><path d="M170 268l10-8" stroke="#3f3d56" stroke-width="5" stroke-linecap="round"></path>
+<path d="M120 382h60c0-16-14-28-30-28s-30 12-30 28Z" fill="#e6e6e6"></path>
+</svg>

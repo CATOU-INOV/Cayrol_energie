@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PhotoBanner from "../components/PhotoBanner.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
+import MethanisationScrollytelling from "../components/MethanisationScrollytelling.tsx";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
 
@@ -68,5 +69,16 @@ const atouts = [
       réalisations seront disponibles.
     </p>
   </div>
+  </section>
+
+  <!-- Schéma explicatif du cycle de méthanisation : scrollytelling en 10 étapes (intrants →
+       digesteur → épandage/épuration → usages), porté depuis le prototype Claude Design fourni
+       par le client (cf. handoff "Moderniser graphique énergie scrollytelling"). -->
+  <section class="border-t border-slate-200/80 bg-white pt-14">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Le cycle de la méthanisation</h2>
+      <p class="mb-4 text-neutral-600">Faites défiler pour suivre le parcours de la matière organique jusqu'au biométhane.</p>
+    </div>
+    <MethanisationScrollytelling client:visible />
   </section>
 </BaseLayout>
