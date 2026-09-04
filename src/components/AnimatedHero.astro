@@ -1,0 +1,113 @@
+---
+// Hero sticky générique : le titre se colore mot par mot (gris → couleur du thème) et un logo
+// tourne au fil du scroll, scroll retenu (wheel intercepté) tant que la coloration n'est pas
+// terminée — extrait du hero hydroélectricité pour être réutilisable sur toute page filière,
+// paramétré par heroId (unique par page, pour éviter les collisions de sélecteurs/CSS vars quand
+// plusieurs instances coexistent) et color (couleur cible de la coloration).
+
+interface Props {
+  /** Identifiant unique de la section, utilisé pour les sélecteurs CSS/JS scoped à ce hero
+   * (ex. "biogaz-hero") — doit être différent sur chaque page utilisant ce composant. */
+  heroId: string;
+  /** Titre affiché, coloré mot par mot au fil du scroll. */
+  title: string;
+  /** Couleur cible du dégradé de coloration (couleur du thème de la page). */
+  color: string;
+}
+
+const { heroId, title, color } = Astro.props;
+const titleId = `${heroId}-title`;
+const wordClass = `${heroId}-word`;
+---
+
+<section id={heroId} class="relative bg-white" style="height: calc(100vh + 60vh);">
+  <div class="sticky top-[var(--header-h,61px)] pt-6 pb-10 md:pt-8">
+    <div class="mx-auto w-full max-w-6xl px-4">
+      <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
+        <div class="lg:col-span-4">
+          <h1 id={titleId} class="text-3xl font-bold !leading-[110%] text-slate-900 md:text-4xl">
+            {title.split(" ").map((word) => (
+              <span class={`${wordClass} mr-[0.3em] inline-block`} data-word>{word}</span>
+            ))}
+          </h1>
+          <slot name="lead" />
+        </div>
+
+        <div class="lg:col-span-8">
+          <slot name="image" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style define:vars={{ heroColor: color }}>
+  /* Coloration progressive du titre (gris → couleur du thème) au fil du scroll. */
+  h1[id] :global([data-word]) {
+    color: color-mix(in srgb, #0f172a calc(100% - var(--word-progress, 0) * 100%), var(--heroColor) calc(var(--word-progress, 0) * 100%));
+    transition: color 80ms linear;
+  }
+
+  /* Rotation du logo synchronisée sur la même progression que le titre, via --logo-progress
+     (0 à 1) posé par le script ci-dessous sur la section plutôt que sur le logo lui-même. */
+  section[id] :global(.hero-logo) {
+    transform: rotate(calc(var(--logo-progress, 0) * 360deg));
+    transition: transform 80ms linear;
+  }
+</style>
+
+<script define:vars={{ heroId, wordClass }}>
+  // Anime le titre mot par mot et fait tourner le logo au fil du scroll dans la section sticky
+  // (hauteur = 100vh + COLOR_VH*100vh) : progress passe de 0 à 1 sur les COLOR_VH premiers vh de
+  // scroll de la section. Le wheel est intercepté et amorti tant que progress < 1, pour "retenir"
+  // le scroll pendant la lecture du titre — au-delà, le scroll redevient natif.
+  const COLOR_VH = 0.6;
+
+  function initHeroReveal() {
+    const section = document.getElementById(heroId);
+    const words = Array.from(section?.querySelectorAll(`.${wordClass}`) ?? []);
+    if (!section || words.length === 0) return;
+
+    function onScroll() {
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const scrolled = -rect.top;
+      const progress = Math.min(Math.max(scrolled / (window.innerHeight * COLOR_VH), 0), 1);
+
+      words.forEach((word, i) => {
+        const wordStart = i / words.length;
+        const wordEnd = Math.min((i + 1.6) / words.length, 1);
+        const wordProgress = (progress - wordStart) / (wordEnd - wordStart);
+        word.style.setProperty("--word-progress", String(Math.min(Math.max(wordProgress, 0), 1)));
+      });
+
+      section.style.setProperty("--logo-progress", String(progress));
+    }
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Un scroll "3 tours" de molette amène tout juste à la fin de la fenêtre de coloration.
+    const WHEEL_TURNS_TO_COLOR_END = 3;
+    const PX_PER_WHEEL_TURN = 110;
+
+    function onWheel(e) {
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      // En dehors de la plage [-colorEndY, 0] de rect.top, la section n'est pas en train de
+      // traverser sa fenêtre de coloration (pas encore atteinte, ou déjà terminée) : on laisse
+      // le scroll natif faire son travail.
+      const colorEndY = window.innerHeight * COLOR_VH;
+      const scrolled = -rect.top;
+      if (scrolled < 0 || scrolled >= colorEndY) return;
+      e.preventDefault();
+      const damping = colorEndY / (WHEEL_TURNS_TO_COLOR_END * PX_PER_WHEEL_TURN);
+      const next = Math.max(window.scrollY + e.deltaY * damping, 0);
+      window.scrollTo(0, next);
+    }
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+  }
+
+  document.addEventListener("astro:page-load", initHeroReveal);
+</script>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PhotoBanner from "../components/PhotoBanner.astro";
+import AnimatedHero from "../components/AnimatedHero.astro";
+import OrganicImageHero from "../components/OrganicImageHero.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
 import MethanisationScrollytelling from "../components/MethanisationScrollytelling.tsx";
 import { themes } from "../data/themes";
@@ -35,20 +36,29 @@ const atouts = [
 ---
 
 <BaseLayout title="Biogaz" theme="biogaz">
-  <PhotoBanner
-    src={photoUrl("biogaz")}
-    alt="Silos agricoles, illustration provisoire d'un site biogaz"
-    height="h-[320px] md:h-[420px]"
-    rounded={false}
-  />
-  <section class="bg-white">
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Biogaz</h1>
+  <AnimatedHero heroId="biogaz-hero" title="Valoriser la matière organique locale." color={theme.color}>
+    <Fragment slot="lead">
+      <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
+        Cayrol Energie développe des unités de méthanisation qui transforment les effluents et résidus
+        agricoles du territoire en énergie renouvelable, au service des exploitations partenaires.
+      </p>
+    </Fragment>
 
+    <OrganicImageHero
+      slot="image"
+      src={photoUrl("biogaz", { w: 1800 })}
+      alt="Silos agricoles, illustration provisoire d'un site biogaz"
+      logo={theme.logo}
+      variant="chamfer"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
+    />
+  </AnimatedHero>
+
+  <section class="bg-white">
+  <div class="mx-auto max-w-6xl px-4 pb-14">
     <ThematicTab
       client:visible
       color={theme.color}
-      tagline="TODO-CONTENT : phrase d'accroche provisoire — Cayrol Energie développe des unités de méthanisation qui valorisent la matière organique locale en énergie renouvelable, au service des exploitations agricoles du territoire."
       explanations={[
         {
           title: "Explications",

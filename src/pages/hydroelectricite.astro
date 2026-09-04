@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import AnimatedHero from "../components/AnimatedHero.astro";
 import OrganicImageHero from "../components/OrganicImageHero.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
 import { themes } from "../data/themes";
@@ -33,128 +34,40 @@ const timelineSteps = [
 ---
 
 <BaseLayout title="Hydroélectricité" theme="hydroelectricite" hideServiceRail>
-  <!-- Hero sticky : le titre se colore mot par mot (gris → bleu) et le logo tourne au fil du
-       scroll, scroll retenu (wheel intercepté) tant que la coloration n'est pas terminée — même
-       principe que le hero plein écran de l'accueil (section haute + sticky top-0 + wheel hijack),
-       adapté à un hero non plein écran : HYDRO_HERO_EXTRA_VH de hauteur supplémentaire sous le
-       contenu sticky, consommée par le scroll pendant la phase de coloration. -->
-  <section id="hydro-hero" class="relative bg-white" style="height: calc(100vh + 60vh);">
-    <div class="sticky top-[var(--header-h,61px)] pt-6 pb-10 md:pt-8">
-      <div class="mx-auto w-full max-w-6xl px-4">
-        <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
-          <div class="lg:col-span-4">
-            <h1 id="hydro-hero-title" class="text-3xl font-bold !leading-[110%] text-slate-900 md:text-4xl">
-              {"Un savoir-faire historique au fil de l'eau.".split(" ").map((word) => (
-                <span class="hydro-hero-word mr-[0.3em] inline-block" data-word>{word}</span>
-              ))}
-            </h1>
-            <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
-              Pionnier de la production hydroélectrique, Cayrol Energie exploite aujourd'hui 11 centrales pour une
-              puissance cumulée de 19,15 MW, un savoir-faire transmis depuis plusieurs générations.
-            </p>
+  <!-- Hero sticky : le titre se colore mot par mot et le logo tourne au fil du scroll, scroll
+       retenu (wheel intercepté) tant que la coloration n'est pas terminée — cf. AnimatedHero.astro
+       pour le détail du mécanisme (extrait de ce hero pour être réutilisé sur biogaz/BESS). -->
+  <AnimatedHero heroId="hydro-hero" title="Un savoir-faire historique au fil de l'eau." color={theme.color}>
+    <Fragment slot="lead">
+      <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
+        Pionnier de la production hydroélectrique, Cayrol Energie exploite aujourd'hui 11 centrales pour une
+        puissance cumulée de 19,15 MW, un savoir-faire transmis depuis plusieurs générations.
+      </p>
 
-            <div class="mt-8 flex flex-col gap-5">
-              <div>
-                <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>11</p>
-                <p class="text-sm text-slate-500">centrales hydroélectriques</p>
-              </div>
-              <div>
-                <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>19,15 MW</p>
-                <p class="text-sm text-slate-500">de puissance installée</p>
-              </div>
-              <div>
-                <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>4</p>
-                <p class="text-sm text-slate-500">générations au fil de l'eau</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="lg:col-span-8">
-            <OrganicImageHero
-              src={photoUrl("hydroHauteChute", { w: 1800 })}
-              alt="Barrage hydroélectrique en montagne"
-              logo="/logos/logo-bleu.png"
-              class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
-            />
-          </div>
+      <div class="mt-8 flex flex-col gap-5">
+        <div>
+          <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>11</p>
+          <p class="text-sm text-slate-500">centrales hydroélectriques</p>
+        </div>
+        <div>
+          <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>19,15 MW</p>
+          <p class="text-sm text-slate-500">de puissance installée</p>
+        </div>
+        <div>
+          <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>4</p>
+          <p class="text-sm text-slate-500">générations au fil de l'eau</p>
         </div>
       </div>
-    </div>
-  </section>
+    </Fragment>
 
-  <style>
-    /* Coloration progressive du titre (gris → bleu du thème hydro) au fil du scroll, même principe
-       que le hero de l'accueil (--word-progress + color-mix). */
-    .hydro-hero-word {
-      color: color-mix(in srgb, #0f172a calc(100% - var(--word-progress, 0) * 100%), #1d4ed8 calc(var(--word-progress, 0) * 100%));
-      transition: color 80ms linear;
-    }
-
-    /* Rotation du logo synchronisée sur la même progression que le titre, via --logo-progress
-       (0 à 1) posé par le script ci-dessous sur la section plutôt que sur le logo lui-même. */
-    #hydro-hero :global(.hero-logo) {
-      transform: rotate(calc(var(--logo-progress, 0) * 360deg));
-      transition: transform 80ms linear;
-    }
-  </style>
-
-  <script>
-    // Anime le titre mot par mot et fait tourner le logo au fil du scroll dans #hydro-hero (sticky,
-    // hauteur = 100vh + HYDRO_COLOR_VH*100vh) : progress passe de 0 à 1 sur les HYDRO_COLOR_VH
-    // premiers vh de scroll de la section, comme le hero de l'accueil. Le wheel est intercepté et
-    // amorti tant que progress < 1, pour "retenir" le scroll pendant la lecture du titre — au-delà,
-    // le scroll redevient natif et la section se libère normalement.
-    const HYDRO_COLOR_VH = 0.6;
-
-    function initHydroHeroReveal() {
-      const section = document.getElementById("hydro-hero");
-      const words = Array.from(document.querySelectorAll<HTMLElement>("#hydro-hero-title .hydro-hero-word"));
-      if (!section || words.length === 0) return;
-
-      function onScroll() {
-        if (!section) return;
-        const rect = section.getBoundingClientRect();
-        const scrolled = -rect.top;
-        const progress = Math.min(Math.max(scrolled / (window.innerHeight * HYDRO_COLOR_VH), 0), 1);
-
-        words.forEach((word, i) => {
-          const wordStart = i / words.length;
-          const wordEnd = Math.min((i + 1.6) / words.length, 1);
-          const wordProgress = (progress - wordStart) / (wordEnd - wordStart);
-          word.style.setProperty("--word-progress", String(Math.min(Math.max(wordProgress, 0), 1)));
-        });
-
-        section.style.setProperty("--logo-progress", String(progress));
-      }
-
-      onScroll();
-      window.addEventListener("scroll", onScroll, { passive: true });
-
-      // Même calibrage que le hero de l'accueil : un scroll "3 tours" de molette amène tout juste
-      // à la fin de la fenêtre de coloration.
-      const WHEEL_TURNS_TO_COLOR_END = 3;
-      const PX_PER_WHEEL_TURN = 110;
-
-      function onWheel(e: WheelEvent) {
-        if (!section) return;
-        const rect = section.getBoundingClientRect();
-        // En dehors de la plage [-colorEndY, 0] de rect.top, la section n'est pas en train de
-        // traverser sa fenêtre de coloration (pas encore atteinte, ou déjà terminée) : on laisse
-        // le scroll natif faire son travail.
-        const colorEndY = window.innerHeight * HYDRO_COLOR_VH;
-        const scrolled = -rect.top;
-        if (scrolled < 0 || scrolled >= colorEndY) return;
-        e.preventDefault();
-        const damping = colorEndY / (WHEEL_TURNS_TO_COLOR_END * PX_PER_WHEEL_TURN);
-        const next = Math.max(window.scrollY + e.deltaY * damping, 0);
-        window.scrollTo(0, next);
-      }
-
-      window.addEventListener("wheel", onWheel, { passive: false });
-    }
-
-    document.addEventListener("astro:page-load", initHydroHeroReveal);
-  </script>
+    <OrganicImageHero
+      slot="image"
+      src={photoUrl("hydroHauteChute", { w: 1800 })}
+      alt="Barrage hydroélectrique en montagne"
+      logo="/logos/logo-bleu.png"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
+    />
+  </AnimatedHero>
 
   <section class="bg-white">
   <div class="mx-auto max-w-6xl px-4 pb-14">

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PhotoBanner from "../components/PhotoBanner.astro";
+import AnimatedHero from "../components/AnimatedHero.astro";
+import OrganicImageHero from "../components/OrganicImageHero.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
@@ -50,24 +51,30 @@ const partenaires = [
 ---
 
 <BaseLayout title="Flexibilité / BESS" theme="flexibilite-bess">
-  <PhotoBanner
-    src={photoUrl("bessTerrain")}
-    alt="Conteneurs industriels, illustration d'un site BESS"
-    height="h-[320px] md:h-[420px]"
-    rounded={false}
-  />
-  <section class="bg-white">
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="mb-8 text-3xl font-extrabold" style={`color:${theme.color}`}>Flexibilité / BESS</h1>
+  <AnimatedHero heroId="bess-hero" title="Stocker l'énergie pour mieux la restituer." color={theme.color}>
+    <Fragment slot="lead">
+      <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
+        Le Battery Energy Storage System (BESS) permet de stocker l'électricité produite par nos centrales
+        pour la restituer au moment où le réseau en a le plus besoin, une brique essentielle de la
+        transition énergétique.
+      </p>
+    </Fragment>
 
+    <OrganicImageHero
+      slot="image"
+      src={photoUrl("bessTerrain", { w: 1800 })}
+      alt="Conteneurs industriels, illustration d'un site BESS"
+      logo={theme.logo}
+      variant="step"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
+    />
+  </AnimatedHero>
+
+  <section class="bg-white">
+  <div class="mx-auto max-w-6xl px-4 pb-14">
     <ThematicTab
       client:visible
       color={theme.color}
-      tagline="Le Battery Energy Storage System (BESS) permet de stocker l'électricité produite par nos centrales pour la restituer au moment où le réseau en a le plus besoin, une brique essentielle de la transition énergétique."
-      stats={[
-        { value: "64", label: "centrales photovoltaïques" },
-        { value: "11", label: "centrales hydroélectriques (19,15 MW)" },
-      ]}
       explanations={[
         {
           title: "Ancrage territorial",
