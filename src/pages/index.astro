@@ -57,6 +57,14 @@ const scrollMapItems = dedupedProjects.map((p, i) => {
     energyLabel: theme.shortName,
     featured: FEATURED_PROJECT_IDS.has(p.id),
     href: p.id === "star-soleil" ? "/projets/star-soleil" : undefined,
+    // Photo de fond de la carte projet (retour client). Seul Star Soleil a de vraies photos ;
+    // TODO-CONTENT : les autres reprennent un visuel de leur filière / type de pose.
+    photo:
+      p.id === "star-soleil"
+        ? "/projets/star-soleil/principale.jpg"
+        : themeKey === "hydroelectricite"
+          ? photoUrl("hydroBasseChute", { w: 1000 })
+          : photoUrl(p.type.toLowerCase().includes("ombrières") ? "pvOmbrieres" : "pvToiture", { w: 1000 }),
   };
 });
 
