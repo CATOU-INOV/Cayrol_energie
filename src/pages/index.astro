@@ -15,20 +15,15 @@ const ENERGY_TO_THEME: Record<string, ThemeKey> = {
   hydroelectricite: "hydroelectricite",
   "flexibilite-bess": "flexibilite-bess",
   biogaz: "biogaz",
-  hybride: "photovoltaique",
+  // La Combe (toiture solaire + hydro) classée Hydro (retour client) : montre une 2ᵉ filière sur
+  // la carte et active le filtre par filière.
+  hybride: "hydroelectricite",
 };
 
 // Dédoublonne par commune (le composant présente une carte, pas une liste exhaustive de sites —
 // Bramafan/Argentine apparaît deux fois dans projects.json, TODO-CONTENT probablement une entrée
 // à corriger côté données) et ne garde que les champs utiles au scrollytelling.
 const dedupedProjects = Array.from(new Map(projects.map((p) => [p.commune, p])).values());
-
-// DEMO — TODO-CONTENT : les projets #5 à #8 (index 4 à 7, ordre d'affichage) sont forcés en
-// filière "hydroelectricite" pour montrer le changement de couleur de fond de la carte au scroll
-// (bleu Hydro au lieu du orange Photovoltaïque par défaut) — aucun de ces projets n'est réellement
-// hydroélectrique dans les données actuelles. À retirer dès que de vrais projets multi-filières
-// seront disponibles ; energy garde sa vraie valeur, seul l'override d'affichage ci-dessous change.
-const DEMO_HYDRO_OVERRIDE_INDICES = new Set([4, 5, 6, 7]);
 
 // 5 projets phares affichés dans la liste texte scrollytelling de la carte accueil (retour
 // client) — sélection représentative : le plus gros projet (star-soleil, déjà pourvu d'une fiche
@@ -40,8 +35,8 @@ const DEMO_HYDRO_OVERRIDE_INDICES = new Set([4, 5, 6, 7]);
 // scrollMapItems ; besseges le remplace pour garder 5 projets phares réellement affichés.
 const FEATURED_PROJECT_IDS = new Set(["star-soleil", "la-combe", "besseges", "aiton", "bizanet"]);
 
-const scrollMapItems = dedupedProjects.map((p, i) => {
-  const themeKey = DEMO_HYDRO_OVERRIDE_INDICES.has(i) ? "hydroelectricite" : (ENERGY_TO_THEME[p.energy] ?? "photovoltaique");
+const scrollMapItems = dedupedProjects.map((p) => {
+  const themeKey = ENERGY_TO_THEME[p.energy] ?? "photovoltaique";
   const theme = themes[themeKey];
   return {
     id: p.id,
@@ -142,9 +137,9 @@ const heroParallaxProducts = projects.map((p) => ({
            couvre donc cette fenêtre où aucune marque n'était visible à l'écran. Logo complet du header
            (texte + sigle) en version négative (texte blanc, orange conservé, généré depuis le logo
            positif), plus grand et aligné sur le titre : met l'entreprise en avant sans animation.
-           Placé sous la hauteur du header (~73px), qui apparaît pendant que le hero est encore épinglé
-           et le recouvrait. En absolute (pas dans le flux) pour ne pas décaler le titre centré. -->
-      <div class="absolute left-6 top-24 z-10 md:left-16 md:top-28 lg:left-24">
+           Placé juste sous la hauteur du header (73px), qui apparaît pendant que le hero est encore
+           épinglé et le recouvrait. En absolute (pas dans le flux) pour ne pas décaler le titre centré. -->
+      <div class="absolute left-6 top-20 z-10 md:left-16 lg:left-24">
         <img
           src="/logos/logo-horizontal-negatif.png"
           alt="Cayrol Energie"

@@ -1,7 +1,7 @@
 // Section "scrollytelling" façon featured.undp.org/digital-goals : carte de France en SVG figée
 // à gauche (sticky), projets qui défilent en texte à droite. Le point du projet actuellement
-// affiché à droite s'allume en couleur pleine sur la carte, les autres restent en gris translucide
-// — un seul actif à la fois. Contour et points partagent la même projection Web Mercator
+// affiché à droite s'allume et s'agrandit sur la carte, les autres restent de la couleur de leur
+// filière, plus petits — un seul actif à la fois. Contour et points partagent la même projection Web Mercator
 // (mercatorProject ci-dessous), donc restent alignés géographiquement quelle que soit l'échelle.
 //
 // Couleurs par filière : dérivées de src/data/themes.ts (passées en props par le composant
@@ -96,7 +96,7 @@ function MapCardContent({
   totalCount: number;
   energyFilters: { key: string; label: string; color: string }[];
   energyFilter: string | null;
-  setEnergyFilter: (updater: (current: string | null) => string | null) => void;
+  setEnergyFilter: (key: string | null) => void;
 }) {
   return (
     <>
@@ -105,7 +105,8 @@ function MapCardContent({
           pas donner l'impression que des projets disparaissent quand on filtre par filière. */}
       <div className="mb-5 flex items-center justify-between gap-3">
         <h3 className="text-lg font-extrabold text-white md:text-xl">En réalisation</h3>
-        <div className="text-right">
+        {/* Chiffre à gauche du libellé, sur la même ligne (retour client) plutôt qu'empilé au-dessus. */}
+        <div className="flex items-center gap-2">
           <p className="text-2xl font-extrabold text-white md:text-3xl">{totalCount}</p>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Nombre de projets</p>
         </div>
@@ -122,7 +123,9 @@ function MapCardContent({
       <div className="relative aspect-square w-full overflow-visible">
         <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible" aria-hidden="true">
           <path d={OUTLINE_PATH} fill="rgb(255 255 255 / 0.12)" stroke="rgb(255 255 255 / 0.45)" strokeWidth="0.5" />
-          {visibleItems.map((item) => {
+          {/* Point actif (halo, radar, fiche) dessiné en dernier : en SVG l'ordre du document fait
+              le z-index, sinon les points suivants recouvraient la fiche (retour client). */}
+          {[...visibleItems.filter((item) => item.id !== active?.id), ...visibleItems.filter((item) => item.id === active?.id)].map((item) => {
             const isActive = item.id === active?.id;
             const { x, y } = toViewBox(mercatorProject(item.lat, item.lng));
             return (
@@ -143,14 +146,17 @@ function MapCardContent({
                     <circle cx={x} cy={y} r="4.5" fill="white" opacity="0.25" />
                   </>
                 )}
+                {/* Point de la couleur de sa filière, cerclé de blanc pour rester visible sur le
+                    fond de la carte (lui-même teinté de la filière active) — fait le lien avec les
+                    couleurs du filtre sous la carte. */}
                 <circle
                   cx={x}
                   cy={y}
-                  r={isActive ? 2.2 : 1.3}
-                  fill="white"
-                  opacity={isActive ? 1 : 0.55}
-                  stroke={active?.color}
-                  strokeWidth={isActive ? 0.8 : 0}
+                  r={isActive ? 2.2 : 1.4}
+                  fill={item.color}
+                  opacity={isActive ? 1 : 0.85}
+                  stroke="white"
+                  strokeWidth={isActive ? 0.8 : 0.45}
                   className="transition-all duration-300"
                 />
                 {/* Tooltip flottant amélioré (retour client) : plus grand, mieux contrasté
@@ -159,14 +165,29 @@ function MapCardContent({
                     <foreignObject> (texte HTML normal, plus simple à styler/tronquer qu'un <text>
                     SVG pur). y décalé au-delà du halo (r=4.5) et de la vague radar maximale (r=7)
                     pour ne jamais chevaucher le point actif. */}
+                {/* Bas de la bulle ancré à y - 8 (au-delà de la vague radar max, r=7) : la bulle
+                    grandit vers le haut (flex justify-end) au lieu de déborder vers le bas sur le
+                    point et son onde (retour client : "barre" qui pulsait sous la bulle). Marges,
+                    bordure et arrondi en unités du viewBox (le contenu du foreignObject est mis à
+                    l'échelle avec le SVG, ×5 environ) : en classes Tailwind px, elles devenaient
+                    énormes. */}
                 {isActive && (
-                  <foreignObject x={x - 34} y={y - 26} width="68" height="18" style={{ overflow: "visible" }}>
+                  <foreignObject x={x - 34} y={y - 38} width="68" height="30" style={{ overflow: "visible" }}>
+                    <div className="flex h-full flex-col items-center justify-end">
                     <div
-                      className="mx-auto w-fit max-w-[13rem] rounded-lg border-2 bg-white px-2.5 py-1.5 text-center shadow-lg"
-                      style={{ fontSize: "3.4px", lineHeight: 1.35, borderColor: item.color }}
+                      className="w-fit bg-white text-center shadow-lg"
+                      style={{
+                        fontSize: "3.4px",
+                        lineHeight: 1.35,
+                        padding: "1.2px 2.4px",
+                        border: `0.5px solid ${item.color}`,
+                        borderRadius: "1.5px",
+                        maxWidth: "60px",
+                      }}
                     >
                       <p className="font-bold text-slate-900">{item.name}</p>
                       <p className="text-slate-500">{item.type} — {item.power}</p>
+                    </div>
                     </div>
                   </foreignObject>
                 )}
@@ -176,31 +197,35 @@ function MapCardContent({
         </svg>
       </div>
 
-      {/* Légende améliorée (retour client) : pilules avec fond blanc plutôt que texte nu + puce
-          discrète — le filtre actif se distingue clairement (fond plein, texte de la couleur de
-          la filière) des filtres inactifs (fond translucide, texte blanc), plus lisible que la
-          version précédente où toutes les puces étaient blanches quelle que soit la filière. */}
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 border-t border-white/15 pt-4">
-        {energyFilters.map((f) => {
-          const isFilterActive = energyFilter === f.key;
-          return (
-          <button
-            key={f.key}
-            type="button"
-            onClick={() => setEnergyFilter((current) => (current === f.key ? null : f.key))}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
-            style={{
-              backgroundColor: isFilterActive ? "#fff" : "rgb(255 255 255 / 0.15)",
-              color: isFilterActive ? f.color : "#fff",
-            }}
-            aria-pressed={isFilterActive}
-          >
-            <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: isFilterActive ? f.color : "#fff" }} />
-            {f.label}
-          </button>
-          );
-        })}
-      </div>
+      {/* Filtre par filière (retour client : l'ancienne "légende" aux puces blanches ne disait
+          rien). Assumé comme filtre : libellé explicite, bouton "Tous", pastille toujours de la
+          couleur de la filière (même couleur que les points de la carte). Le choix filtre aussi
+          la liste de projets à droite, qui défile jusqu'au premier projet de la filière. Masqué
+          tant qu'il y a moins de 2 filières (un filtre à une seule option ne sert à rien). */}
+      {energyFilters.length > 1 && (
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2 border-t border-white/15 pt-4">
+          <span className="mr-1 text-xs font-semibold text-white/80">Filtrer par filière :</span>
+          {[{ key: null, label: "Tous", color: "#0f172a" }, ...energyFilters].map((f) => {
+            const isFilterActive = energyFilter === f.key;
+            return (
+              <button
+                key={f.key ?? "tous"}
+                type="button"
+                onClick={() => setEnergyFilter(f.key)}
+                className="flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold text-slate-900 transition-colors"
+                style={{
+                  backgroundColor: isFilterActive ? "#fff" : "rgb(255 255 255 / 0.85)",
+                  borderColor: isFilterActive ? f.color : "transparent",
+                }}
+                aria-pressed={isFilterActive}
+              >
+                {f.key && <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: f.color }} />}
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {active && <p className="mt-4 text-center text-sm font-semibold text-white">{active.commune}</p>}
     </>
@@ -308,6 +333,32 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
 
   const visibleItems = energyFilter ? items.filter((item) => item.energyKey === energyFilter) : items;
 
+  // Liste de droite : les 5 projets phares sans filtre ; avec un filtre, les projets de cette
+  // filière (phares en tête, 5 maximum) — même plafond que la liste par défaut.
+  const listItems = useMemo(() => {
+    if (!energyFilter) return featuredItems;
+    const ofEnergy = items.filter((item) => item.energyKey === energyFilter);
+    return [...ofEnergy.filter((item) => item.featured), ...ofEnergy.filter((item) => !item.featured)].slice(0, 5);
+  }, [items, featuredItems, energyFilter]);
+
+  // Au changement de filtre : active le premier projet de la liste et y fait défiler la page, pour
+  // que carte (fond, point allumé) et liste montrent tout de suite la filière choisie.
+  const listRef = useRef<HTMLDivElement>(null);
+  const selectFilter = (key: string | null) => {
+    const next = key ? items.filter((item) => item.energyKey === key) : featuredItems;
+    const first = key ? (next.find((item) => item.featured) ?? next[0]) : next[0];
+    setEnergyFilter(key);
+    if (first) setActiveId(first.id);
+    // Haut de la liste aligné sur la carte sticky (md:top-24 = 96px) plutôt que 1er projet centré :
+    // avec une filière à 1 ou 2 projets, la section est courte et le centrage sortait la carte de
+    // l'écran.
+    requestAnimationFrame(() => {
+      const list = listRef.current;
+      if (!list) return;
+      window.scrollTo({ top: list.getBoundingClientRect().top + window.scrollY - 96, behavior: "smooth" });
+    });
+  };
+
   // Fond de la carte : couleur de la filière assombrie en OKLCH, qui garde la teinte au lieu de virer
   // au marron comme un mélange RVB (la couleur pure, orange
   // ou bleu vif sur une demi-page, était trop criarde), avec une transition lente entre projets.
@@ -353,7 +404,7 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
             totalCount={items.length}
             energyFilters={energyFilters}
             energyFilter={energyFilter}
-            setEnergyFilter={setEnergyFilter}
+            setEnergyFilter={selectFilter}
           />
         </div>
       </div>
@@ -362,8 +413,8 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
           projet active son point sur la carte en entrant au centre du viewport (IntersectionObserver
           par bloc, voir StepText). La carte, elle, continue d'afficher tous les projets (visibleItems
           dérive de `items`, pas de featuredItems) — seule cette liste de texte est raccourcie. */}
-      <div className="relative">
-        {featuredItems.map((item) => (
+      <div ref={listRef} className="relative">
+        {listItems.map((item) => (
           <StepText key={item.id} item={item} active={item.id === activeId} onActivate={() => setActiveId(item.id)} />
         ))}
 

@@ -63,7 +63,9 @@ export default function EnergyShowcase({ items }: EnergyShowcaseProps) {
 
   return (
     <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-16">
-      <ol ref={railRef} className="relative border-l-2 border-slate-200 pl-12">
+      {/* Pas de trait vertical entre les logos (retour client) : pl-12 conservé pour garder la
+          colonne de logos à sa place. */}
+      <ol ref={railRef} className="relative pl-12">
         {items.map((item, i) => {
           const isActive = active === i;
           return (
@@ -78,7 +80,7 @@ export default function EnergyShowcase({ items }: EnergyShowcaseProps) {
                 {/* Fond blanc retiré (logo directement sur le fond de la section) et agrandi —
                     retour client : logos trop petits, cadre blanc jugé superflu. La rotation au
                     survol reprend le même geste que ServiceRail (cf. src/components/ServiceRail.astro).
-                    Centré sur la barre verticale : -49px = pl-12 (48px) + moitié du trait (1px),
+                    Centré sur l'ancienne barre verticale (retirée) : -49px = pl-12 (48px) + 1px,
                     puis recentrage de la pastille sur ce point ; verticalement sur la 1re ligne du
                     titre. Le logo (fichier carré, pictogramme centré) tourne donc sur place. */}
                 <span
