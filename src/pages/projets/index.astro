@@ -1,0 +1,87 @@
+---
+// Page "Nos réalisations" : grille de tous les projets de projects.json — destination du bouton
+// "voir tous nos projets" demandé par le client (carte accueil, présentation projets hydro/PV).
+// Version volontairement simple (grille de cartes, pas de filtre ni de carte interactive) : le
+// scrollytelling déjà en place ailleurs (ScrollProjectMap sur l'accueil) reste le point d'entrée
+// visuel, cette page sert de destination "voir plus" pour la liste complète.
+//
+// Pas de photo par site individuel dans les données actuelles (seul Star Soleil a une vraie
+// galerie, cf. src/pages/projets/star-soleil.astro) : alterne toiture/ombrières selon le type du
+// projet, cohérent avec les visuels déjà utilisés ailleurs (HeroParallax sur l'accueil) plutôt que
+// d'introduire une 3ᵉ source d'images.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { photoUrl } from "../../data/photos";
+import { themes, type ThemeKey } from "../../data/themes";
+import projects from "../../data/projects.json";
+
+const ENERGY_TO_THEME: Record<string, ThemeKey> = {
+  photovoltaique: "photovoltaique",
+  hydroelectricite: "hydroelectricite",
+  "flexibilite-bess": "flexibilite-bess",
+  biogaz: "biogaz",
+  hybride: "photovoltaique",
+};
+
+const cards = projects.map((p) => {
+  const theme = themes[ENERGY_TO_THEME[p.energy] ?? "photovoltaique"];
+  return {
+    ...p,
+    image: photoUrl(p.type.toLowerCase().includes("ombrières") ? "pvOmbrieres" : "pvToiture", { w: 900 }),
+    color: theme.color,
+    href: p.id === "star-soleil" ? "/projets/star-soleil" : null,
+  };
+});
+---
+
+<BaseLayout title="Nos réalisations" theme="societe" description="L'ensemble des projets réalisés par Cayrol Energie, région par région.">
+  <section class="border-b border-slate-200/80 bg-slate-50 py-14">
+    <div class="mx-auto max-w-6xl px-4">
+      <p class="text-sm font-semibold uppercase tracking-wide text-orange-600">Nos réalisations</p>
+      <h1 class="mt-2 text-3xl font-extrabold text-neutral-900 md:text-4xl">{projects.length} projets, région par région</h1>
+      <p class="mt-3 max-w-2xl text-neutral-600">
+        Des toitures agricoles aux ombrières de parking en passant par l'hydroélectricité, un aperçu de nos centrales
+        en exploitation.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-14">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {cards.map((p) => {
+          const Tag = p.href ? "a" : "div";
+          return (
+            <Tag
+              href={p.href ?? undefined}
+              class:list={[
+                "group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition",
+                p.href && "hover:-translate-y-1 hover:shadow-md",
+              ]}
+            >
+              <div class="relative h-44 w-full overflow-hidden">
+                <img
+                  src={p.image}
+                  alt={p.name}
+                  class:list={["h-full w-full object-cover", p.href && "transition-transform duration-500 group-hover:scale-105"]}
+                  loading="lazy"
+                />
+                <span
+                  class="absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
+                  style={`background-color:${p.color};`}
+                >
+                  {p.type}
+                </span>
+              </div>
+              <div class="p-5">
+                <h2 class="text-lg font-bold text-neutral-900">{p.name}</h2>
+                <p class="mt-1 text-sm text-neutral-500">{p.commune}</p>
+                <p class="mt-3 text-sm leading-relaxed text-neutral-600">{p.description}</p>
+                <p class="mt-4 text-sm font-semibold" style={`color:${p.color};`}>{p.power}</p>
+              </div>
+            </Tag>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

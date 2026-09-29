@@ -8,9 +8,9 @@ import ThemeSelector from "../components/ThemeSelector.tsx";
 import EnergyShowcase from "../components/EnergyShowcase.tsx";
 import PetalArc from "../components/PetalArc.tsx";
 import LogoMarquee from "../components/LogoMarquee.astro";
-import BrandPattern from "../components/BrandPattern.astro";
 import { photoUrl } from "../data/photos";
 import { energyThemeList, themes, type ThemeKey } from "../data/themes";
+import { trustedBy } from "../data/company";
 import projects from "../data/projects.json";
 
 const ENERGY_TO_THEME: Record<string, ThemeKey> = {
@@ -33,6 +33,16 @@ const dedupedProjects = Array.from(new Map(projects.map((p) => [p.commune, p])).
 // seront disponibles ; energy garde sa vraie valeur, seul l'override d'affichage ci-dessous change.
 const DEMO_HYDRO_OVERRIDE_INDICES = new Set([4, 5, 6, 7]);
 
+// 5 projets phares affichés dans la liste texte scrollytelling de la carte accueil (retour
+// client) — sélection représentative : le plus gros projet (star-soleil, déjà pourvu d'une fiche
+// dédiée), le seul projet hydro/hybride des données actuelles (la-combe), et 3 PV variés en type
+// et région. Tous les autres projets restent affichés comme points sur la carte (voir
+// ScrollProjectMap : featuredItems ne filtre que la liste de texte, pas les points).
+// NB : "bramafan" est exclu volontairement — dedupedProjects ci-dessus dédoublonne par commune et
+// Bramafan partage "Argentine" avec la-combe (qui l'écrase), donc Bramafan n'existe jamais dans
+// scrollMapItems ; besseges le remplace pour garder 5 projets phares réellement affichés.
+const FEATURED_PROJECT_IDS = new Set(["star-soleil", "la-combe", "besseges", "aiton", "bizanet"]);
+
 const scrollMapItems = dedupedProjects.map((p, i) => {
   const themeKey = DEMO_HYDRO_OVERRIDE_INDICES.has(i) ? "hydroelectricite" : (ENERGY_TO_THEME[p.energy] ?? "photovoltaique");
   const theme = themes[themeKey];
@@ -48,6 +58,8 @@ const scrollMapItems = dedupedProjects.map((p, i) => {
     color: theme.color,
     energyKey: theme.key,
     energyLabel: theme.shortName,
+    featured: FEATURED_PROJECT_IDS.has(p.id),
+    href: p.id === "star-soleil" ? "/projets/star-soleil" : undefined,
   };
 });
 
@@ -85,38 +97,18 @@ const petalItems = energyThemeList.map((theme) => ({
   href: theme.href,
 }));
 
-// Liste confirmée par le site actuel cayrolenergie.com (page Société) pour les 3 premières
-// entrées (certifications réelles), complétée par les références du cadrage PDF (section "Ils
-// nous font confiance" de l'onglet BESS). Volontairement pas de logos d'entreprises sans lien
-// réel avec Cayrol Energie (Google, grandes marques...).
-const trustedBy = [
-  "QualiPV",
-  "La French Tech Green",
-  "La French Lab",
-  "Banque Populaire",
-  "Crédit Agricole",
-  "CA des Savoie",
-  "Territoire d'énergie Savoie Mont-Blanc",
-  "Groupe Lauzière",
-];
-
-const totalPower = projects.reduce((sum, p) => {
-  const match = p.power.match(/[\d.,]+/);
-  return sum + (match ? parseFloat(match[0].replace(",", ".")) : 0);
-}, 0);
-
-const communes = new Set(projects.map((p) => p.commune)).size;
-
+// Chiffres validés par le client (retour du 2026-09-21) — volontairement figés plutôt que
+// calculés depuis projects.json, qui ne couvre pas l'ensemble du parc réel de l'entreprise.
 // target = valeur numérique animée en comptage, suffix = reste du texte affiché après le nombre.
 const heroStats = [
-  { target: projects.length, suffix: "+", label: "projets réalisés" },
-  { target: Math.round(totalPower), suffix: "+ kVA", label: "de puissance installée" },
-  { target: communes, suffix: "", label: "communes partenaires" },
-  { target: 4, suffix: "", label: "filières énergétiques" },
+  { target: 40, suffix: " MW", label: "de puissance installée" },
+  { target: 100, suffix: " MW", label: "de puissance en projet" },
+  { target: 50, suffix: "+ ans", label: "d'ancienneté" },
+  { target: 100, suffix: "+", label: "projets réalisés" },
 ];
 ---
 
-<BaseLayout title="Accueil" theme="societe" transparentHeader>
+<BaseLayout title="Accueil" theme="societe" transparentHeader hideServiceRail>
   <!-- Hero plein écran : photo pleine page, header transparent fondu dedans, texte centré.
        Le titre se colore mot par mot au fil du scroll (gris → orange), fond figé (sticky) tant
        que la lecture n'est pas terminée — même principe que la section scroll-reveal étudiée sur
@@ -129,20 +121,37 @@ const heroStats = [
        normalement hors de l'écran une fois le texte entièrement coloré. -->
   <section id="hero-section" class="relative h-[200vh] w-full">
     <div class="sticky top-0 h-screen w-full overflow-hidden">
+      <!-- 2 photos de fond en fondu enchaîné continu (retour client : une hydro, une PV) — pure
+           CSS, pas de JS : deux <img> superposées, chacune sur son propre cycle d'opacité décalé
+           de moitié (voir <style> ci-dessous), pour un crossfade infini sans à-coup. -->
       <img
-        src={photoUrl("heroAccueil", { w: 2400 })}
-        alt="Vue aérienne d'une centrale photovoltaïque Cayrol Energie"
-        class="absolute inset-0 h-full w-full object-cover"
+        src={photoUrl("hydroHauteChute", { w: 2400 })}
+        alt="Barrage hydroélectrique Cayrol Energie en montagne"
+        class="hero-bg-photo absolute inset-0 h-full w-full object-cover"
+        style="animation-delay: 0s;"
+        loading="eager"
+      />
+      <img
+        src={photoUrl("pvAuSol", { w: 2400 })}
+        alt="Centrale photovoltaïque au sol Cayrol Energie"
+        class="hero-bg-photo absolute inset-0 h-full w-full object-cover"
+        style="animation-delay: -8s;"
         loading="eager"
       />
       <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" aria-hidden="true" />
 
-      <!-- Motif de marque en filigrane, coin supérieur droit -->
-      <BrandPattern
-        id="brand-hero"
-        color="white"
-        class="pointer-events-none absolute -right-16 -top-16 h-72 w-72 opacity-5 md:h-96 md:w-96"
-      />
+      <!-- Logo Cayrol Energie affiché dès l'arrivée sur le site (retour client) : le header réel
+           reste masqué (header-hidden) tant que le titre n'a pas fini de se colorer, ce logo
+           couvre donc cette fenêtre où aucune marque n'était visible à l'écran. Variante négative
+           (blanche) du logo, lisible sur le fond photo assombri par le gradient ci-dessus. En
+           absolute (pas dans le flux) pour ne pas décaler le bloc titre centré juste en dessous. -->
+      <div class="absolute left-6 top-6 z-10 md:left-16 md:top-10">
+        <img
+          src="/logos/sigle-negatif-T-removebg-preview.png"
+          alt="Cayrol Energie"
+          class="h-16 w-auto md:h-20"
+        />
+      </div>
 
       <!-- Texte, aligné à gauche, bien espacé -->
       <div class="relative z-10 flex h-screen flex-col justify-center gap-8 px-6 md:px-16 lg:px-24">
@@ -152,10 +161,6 @@ const heroStats = [
               <span class="hero-word mr-[0.3em] inline-block" data-word>{word}</span>
             ))}
           </h1>
-          <p class="mt-8 max-w-xl text-lg text-white/85 md:text-xl">
-            Nous développons, construisons et exploitons des installations à taille humaine, en lien
-            étroit avec nos territoires.
-          </p>
         </div>
       </div>
 
@@ -170,6 +175,28 @@ const heroStats = [
   </section>
 
   <style>
+    /* Fondu enchaîné infini entre les 2 photos de fond du hero : cycle de 16s, chaque image reste
+       pleinement visible ~6s puis se fond dans l'autre sur ~2s. Les deux <img> tournent sur la
+       même animation, décalées d'un demi-cycle (animation-delay: -8s posé en style inline sur la
+       seconde) : quand l'une descend à 0, l'autre remonte à 1, donc jamais les deux transparentes
+       en même temps. */
+    .hero-bg-photo {
+      animation: hero-bg-crossfade 16s ease-in-out infinite;
+    }
+    @keyframes hero-bg-crossfade {
+      0%, 37.5% { opacity: 1; }
+      50% { opacity: 0; }
+      87.5%, 100% { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-bg-photo {
+        animation: none;
+      }
+      .hero-bg-photo:nth-of-type(2) {
+        opacity: 0;
+      }
+    }
+
     /* Couleur de repos (avant lecture) : blanc légèrement translucide, cohérent avec le sous-titre
        — la variable --word-progress (0 à 1, posée en JS ci-dessous) pilote le mélange vers
        l'orange de marque au fil du scroll. */
@@ -268,11 +295,6 @@ const heroStats = [
        chaque chiffre — les chiffres comptent de 0 jusqu'à leur valeur au moment où ils entrent
        dans l'écran. -->
   <section class="relative overflow-hidden bg-slate-50">
-    <BrandPattern
-      id="brand-stats"
-      color="#ea580c"
-      class="pointer-events-none absolute -right-10 -top-10 h-64 w-64 opacity-5"
-    />
     <div class="relative mx-auto max-w-6xl px-4 py-10 md:px-8">
       <div class="grid grid-cols-2 rounded-xl border border-slate-300 bg-white shadow-sm md:grid-cols-4">
         {heroStats.map((s, i) => (
@@ -370,31 +392,6 @@ const heroStats = [
   </section>
   -->
 
-  <!-- Bandeau d'accroche en couleur pleine : rompt franchement le rythme clair/blanc de la page,
-       plutôt qu'une nuance de plus — sert aussi de transition entre "nos filières" et "nos
-       implantations" avec un vrai temps fort visuel. Le pictogramme blanc officiel sert de
-       filigrane fixe en arrière-plan (grand, semi-transparent, à droite) — pas d'animation liée
-       au scroll : le texte reste pleinement lisible en toutes circonstances, contrairement aux
-       essais précédents (roue qui roule, puis rideau qui glisse) où le logo pouvait masquer le
-       message ou disparaître trop vite selon la vitesse de défilement. -->
-  <section id="wheel-banner" class="relative overflow-hidden bg-orange-600 py-16 text-center">
-    <img
-      src="/logos/sigle-negatif-T-removebg-preview.png"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute inset-y-0 right-0 z-0 h-full w-auto max-w-[45%] object-contain opacity-15 md:max-w-[35%]"
-    />
-
-    <div class="relative z-10 mx-auto max-w-3xl px-4">
-      <p class="text-2xl font-extrabold text-white md:text-3xl">
-        15 centrales, 4 filières, une même exigence de proximité.
-      </p>
-      <p class="mt-3 text-orange-50">
-        Découvrez où nous intervenons et comment nous accompagnons chaque territoire.
-      </p>
-    </div>
-  </section>
-
   <!-- Bandeau d'accroche "Vous souhaitez découvrir nos projets" : pattern "Hero Parallax"
        (3 rangées de projets qui défilent horizontalement en sens opposés pendant que la scène
        pivote en 3D au scroll), remplace le précédent essai ContainerScroll — jugé redondant une
@@ -423,21 +420,25 @@ const heroStats = [
     </div>
   </section>
 
-  <!-- Autoconsommation collective -->
-  <section class="border-t border-slate-200/80" style="background-color: var(--theme-color-bg, #f0f9ff);">
-    <div class="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-14 md:flex-row md:items-center">
-      <img src="/logos/logo-assoc.png" alt="Court Circuit" class="h-24 w-24 shrink-0 object-contain" />
+  <!-- Autoconsommation collective : cadre volontairement plus imposant (section pleine largeur,
+       accroche en évidence) — le retour client demande de mettre en avant "Autoconsommation
+       collective / Consommez local" plutôt que la marque associative "Court Circuit", reléguée en
+       mention secondaire dans le texte. -->
+  <section class="border-t border-slate-200/80 bg-sky-600 py-20 text-white">
+    <div class="mx-auto flex max-w-6xl flex-col items-start gap-8 px-4 md:flex-row md:items-center">
+      <img src="/logos/logo-assoc.png" alt="" aria-hidden="true" class="h-28 w-28 shrink-0 object-contain" />
       <div>
-        <h2 class="mb-2 text-2xl font-bold text-sky-900">Autoconsommation collective</h2>
-        <p class="max-w-2xl text-neutral-700">
-          Avec l'association Court Circuit, Cayrol Energie accompagne les habitants et entreprises d'un même
+        <p class="text-sm font-semibold uppercase tracking-wide text-sky-100">Autoconsommation collective</p>
+        <h2 class="mb-3 mt-1 text-3xl font-extrabold md:text-4xl">Consommez local.</h2>
+        <p class="max-w-2xl text-lg text-sky-50">
+          Cayrol Energie accompagne, avec l'association Court Circuit, les habitants et entreprises d'un même
           territoire pour consommer localement l'électricité produite près de chez eux, en toute transparence.
         </p>
         <a
           href="/autoconsommation-collective"
-          class="mt-4 inline-block rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
+          class="mt-6 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50"
         >
-          Découvrir Court Circuit
+          Découvrir l'autoconsommation collective
         </a>
       </div>
     </div>
@@ -454,7 +455,9 @@ const heroStats = [
     </div>
   </section>
 
-  <!-- Ils nous font confiance : bandeau à défilement infini, pure CSS -->
+  <!-- Ils nous font confiance : bandeau à défilement infini, pure CSS. Texte en attendant les
+       vrais logos partenaires (aucun fichier logo disponible dans le projet à ce jour) — à
+       remplacer dès qu'ils seront fournis (voir src/data/company.ts). -->
   <section class="border-t border-slate-200/80 bg-white py-12">
     <h2 class="mb-8 text-center text-sm font-semibold uppercase tracking-widest text-neutral-400">
       Ils nous font confiance

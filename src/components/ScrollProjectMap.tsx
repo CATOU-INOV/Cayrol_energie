@@ -28,6 +28,10 @@ export interface ScrollProjectMapItem {
    * fiche par projet, sera renseigné une fois ces pages disponibles. Sans href, le titre reste du
    * texte simple (pas de lien mort). */
   href?: string;
+  /** Marque les projets phares affichés dans la liste texte scrollytelling (retour client :
+   * 5 projets maximum) — tous les projets restent affichés comme points sur la carte quel que
+   * soit ce champ, seule la liste de droite est filtrée. */
+  featured?: boolean;
 }
 
 export interface ScrollProjectMapProps {
@@ -78,30 +82,40 @@ const OUTLINE_PATH = `M ${OUTLINE_POINTS.map((p) => `${p.x.toFixed(2)},${p.y.toF
 function MapCardContent({
   active,
   visibleItems,
+  totalCount,
   energyFilters,
   energyFilter,
   setEnergyFilter,
 }: {
   active: ScrollProjectMapItem | undefined;
   visibleItems: ScrollProjectMapItem[];
+  totalCount: number;
   energyFilters: { key: string; label: string; color: string }[];
   energyFilter: string | null;
   setEnergyFilter: (updater: (current: string | null) => string | null) => void;
 }) {
   return (
     <>
-      {/* En-tête épuré : titre + compteur dynamique, cohérent avec le nombre d'items réellement
-          affichés (filtre appliqué ou non). */}
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-white">Nos réalisations</h3>
-        <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold text-white">
-          {visibleItems.length} projet{visibleItems.length > 1 ? "s" : ""}
-        </span>
+      {/* En-tête agrandi (retour client) : "En réalisation" à gauche, "Nombre de projets" à
+          droite — le compteur reste sur le total réel (totalCount), pas sur visibleItems, pour ne
+          pas donner l'impression que des projets disparaissent quand on filtre par filière. */}
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <h3 className="text-lg font-extrabold text-white md:text-xl">En réalisation</h3>
+        <div className="text-right">
+          <p className="text-2xl font-extrabold text-white md:text-3xl">{totalCount}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Nombre de projets</p>
+        </div>
       </div>
 
+      {/* TODO retour client : logo Cayrol en filigrane derrière la carte demandé, mais premier
+          essai (image centrée pleine carte, opacité 0.08) jugé mal placé/pas propre — retiré en
+          attendant de clarifier avec le client le placement et le traitement graphique attendus. */}
+
       {/* Tracé de la France : blanc semi-transparent sur le fond de couleur pleine, avec un
-          contour plus opaque — plus de dégradé beige/gris (perdrait tout contraste ici). */}
-      <div className="relative aspect-[4/5] w-full overflow-visible">
+          contour plus opaque — plus de dégradé beige/gris (perdrait tout contraste ici). Carte
+          agrandie (retour client) : aspect-[4/5] → aspect-square, plus de hauteur disponible pour
+          le tracé et les points. */}
+      <div className="relative aspect-square w-full overflow-visible">
         <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible" aria-hidden="true">
           <path d={OUTLINE_PATH} fill="rgb(255 255 255 / 0.12)" stroke="rgb(255 255 255 / 0.45)" strokeWidth="0.5" />
           {visibleItems.map((item) => {
@@ -135,18 +149,20 @@ function MapCardContent({
                   strokeWidth={isActive ? 0.8 : 0}
                   className="transition-all duration-300"
                 />
-                {/* Tooltip flottant : uniquement sur le point actif, positionné juste au-dessus via
-                    une <foreignObject> (texte HTML normal, plus simple à styler/tronquer qu'un
-                    <text> SVG pur). y décalé au-delà du halo (r=4.5) et de la vague radar maximale
-                    (r=7) pour ne jamais chevaucher le point actif. */}
+                {/* Tooltip flottant amélioré (retour client) : plus grand, mieux contrasté
+                    (liseré de la couleur de la filière, nom + type + puissance sur 2 lignes) —
+                    uniquement sur le point actif, positionné juste au-dessus via une
+                    <foreignObject> (texte HTML normal, plus simple à styler/tronquer qu'un <text>
+                    SVG pur). y décalé au-delà du halo (r=4.5) et de la vague radar maximale (r=7)
+                    pour ne jamais chevaucher le point actif. */}
                 {isActive && (
-                  <foreignObject x={x - 26} y={y - 22} width="52" height="12" style={{ overflow: "visible" }}>
+                  <foreignObject x={x - 34} y={y - 26} width="68" height="18" style={{ overflow: "visible" }}>
                     <div
-                      className="mx-auto w-fit max-w-[9rem] rounded-md bg-white px-1.5 py-0.5 text-center shadow-md"
-                      style={{ fontSize: "2.6px", lineHeight: 1.3 }}
+                      className="mx-auto w-fit max-w-[13rem] rounded-lg border-2 bg-white px-2.5 py-1.5 text-center shadow-lg"
+                      style={{ fontSize: "3.4px", lineHeight: 1.35, borderColor: item.color }}
                     >
-                      <span className="font-bold text-slate-900">{item.name}</span>
-                      <span className="text-slate-500"> — {item.power}</span>
+                      <p className="font-bold text-slate-900">{item.name}</p>
+                      <p className="text-slate-500">{item.type} — {item.power}</p>
                     </div>
                   </foreignObject>
                 )}
@@ -156,23 +172,30 @@ function MapCardContent({
         </svg>
       </div>
 
-      {/* Légende horizontale épurée : une puce par filière représentée, cliquable pour filtrer
-          (voir energyFilter) — remplace les anciens boutons circulaires isolés à droite de la page
-          par une barre de filtres directement rattachée à la carte. */}
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-white/15 pt-4">
-        {energyFilters.map((f) => (
+      {/* Légende améliorée (retour client) : pilules avec fond blanc plutôt que texte nu + puce
+          discrète — le filtre actif se distingue clairement (fond plein, texte de la couleur de
+          la filière) des filtres inactifs (fond translucide, texte blanc), plus lisible que la
+          version précédente où toutes les puces étaient blanches quelle que soit la filière. */}
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 border-t border-white/15 pt-4">
+        {energyFilters.map((f) => {
+          const isFilterActive = energyFilter === f.key;
+          return (
           <button
             key={f.key}
             type="button"
             onClick={() => setEnergyFilter((current) => (current === f.key ? null : f.key))}
-            className="flex items-center gap-1.5 text-xs font-medium text-white transition-opacity"
-            style={{ opacity: energyFilter && energyFilter !== f.key ? 0.5 : 1 }}
-            aria-pressed={energyFilter === f.key}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: isFilterActive ? "#fff" : "rgb(255 255 255 / 0.15)",
+              color: isFilterActive ? f.color : "#fff",
+            }}
+            aria-pressed={isFilterActive}
           >
-            <span className="h-2 w-2 shrink-0 rounded-full bg-white" />
+            <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: isFilterActive ? f.color : "#fff" }} />
             {f.label}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {active && <p className="mt-4 text-center text-sm font-semibold text-white">{active.commune}</p>}
@@ -261,12 +284,22 @@ function StepText({
 }
 
 export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
-  const [activeId, setActiveId] = useState(items[0]?.id);
-  const [energyFilter, setEnergyFilter] = useState<string | null>(null);
-  const active = items.find((p) => p.id === activeId) ?? items[0];
+  // Retour client : la liste scrollytelling (texte à droite) ne présente plus que 5 projets
+  // phares, avec un bouton vers "Nos réalisations" pour le reste — mais TOUS les projets restent
+  // affichés comme points sur la carte (mapItems, non tronqué). featuredItems piloté par le champ
+  // `featured` posé par l'appelant (voir index.astro) ; si aucun n'est marqué, on retombe sur les
+  // 5 premiers plutôt que de casser l'affichage.
+  const featuredItems = useMemo(() => {
+    const marked = items.filter((item) => item.featured);
+    return (marked.length > 0 ? marked : items.slice(0, 5)).slice(0, 5);
+  }, [items]);
 
-  // Légende/filtres dérivés des items eux-mêmes (couleur + libellé), pas d'une liste séparée à
-  // maintenir en double — une filière qui disparaîtrait des projets disparaît aussi de la légende.
+  const [activeId, setActiveId] = useState(featuredItems[0]?.id);
+  const [energyFilter, setEnergyFilter] = useState<string | null>(null);
+  const active = items.find((p) => p.id === activeId) ?? featuredItems[0];
+
+  // Légende/filtres dérivés de TOUS les items (pas seulement les 5 vedettes) — la carte affiche
+  // l'ensemble des projets, la légende doit donc couvrir toutes les filières réellement présentes.
   const energyFilters = useMemo(() => {
     const seen = new Map<string, { key: string; label: string; color: string }>();
     items.forEach((item) => {
@@ -310,10 +343,13 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
             l'écart vaut 16px (24px de padding — 8px de demi-gap) ; au-delà, le conteneur se fige à
             1152px alors que le fond continue de suivre le viewport, donc l'écart croît avec la
             largeur d'écran — min() choisit automatiquement la bonne branche à toute taille. */}
-        <div className="scroll-map-card-offset mx-auto w-full max-w-md px-6 py-10 md:mx-0 md:px-8">
+        {/* Carte agrandie (retour client) : max-w-md → max-w-lg, plus de place pour le tracé et
+            les en-têtes qui ont aussi grandi ci-dessus (MapCardContent). */}
+        <div className="scroll-map-card-offset mx-auto w-full max-w-lg px-6 py-10 md:mx-0 md:px-8">
           <MapCardContent
             active={active}
             visibleItems={visibleItems}
+            totalCount={items.length}
             energyFilters={energyFilters}
             energyFilter={energyFilter}
             setEnergyFilter={setEnergyFilter}
@@ -321,14 +357,29 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
         </div>
       </div>
 
-      {/* Texte : défile normalement, chaque projet active son point sur la carte en entrant au
-          centre du viewport (IntersectionObserver par bloc, voir StepText). Le filtre de légende
-          n'agit que sur la carte (quels points sont dessinés) — la liste de droite reste complète,
-          pour ne pas faire disparaître du contenu texte au clic sur une puce. */}
+      {/* Texte : défile normalement sur les 5 projets phares uniquement (retour client), chaque
+          projet active son point sur la carte en entrant au centre du viewport (IntersectionObserver
+          par bloc, voir StepText). La carte, elle, continue d'afficher tous les projets (visibleItems
+          dérive de `items`, pas de featuredItems) — seule cette liste de texte est raccourcie. */}
       <div className="relative">
-        {items.map((item, i) => (
+        {featuredItems.map((item, i) => (
           <StepText key={item.id} item={item} index={i} active={item.id === activeId} onActivate={() => setActiveId(item.id)} />
         ))}
+
+        {/* Bouton "voir tous nos projets" (retour client) — vers la page /projets qui liste
+            l'ensemble du parc, puisque la liste ci-dessus se limite désormais à 5 projets phares. */}
+        <div className="border-l-2 border-transparent py-10 pl-6 md:py-16">
+          <a
+            href="/projets"
+            className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5"
+            style={{ backgroundColor: active?.color ?? "#0f172a" }}
+          >
+            Voir tous nos projets
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
   );
