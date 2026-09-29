@@ -4,16 +4,16 @@ import AnimatedHero from "../components/AnimatedHero.astro";
 import OrganicImageHero from "../components/OrganicImageHero.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
 import ScrollStepGallery from "../components/ScrollStepGallery.tsx";
+import ProjectScrollShowcase from "../components/ProjectScrollShowcase.astro";
 import { themes } from "../data/themes";
-import { photoUrl } from "../data/photos";
-import { company } from "../data/company";
+import { photoUrl, photos } from "../data/photos";
 import projects from "../data/projects.json";
 
 const theme = themes.photovoltaique;
 
 // Contenu repris de la maquette client retour_site_internet/cayrol-photovoltaique.html (textes issus
 // de cayrolenergie.com) : accroche, chiffres clés, paragraphe métier, descriptions des 4 types,
-// sélection de projets et bandeau de contact. La structure de la page reste la nôtre pour l'instant.
+// déroulé d'un projet type. Le contact est porté par le bandeau du footer (commun à tout le site).
 const keyFigures = [
   { value: 64, suffix: "", label: "centrales photovoltaïques en exploitation" },
   { value: 50, suffix: "+", label: "années d'expertise en énergies renouvelables" },
@@ -21,47 +21,68 @@ const keyFigures = [
   { value: 2, suffix: "", label: "départements d'ancrage territorial — 73 & 34" },
 ];
 
-const isType = (p: (typeof projects)[number], keyword: string) => p.type.toLowerCase().includes(keyword);
-
-// Sélection de réalisations de la maquette client, dans son ordre.
-// TODO-CONTENT : aucun projet "Au sol" ni "Agrivoltaïsme" dans les données fournies — à compléter par le client.
-const FEATURED_IDS = ["star-soleil", "bramafan", "besseges", "aiton", "la-chambre", "sauvian"];
-const featuredProjects = FEATURED_IDS.map((id) => projects.find((p) => p.id === id)!);
-
-// Chaque carte "showcase" affiche la photo de la catégorie du projet (pas de photo par site
-// individuel dans les données actuelles) — cohérent avec les mêmes visuels que la grille
-// "Nos types d'installations" juste au-dessus, pour ne pas introduire une 3ᵉ source d'images.
-// Star Soleil a en plus une fiche détaillée en démo (photos + description complète) : voir
-// src/pages/projets/star-soleil.astro — les autres projets restent de simples encarts.
-const toProject = (p: (typeof projects)[number]) => ({
-  name: p.name,
-  commune: p.commune,
-  power: p.power,
-  description: p.description,
-  image: isType(p, "toiture") ? photoUrl("pvToiture", { w: 900 }) : photoUrl("pvOmbrieres", { w: 900 }),
-  tags: [p.type, p.power],
-  href: p.id === "star-soleil" ? "/projets/star-soleil" : undefined,
-});
-
-const timelineSteps = [
-  { date: "M0", label: "Étude de faisabilité", description: "Analyse technique et administrative du site." },
-  { date: "M+2", label: "Dépôt du permis de construire", description: "Constitution et dépôt du dossier." },
-  { date: "M+6", label: "Instruction & raccordement", description: "Instruction du permis, demande de raccordement au réseau." },
-  { date: "M+9", label: "Construction", description: "Installation des panneaux et du poste de livraison." },
-  { date: "M+10", label: "Mise en service", description: "Raccordement au réseau et démarrage de la production." },
+// 4 projets phares, un par mode de pose (retour client), présentés comme sur la page Hydro.
+// Star Soleil a de vraies photos ; Aiton reprend la photo toiture.
+// TODO-CONTENT : aucun projet "Au sol" ni "Agrivoltaïsme" dans les données fournies — emplacements
+// à compléter par le client (nom, commune, puissance, description, photo).
+const project = (id: string) => projects.find((p) => p.id === id)!;
+const starSoleil = project("star-soleil");
+const aiton = project("aiton");
+const featuredProjects = [
+  {
+    name: aiton.name,
+    type: aiton.type,
+    commune: aiton.commune,
+    power: aiton.power,
+    description: aiton.description,
+    image: photoUrl("pvToiture", { w: 900 }),
+  },
+  {
+    name: starSoleil.name,
+    type: starSoleil.type,
+    commune: starSoleil.commune,
+    power: starSoleil.power,
+    description: starSoleil.description,
+    image: "/projets/star-soleil/principale.jpg",
+    href: "/projets/star-soleil",
+  },
+  {
+    name: "Centrale au sol",
+    type: "Au sol",
+    commune: "TODO-CONTENT",
+    power: "—",
+    description: "TODO-CONTENT : projet de centrale au sol phare à fournir par le client (nom, commune, puissance, courte description, photo).",
+    image: `${photos.pvAuSol}?w=900&h=675&q=80&auto=format&fit=crop`,
+  },
+  {
+    name: "Projet agrivoltaïque",
+    type: "Agrivoltaïsme",
+    commune: "TODO-CONTENT",
+    power: "—",
+    description: "TODO-CONTENT : projet agrivoltaïque phare à fournir par le client (nom, commune, puissance, courte description, photo).",
+    image: `${photos.pvAgrivoltaisme}?w=900&h=675&q=80&auto=format&fit=crop`,
+  },
 ];
 
-// Même déroulé que timelineSteps, avec une photo par étape pour la démo ScrollStepGallery —
+// Déroulé d'un projet type : une phrase simple et une photo par étape, sans durée (retour client).
+const timelineSteps = [
+  { label: "Étude de faisabilité", description: "Analyse technique et administrative du site." },
+  { label: "Dépôt du permis de construire", description: "Constitution et dépôt du dossier." },
+  { label: "Instruction & raccordement", description: "Instruction du permis, demande de raccordement au réseau." },
+  { label: "Construction", description: "Installation des panneaux et du poste de livraison." },
+  { label: "Mise en service", description: "Raccordement au réseau et démarrage de la production." },
+];
+
 // TODO-CONTENT : réemploi des 4 photos de catégories + la photo hero faute de photos dédiées à
 // chaque étape du chantier dans les données actuelles ; à remplacer par de vraies photos de
 // chantier (étude terrain, dépôt de dossier, tranchée de raccordement, pose des panneaux, mise en
 // service) si le client peut en fournir.
 const scrollGallerySteps = [
-  { ...timelineSteps[0], image: photoUrl("pvAuSol", { w: 1400 }), icon: "idea" as const },
-  { ...timelineSteps[1], image: photoUrl("heroAccueil", { w: 1400 }), icon: "building" as const },
-  { ...timelineSteps[2], image: photoUrl("pvOmbrieres", { w: 1400 }), icon: "bolt" as const },
-  { ...timelineSteps[3], image: photoUrl("pvToiture", { w: 1400 }), icon: "shield" as const },
-  { ...timelineSteps[4], image: photoUrl("pvAgrivoltaisme", { w: 1400 }), icon: "chart" as const },
+  { ...timelineSteps[0], image: photoUrl("pvAuSol", { w: 1400 }) },
+  { ...timelineSteps[1], image: photoUrl("heroAccueil", { w: 1400 }) },
+  { ...timelineSteps[2], image: photoUrl("pvOmbrieres", { w: 1400 }) },
+  { ...timelineSteps[3], image: photoUrl("pvToiture", { w: 1400 }) },
+  { ...timelineSteps[4], image: photoUrl("pvAgrivoltaisme", { w: 1400 }) },
 ];
 ---
 
@@ -145,47 +166,22 @@ const scrollGallerySteps = [
         },
       ]}
       categoriesIntro="Quatre façons de valoriser un foncier en source d'énergie renouvelable — chacune fait l'objet d'une page dédiée."
-      timelineSteps={timelineSteps}
-      timelineVariant="dots"
-      timelineIntro="De l'étude de faisabilité à la mise en service, cinq grandes étapes structurent chaque projet."
-      projects={featuredProjects.map(toProject)}
-      projectsIntro="Quelques réalisations, du dossier à la mise en service."
-      projectsLayout="showcase-carousel"
     />
 
-    <p class="mt-10 text-sm text-neutral-500">
-      TODO-CONTENT : les catégories "Au sol" et "Agrivoltaïsme" n'ont pas d'exemple dans les données transmises —
-      merci de fournir 2 projets par catégorie pour compléter cette page. Par ailleurs, une page dédiée "Hangar
-      photovoltaïque" existe déjà (contenu du docx client intégré, voir /photovoltaique/hangar) mais n'a pas
-      encore de carte dans la grille ci-dessus — cette grille reste à 4 cases (Hangar fondu dans Toiture) en
-      attendant une décision du client sur la 5ᵉ catégorie (voir TODO-CONTENT.md).
-    </p>
   </div>
   </section>
 
-  <!-- Déroulé d'un projet type, variante scroll immersif façon business.nrg.com — posée en plus
-       de la frise "dots" ci-dessus (dans ThematicTab) le temps de comparer les deux rendus. -->
+  <!-- Déroulé d'un projet type au scroll (façon business.nrg.com) : une photo et une phrase par
+       étape, sans durée. Hangar photovoltaïque : page dédiée (/photovoltaique/hangar) sans carte
+       dans la grille ci-dessus, en attente de décision client sur une 5ᵉ catégorie. -->
   <section class="border-t border-slate-200/80 bg-white">
     <div class="mx-auto max-w-7xl px-4 py-14">
-      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Déroulement d'un projet type (variante scroll)</h2>
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Déroulement d'un projet type</h2>
       <p class="mb-10 text-neutral-600">De l'étude de faisabilité à la mise en service, cinq grandes étapes structurent chaque projet.</p>
       <ScrollStepGallery client:visible steps={scrollGallerySteps} color={theme.color} />
     </div>
   </section>
 
-  <!-- Bandeau de contact (maquette client) -->
-  <section class="bg-orange-600 text-white">
-    <div class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-4 py-12 md:flex-row md:items-center">
-      <div>
-        <h2 class="text-2xl font-bold md:text-3xl">Un projet photovoltaïque en tête ?</h2>
-        <p class="mt-2 text-white/85">Parlons-en — un interlocuteur unique vous accompagne de l'étude à la mise en service.</p>
-      </div>
-      <a
-        href="tel:+33467494570"
-        class="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-orange-700 shadow-sm transition-transform hover:-translate-y-0.5"
-      >
-        {company.telephone}
-      </a>
-    </div>
-  </section>
+
+  <ProjectScrollShowcase title="Présentation de projets" color={theme.color} projects={featuredProjects} />
 </BaseLayout>

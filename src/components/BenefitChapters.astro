@@ -16,6 +16,8 @@ const { blocks, color, title = "Ce que ça change pour vous" } = Astro.props;
 
 // Hauteur de scroll accordée à chaque ligne (en vh) pendant que le chapitre est épinglé.
 const VH_PER_LINE = 28;
+// Au-delà de ce volume de texte, lignes en taille réduite pour tenir dans un écran épinglé.
+const DENSE_CHARS = 280;
 ---
 
 <section class="bg-white pt-16 md:pt-24">
@@ -45,7 +47,13 @@ const VH_PER_LINE = 28;
             </span>
             <ul class="flex flex-col gap-5 lg:gap-7">
               {block.items.map((item) => (
-                <li class="chapter-line text-xl font-semibold !leading-snug tracking-tight lg:text-3xl" data-chapter-line>
+                <li
+                  class:list={[
+                    "chapter-line text-xl font-semibold !leading-snug tracking-tight",
+                    block.items.join("").length > DENSE_CHARS ? "lg:text-2xl" : "lg:text-3xl",
+                  ]}
+                  data-chapter-line
+                >
                   {item}
                 </li>
               ))}
