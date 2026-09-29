@@ -88,7 +88,9 @@ const onEnergyPage = energyThemeList.some((t) => isCurrent(t.href));
       {!transparentHeader && <div class="h-1 w-full" style="background-color: var(--theme-color);" />}
       <div class="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-4">
         <a href="/" class="hdr-text flex shrink-0 items-center" aria-label="Cayrol Energie — accueil">
-          <img src="/logos/logo-horizontal-positif-C-removebg-preview.png" alt="Cayrol Energie" class="h-14 w-auto" />
+          <!-- Logo recadré sur son contenu (l'ancien fichier avait ~15 % de marge transparente en
+               haut et en bas) : même hauteur d'image, logo visible ~40 % plus grand (56 px contre 39). -->
+          <img src="/logos/logo-horizontal-positif.png" alt="Cayrol Energie" class="h-14 w-auto" />
         </a>
 
         <nav aria-label="Navigation principale" class="hdr-text-muted hidden h-full items-center gap-9 text-[15px] font-medium lg:flex">
