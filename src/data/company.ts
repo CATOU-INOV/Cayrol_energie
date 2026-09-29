@@ -10,7 +10,7 @@ export const company = {
 // Partenaires "Ils nous font confiance", affichés en bandeau défilant (footer global + accueil).
 // Liste reprise du site actuel cayrolenergie.com (page Société) et du cadrage PDF (onglet BESS).
 // `logo` : chemin d'un fichier dans public/partenaires/ (SVG de préférence, sinon PNG à fond
-// transparent) — tant qu'il est absent, le bandeau affiche le nom du partenaire.
+// transparent) — tant qu'il est absent, le partenaire n'apparaît pas dans le bandeau.
 // TODO-CONTENT : liste et autorisation d'affichage à valider avec le client, logos à récupérer.
 export interface Partner {
   name: string;
