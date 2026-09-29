@@ -20,13 +20,13 @@ const looped = [...items, ...items];
 <div class="marquee-mask relative overflow-hidden">
   <ul class="marquee-track flex w-max items-center py-2">
     {looped.map((partner, i) => (
-      <li class="flex h-16 shrink-0 items-center pr-16" aria-hidden={i >= items.length ? "true" : undefined}>
+      <li class="flex h-20 shrink-0 items-center pr-16" aria-hidden={i >= items.length ? "true" : undefined}>
         {partner.logo ? (
           <img
             src={partner.logo}
             alt={partner.name}
             loading="lazy"
-            class="h-full w-auto max-w-44 object-contain opacity-80 saturate-[.85] transition duration-300 hover:opacity-100 hover:saturate-100"
+            class:list={[partner.compact ? "h-20" : "h-14", "w-auto max-w-44 object-contain opacity-80 saturate-[.85] transition duration-300 hover:opacity-100 hover:saturate-100"]}
           />
         ) : (
           <span class="whitespace-nowrap text-lg font-bold uppercase tracking-wide text-slate-400 transition-colors hover:text-[var(--theme-color)] md:text-xl">
