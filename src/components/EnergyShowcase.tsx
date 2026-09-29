@@ -77,9 +77,12 @@ export default function EnergyShowcase({ items }: EnergyShowcaseProps) {
               <a href={item.href} className="group block">
                 {/* Fond blanc retiré (logo directement sur le fond de la section) et agrandi —
                     retour client : logos trop petits, cadre blanc jugé superflu. La rotation au
-                    survol reprend le même geste que ServiceRail (cf. src/components/ServiceRail.astro). */}
+                    survol reprend le même geste que ServiceRail (cf. src/components/ServiceRail.astro).
+                    Centré sur la barre verticale : -49px = pl-12 (48px) + moitié du trait (1px),
+                    puis recentrage de la pastille sur ce point ; verticalement sur la 1re ligne du
+                    titre. Le logo (fichier carré, pictogramme centré) tourne donc sur place. */}
                 <span
-                  className="absolute -left-[77px] top-0 flex h-16 w-16 items-center justify-center transition-transform duration-300"
+                  className="absolute top-4 -left-[49px] flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center transition-transform duration-300"
                   style={{ transform: isActive ? "scale(1.1)" : "scale(1)" }}
                 >
                   <img

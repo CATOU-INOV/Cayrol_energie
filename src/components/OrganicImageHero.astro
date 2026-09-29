@@ -29,12 +29,14 @@ const CLIP_UNITS: Record<ClipVariant, "objectBoundingBox" | "userSpaceOnUse"> = 
   tab: "userSpaceOnUse",
 };
 
-// Position du logo dans l'espace vide dégagé par l'encoche de chaque variante.
+// Zone occupée par l'encoche de chaque variante, en % du cadre (d'après les tracés ci-dessus, viewBox
+// 100x40 étiré) : le logo remplit cette zone (centré, marge intérieure) et grandit donc avec la
+// photo au lieu d'avoir une taille fixe, jugée trop petite.
 const LOGO_POSITION: Record<ClipVariant, string> = {
-  corner: "right-2 top-2 md:right-4 md:top-4",
-  chamfer: "left-2 bottom-2 md:left-4 md:bottom-4",
-  step: "left-2 top-2 md:left-4 md:top-4",
-  tab: "right-2 bottom-2 md:right-4 md:bottom-4",
+  corner: "right-0 top-0 w-[24.5%] h-[30%]",
+  chamfer: "left-0 bottom-0 w-[28.5%] h-[40%]",
+  step: "left-0 top-0 w-[24.5%] h-[30%]",
+  tab: "right-0 bottom-0 w-[28.5%] h-[40%]",
 };
 
 interface Props {
@@ -72,11 +74,9 @@ const clipUnits = CLIP_UNITS[variant];
     ></image>
   </svg>
   {logo && (
-    <img
-      src={logo}
-      alt=""
-      class={`hero-logo absolute ${logoPosition} h-14 w-14 object-contain md:h-20 md:w-20`}
-    />
+    <div class={`absolute ${logoPosition} flex items-center justify-center p-2 md:p-4`}>
+      <img src={logo} alt="" class="hero-logo h-full max-h-36 w-full object-contain" />
+    </div>
   )}
   <span class="sr-only">{alt}</span>
 </figure>
