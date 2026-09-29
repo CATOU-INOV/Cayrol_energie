@@ -140,14 +140,16 @@ const heroStats = [
 
       <!-- Logo Cayrol Energie affiché dès l'arrivée sur le site (retour client) : le header réel
            reste masqué (header-hidden) tant que le titre n'a pas fini de se colorer, ce logo
-           couvre donc cette fenêtre où aucune marque n'était visible à l'écran. Variante négative
-           (blanche) du logo, lisible sur le fond photo assombri par le gradient ci-dessus. En
-           absolute (pas dans le flux) pour ne pas décaler le bloc titre centré juste en dessous. -->
-      <div class="absolute left-6 top-6 z-10 md:left-16 md:top-10">
+           couvre donc cette fenêtre où aucune marque n'était visible à l'écran. Logo complet du header
+           (texte + sigle) en version négative (texte blanc, orange conservé, généré depuis le logo
+           positif), plus grand et aligné sur le titre : met l'entreprise en avant sans animation.
+           Placé sous la hauteur du header (~73px), qui apparaît pendant que le hero est encore épinglé
+           et le recouvrait. En absolute (pas dans le flux) pour ne pas décaler le titre centré. -->
+      <div class="absolute left-6 top-24 z-10 md:left-16 md:top-28 lg:left-24">
         <img
-          src="/logos/sigle-negatif-T-removebg-preview.png"
+          src="/logos/logo-horizontal-negatif.png"
           alt="Cayrol Energie"
-          class="h-16 w-auto md:h-20"
+          class="h-14 w-auto md:h-24"
         />
       </div>
 
