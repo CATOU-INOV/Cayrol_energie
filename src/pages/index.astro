@@ -6,7 +6,6 @@ import { HeroParallax } from "../components/HeroParallax.tsx";
 import ScrollProjectMap from "../components/ScrollProjectMap.tsx";
 import ThemeSelector from "../components/ThemeSelector.tsx";
 import EnergyShowcase from "../components/EnergyShowcase.tsx";
-import PetalArc from "../components/PetalArc.tsx";
 import { photoUrl } from "../data/photos";
 import { energyThemeList, themes, type ThemeKey } from "../data/themes";
 import projects from "../data/projects.json";
@@ -86,13 +85,6 @@ const heroParallaxProducts = projects.map((p) => ({
   title: `${p.name} — ${p.commune}`,
   link: p.id === "star-soleil" ? "/projets/star-soleil" : "/photovoltaique",
   thumbnail: photoUrl(p.type.toLowerCase().includes("ombrières") ? "pvOmbrieres" : "pvToiture", { w: 900 }),
-}));
-
-const petalItems = energyThemeList.map((theme) => ({
-  key: theme.key,
-  label: theme.shortName,
-  color: theme.color,
-  href: theme.href,
 }));
 
 // Chiffres validés par le client (retour du 2026-09-21) — volontairement figés plutôt que
@@ -421,38 +413,37 @@ const heroStats = [
     </div>
   </section>
 
-  <!-- Autoconsommation collective : cadre volontairement plus imposant (section pleine largeur,
-       accroche en évidence) — le retour client demande de mettre en avant "Autoconsommation
-       collective / Consommez local" plutôt que la marque associative "Court Circuit", reléguée en
-       mention secondaire dans le texte. -->
-  <section class="border-t border-slate-200/80 bg-sky-600 py-20 text-white">
-    <div class="mx-auto flex max-w-6xl flex-col items-start gap-8 px-4 md:flex-row md:items-center">
-      <img src="/logos/logo-assoc.png" alt="" aria-hidden="true" class="h-28 w-28 shrink-0 object-contain" />
+  <!-- Autoconsommation collective : mise en avant forte (retour client : "Autoconsommation
+       collective / Consommez local" plutôt que la marque associative Court Circuit, en mention
+       secondaire). Section claire, bleu de l'ACC en accent seulement : elle fait respiration entre
+       la moitié bleu marine de la carte au-dessus et le footer coloré en dessous.
+       TODO-CONTENT : photo provisoire (toiture PV), à remplacer par un visuel de boucle locale. -->
+  <section class="bg-white py-20 md:py-28">
+    <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 md:grid-cols-2 md:gap-16">
       <div>
-        <p class="text-sm font-semibold uppercase tracking-wide text-sky-100">Autoconsommation collective</p>
-        <h2 class="mb-3 mt-1 text-3xl font-extrabold md:text-4xl">Consommez local.</h2>
-        <p class="max-w-2xl text-lg text-sky-50">
+        <div class="flex items-center gap-3">
+          <img src="/logos/logo-assoc.png" alt="" aria-hidden="true" class="h-10 w-10 object-contain" />
+          <p class="text-sm font-semibold uppercase tracking-widest text-sky-600">Autoconsommation collective</p>
+        </div>
+        <h2 class="mt-5 text-5xl font-bold !leading-[1.05] tracking-tight text-slate-900 md:text-6xl">Consommez local.</h2>
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-slate-600">
           Cayrol Energie accompagne, avec l'association Court Circuit, les habitants et entreprises d'un même
           territoire pour consommer localement l'électricité produite près de chez eux, en toute transparence.
         </p>
         <a
           href="/autoconsommation-collective"
-          class="mt-6 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50"
+          class="mt-8 inline-flex items-center gap-2 rounded-full bg-sky-600 px-7 py-3.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
         >
-          Découvrir l'autoconsommation collective
+          Découvrir l'autoconsommation collective <span aria-hidden="true">→</span>
         </a>
       </div>
+      <img
+        src={photoUrl("autoconsommation", { w: 1200 })}
+        alt="Panneaux photovoltaïques sur une toiture, production locale partagée"
+        loading="lazy"
+        class="aspect-[4/3] w-full rounded-3xl rounded-tr-none object-cover"
+      />
     </div>
   </section>
 
-  <!-- Arc de pétales du logo, repris comme sélecteur de filières — premier essai pour explorer
-       comment réutiliser un élément de la marque ailleurs que dans le header. Cliquer un pétale
-       l'agrandit et le fait légèrement pivoter avant de naviguer vers sa page filière. -->
-  <section class="border-t border-slate-200/80 bg-white py-16">
-    <div class="mx-auto max-w-6xl px-4 text-center">
-      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Nos filières, en un coup d'œil</h2>
-      <p class="mb-10 text-neutral-600">Cliquez sur un pétale pour découvrir la filière.</p>
-      <PetalArc client:visible items={petalItems} />
-    </div>
-  </section>
 </BaseLayout>

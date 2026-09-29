@@ -136,8 +136,8 @@ const nav = [
 
     <!-- Footer (retours client : conserver le cadre "discutons de vos projets", partenaires
          défilants, bulle d'infos permanentes, lien Google Maps pour l'adresse, sans rubrique "Nos
-         énergies"). Bande sombre, accent à la couleur du thème de la page courante. -->
-    <footer class="bg-stone-950 text-white">
+         énergies"). Fond à la couleur foncée de l’énergie de la page (--theme-footer, themes.css). -->
+    <footer class="text-white" style="background-color: var(--theme-footer);">
       <div class="mx-auto grid max-w-7xl gap-14 px-4 pb-14 pt-16 md:pt-20 lg:grid-cols-12 lg:gap-16">
         <div class="lg:col-span-7">
           <h2 class="text-4xl font-bold !leading-[1.05] tracking-tight md:text-5xl">
@@ -148,8 +148,8 @@ const nav = [
           </p>
           <a
             href="/contact"
-            class="mt-8 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
-            style="background-color: var(--theme-color);"
+            class="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+            style="color: var(--theme-footer);"
           >
             Discutons de votre projet <span aria-hidden="true">→</span>
           </a>

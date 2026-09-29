@@ -1,12 +1,15 @@
 /* Variables de couleur par univers énergétique.
    Un wrapper porte la classe .theme-xxx et tous les descendants
-   peuvent consommer var(--theme-color), --theme-color-dark, --theme-color-light, --theme-color-bg. */
+   peuvent consommer var(--theme-color), --theme-color-dark, --theme-color-light, --theme-color-bg.
+   --theme-footer : fond du footer, version foncée et saturée de la couleur de la page (jamais un
+   quasi-noir : Accueil / Société / Contact prennent l’orange brûlé du logo). */
 
 :root {
   --theme-color: #f97316;
   --theme-color-dark: #c2410c;
   --theme-color-light: #fdba74;
   --theme-color-bg: #fff7ed;
+  --theme-footer: #7c2d12;
 }
 
 .theme-hydroelectricite {
@@ -14,6 +17,7 @@
   --theme-color-dark: #1e3a8a;
   --theme-color-light: #93c5fd;
   --theme-color-bg: #eff6ff;
+  --theme-footer: #1e3a8a;
 }
 
 .theme-photovoltaique {
@@ -21,6 +25,7 @@
   --theme-color-dark: #c2410c;
   --theme-color-light: #fdba74;
   --theme-color-bg: #fff7ed;
+  --theme-footer: #9a3412;
 }
 
 .theme-flexibilite-bess {
@@ -28,6 +33,7 @@
   --theme-color-dark: #991b1b;
   --theme-color-light: #fca5a5;
   --theme-color-bg: #fef2f2;
+  --theme-footer: #7f1d1d;
 }
 
 .theme-biogaz {
@@ -35,6 +41,7 @@
   --theme-color-dark: #14532d;
   --theme-color-light: #86efac;
   --theme-color-bg: #f0fdf4;
+  --theme-footer: #14532d;
 }
 
 .theme-autoconsommation {
@@ -42,6 +49,7 @@
   --theme-color-dark: #1e3a8a;
   --theme-color-light: #7dd3fc;
   --theme-color-bg: #f0f9ff;
+  --theme-footer: #0c4a6e;
 }
 
 /* Identité de marque Cayrol Energie (Accueil / Société / Contact uniquement — les 4 filières et
@@ -50,5 +58,6 @@
   --theme-color: #ea580c; /* orange-600, orange solaire du logo */
   --theme-color-dark: #0f172a; /* slate-900, contraste/structure de marque */
   --theme-color-light: #fdba74;
-  --theme-color-bg: #f8fafc; /* slate-50 */
+  --theme-color-bg: #f8fafc;
+  --theme-footer: #7c2d12; /* slate-50 */
 }
