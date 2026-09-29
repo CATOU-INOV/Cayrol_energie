@@ -7,10 +7,8 @@ import ScrollProjectMap from "../components/ScrollProjectMap.tsx";
 import ThemeSelector from "../components/ThemeSelector.tsx";
 import EnergyShowcase from "../components/EnergyShowcase.tsx";
 import PetalArc from "../components/PetalArc.tsx";
-import LogoMarquee from "../components/LogoMarquee.astro";
 import { photoUrl } from "../data/photos";
 import { energyThemeList, themes, type ThemeKey } from "../data/themes";
-import { trustedBy } from "../data/company";
 import projects from "../data/projects.json";
 
 const ENERGY_TO_THEME: Record<string, ThemeKey> = {
@@ -456,15 +454,5 @@ const heroStats = [
       <p class="mb-10 text-neutral-600">Cliquez sur un pétale pour découvrir la filière.</p>
       <PetalArc client:visible items={petalItems} />
     </div>
-  </section>
-
-  <!-- Ils nous font confiance : bandeau à défilement infini, pure CSS. Texte en attendant les
-       vrais logos partenaires (aucun fichier logo disponible dans le projet à ce jour) — à
-       remplacer dès qu'ils seront fournis (voir src/data/company.ts). -->
-  <section class="border-t border-slate-200/80 bg-white py-12">
-    <h2 class="mb-8 text-center text-sm font-semibold uppercase tracking-widest text-neutral-400">
-      Ils nous font confiance
-    </h2>
-    <LogoMarquee items={trustedBy} />
   </section>
 </BaseLayout>

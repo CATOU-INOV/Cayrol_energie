@@ -65,17 +65,6 @@ const deroulement = [
   { name: "Acte authentique", items: ["Signature chez le notaire, puis construction."] },
 ];
 
-// TODO-CONTENT : logos partenaires non fournis, affichage temporaire en texte.
-const partenaires = [
-  "CA des Savoie",
-  "Communauté Val Cenis Savoie",
-  "Territoire d'énergie Savoie Mont-Blanc",
-  "Groupe Lauzière",
-  "CODEV Savoie",
-  "Savoiexpo",
-  "Terre de Maurienne",
-  "Porte de Maurienne",
-];
 ---
 
 <BaseLayout title="Flexibilité / BESS" theme="flexibilite-bess">
@@ -150,14 +139,4 @@ const partenaires = [
   <StackedCards title="Les atouts du stockage" items={atouts} color={theme.color} />
 
   <PriseEnChargePath title="Déroulement d'un projet" phases={deroulement} color={theme.color} />
-
-  <!-- Ils nous font confiance -->
-  <section class="bg-white py-16 md:py-20">
-    <div class="mx-auto max-w-7xl px-4">
-      <h2 class="text-2xl font-bold text-slate-900 md:text-3xl">Ils nous font confiance</h2>
-      <ul class="mt-8 flex flex-wrap gap-x-10 gap-y-4 text-lg font-semibold text-slate-400">
-        {partenaires.map((nom) => <li>{nom}</li>)}
-      </ul>
-    </div>
-  </section>
 </BaseLayout>

@@ -1,10 +1,16 @@
 ---
 // Bandeau "Ils nous font confiance" à défilement infini (pure CSS, pas de JS/hydratation).
 // Le contenu est dupliqué une fois et translaté de -50% : boucle parfaitement continue quel
-// que soit le nombre d'éléments, sans calcul de largeur en dur.
+// que soit le nombre d'éléments, sans calcul de largeur en dur (espacement porté par chaque
+// élément plutôt que par un gap, pour que la jonction entre les deux copies soit identique).
+// Logos en couleurs réelles (légèrement atténués, pleine couleur au survol) sur fond clair :
+// les partenaires restent reconnaissables et les logos à fond blanc s'y fondent. Tant qu'un
+// logo n'est pas fourni, le nom du partenaire s'affiche en texte.
+
+import type { Partner } from "../data/company";
 
 interface Props {
-  items: string[];
+  items: Partner[];
 }
 
 const { items } = Astro.props;
@@ -12,14 +18,22 @@ const looped = [...items, ...items];
 ---
 
 <div class="marquee-mask relative overflow-hidden">
-  <div class="marquee-track flex w-max items-center gap-14 py-2">
-    {looped.map((label, i) => (
-      <span
-        class="shrink-0 whitespace-nowrap text-lg font-bold uppercase tracking-wide text-neutral-400 transition-colors hover:text-[var(--theme-color)] md:text-xl"
-        aria-hidden={i >= items.length ? "true" : undefined}
-      >
-        {label}
-      </span>
+  <ul class="marquee-track flex w-max items-center py-2">
+    {looped.map((partner, i) => (
+      <li class="flex h-16 shrink-0 items-center pr-16" aria-hidden={i >= items.length ? "true" : undefined}>
+        {partner.logo ? (
+          <img
+            src={partner.logo}
+            alt={partner.name}
+            loading="lazy"
+            class="h-full w-auto max-w-44 object-contain opacity-80 saturate-[.85] transition duration-300 hover:opacity-100 hover:saturate-100"
+          />
+        ) : (
+          <span class="whitespace-nowrap text-lg font-bold uppercase tracking-wide text-slate-400 transition-colors hover:text-[var(--theme-color)] md:text-xl">
+            {partner.name}
+          </span>
+        )}
+      </li>
     ))}
-  </div>
+  </ul>
 </div>
