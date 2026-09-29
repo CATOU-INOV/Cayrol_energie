@@ -1,0 +1,45 @@
+---
+// Liste d'éléments (titre + texte) en cartes empilées au scroll, une seule colonne — même langage
+// que les colonnes haute/basse chute de la page Hydro (HydroStacks) : cartes pleines à la couleur
+// du thème qui foncent d'une carte à l'autre, grand numéro en filigrane. Pur CSS (sticky).
+
+interface Props {
+  title: string;
+  items: { title: string; body: string }[];
+  color: string;
+}
+
+const { title, items, color } = Astro.props;
+
+// Assombrissement progressif (% de noir mélangé à la couleur du thème).
+const shade = (i: number) => i * 12;
+// Chaque carte colle STEP_PX plus bas que la précédente sous le header fixe.
+const CARDS_OFFSET_PX = 24;
+const STEP_PX = 22;
+---
+
+<section class="bg-slate-50 py-16 md:py-24">
+  <div class="mx-auto max-w-7xl px-4">
+    <h2 class="mb-10 text-3xl font-bold !leading-tight text-slate-900 md:mb-14 md:text-4xl">{title}</h2>
+
+    <div class="mx-auto max-w-4xl">
+      {items.map((item, i) => (
+        <article
+          class="sticky mb-6 overflow-hidden rounded-3xl rounded-tr-none p-7 text-white shadow-[0_-12px_30px_-18px_rgba(15,23,42,0.45)] md:p-10"
+          style={`top: calc(var(--header-h, 61px) + ${CARDS_OFFSET_PX + i * STEP_PX}px); z-index:${i + 1}; background-color: color-mix(in srgb, ${color}, #020617 ${shade(i)}%);`}
+        >
+          <span
+            class="pointer-events-none absolute -right-2 -top-8 select-none text-[8rem] font-extrabold leading-none text-white/10"
+            aria-hidden="true"
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <div class="relative pr-20">
+            <h3 class="text-xl font-bold md:text-2xl">{item.title}</h3>
+            <p class="mt-3 max-w-2xl leading-relaxed text-white/85">{item.body}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
