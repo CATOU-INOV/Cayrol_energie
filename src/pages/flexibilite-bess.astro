@@ -2,21 +2,37 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AnimatedHero from "../components/AnimatedHero.astro";
 import OrganicImageHero from "../components/OrganicImageHero.astro";
-import ThematicTab from "../components/ThematicTab.tsx";
+import BessScrollytelling from "../components/BessScrollytelling.tsx";
+import StackedCards from "../components/StackedCards.astro";
+import PriseEnChargePath from "../components/PriseEnChargePath.astro";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
 
 const theme = themes["flexibilite-bess"];
 
-// Contenu transcrit du support de cadrage client (chronologie, atouts, description du terrain).
-// TODO-CONTENT : la chronologie a été reconstituée à partir d'un schéma PDF dont les colonnes
-// se chevauchaient à l'extraction, à faire valider mot pour mot par le client avant mise en ligne.
-const timelineSteps = [
-  { date: "M-1", label: "Identification du projet", description: "Phase d'étude." },
-  { date: "M0", label: "Signature du compromis + dépôt du permis de construire", description: "Demande de raccordement." },
-  { date: "M+3", label: "Permis de construire obtenu", description: "Instruction de la demande de raccordement." },
-  { date: "M+6", label: "Demande de raccordement obtenue", description: "Développement du projet." },
-  { date: "M+8", label: "Signature de l'acte authentique", description: "Construction, rendez-vous chez le notaire." },
+// Contenu transcrit du support de cadrage client (engagements, atouts, description du terrain,
+// déroulement). Retour client : même DA que les autres pages métiers + schéma de fonctionnement
+// animé au scroll (BessScrollytelling).
+
+const engagements = [
+  {
+    title: "Ancrage territorial",
+    body: "Des projets construits en lien direct avec les collectivités et les acteurs économiques locaux.",
+  },
+  {
+    title: "Respect du patrimoine architectural local",
+    body: "Une intégration paysagère pensée avec les riverains et les services de l'urbanisme.",
+  },
+  {
+    title: "Savoir-faire historique",
+    body: "Plus de 20 ans d'expérience dans le développement et l'exploitation d'installations énergétiques.",
+  },
+];
+
+const terrain = [
+  { value: "2", label: "conteneurs 20 pieds aménagés en parc batterie" },
+  { value: "2", label: "postes de refroidissement" },
+  { value: "2", label: "postes de transformation" },
 ];
 
 const atouts = [
@@ -38,20 +54,21 @@ const atouts = [
   },
 ];
 
-const partenaires = [
-  "CA des Savoie",
-  "Communauté Val Cenis Savoie",
-  "Territoire d'énergie Savoie Mont-Blanc",
-  "Groupe Lauzière",
-  "CODEV Savoie",
-  "Savoiexpo",
-  "Terre de Maurienne",
-  "Porte de Maurienne",
+// Déroulement d'un projet, sans durées (cohérent avec le retour client sur la frise photovoltaïque).
+// TODO-CONTENT : chronologie reconstituée à partir d'un schéma PDF dont les colonnes se
+// chevauchaient à l'extraction, à faire valider mot pour mot par le client.
+const deroulement = [
+  { name: "Identification du projet", items: ["Phase d'étude."] },
+  { name: "Compromis & permis de construire", items: ["Signature du compromis, dépôt du permis et demande de raccordement."] },
+  { name: "Permis obtenu", items: ["Instruction de la demande de raccordement."] },
+  { name: "Raccordement obtenu", items: ["Développement du projet."] },
+  { name: "Acte authentique", items: ["Signature chez le notaire, puis construction."] },
 ];
+
 ---
 
 <BaseLayout title="Flexibilité / BESS" theme="flexibilite-bess">
-  <AnimatedHero heroId="bess-hero" title="Stocker l'énergie pour mieux la restituer." color={theme.color}>
+  <AnimatedHero heroId="bess-hero" eyebrow={theme.name} title="Stocker l'énergie pour mieux la restituer." color={theme.color}>
     <Fragment slot="lead">
       <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
         Le Battery Energy Storage System (BESS) permet de stocker l'électricité produite par nos centrales
@@ -66,55 +83,60 @@ const partenaires = [
       alt="Conteneurs industriels, illustration d'un site BESS"
       logo={theme.logo}
       variant="step"
-      class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px] lg:h-[min(680px,calc(100vh-var(--header-h,61px)-4rem))]"
     />
   </AnimatedHero>
 
-  <section class="bg-white">
-  <div class="mx-auto max-w-6xl px-4 pb-14">
-    <ThematicTab
-      client:visible
-      color={theme.color}
-      explanations={[
-        {
-          title: "Ancrage territorial",
-          body: "Des projets construits en lien direct avec les collectivités et les acteurs économiques locaux.",
-        },
-        {
-          title: "Respect du patrimoine architectural local",
-          body: "Une intégration paysagère pensée avec les riverains et les services de l'urbanisme.",
-        },
-        {
-          title: "Savoir-faire historique",
-          body: "Plus de 20 ans d'expérience dans le développement et l'exploitation d'installations énergétiques.",
-        },
-        {
-          title: "À quoi ressemblera le terrain ?",
-          body: "2 conteneurs 20 pieds aménagés en parc batterie, 2 postes de refroidissement, 2 postes de transformation.",
-        },
-      ]}
-      timelineSteps={timelineSteps}
-      timelineVariant="dots"
-      atouts={atouts}
-    />
-
-    <div class="mt-4">
-      <h2 class="mb-4 text-xl font-bold" style={`color:${theme.color}`}>Ils nous font confiance</h2>
-      <p class="mb-4 text-sm text-neutral-500">
-        TODO-CONTENT : logos partenaires non fournis dans les assets transmis, affichage temporaire en texte, à
-        remplacer par les logos réels.
-      </p>
-      <div class="flex flex-wrap gap-3">
-        {partenaires.map((nom) => (
-          <span
-            class="rounded-full border px-4 py-2 text-sm font-medium text-neutral-600 shadow-sm transition-shadow hover:shadow-lg"
-            style={`border-color:${theme.color}33`}
-          >
-            {nom}
-          </span>
-        ))}
-      </div>
+  <!-- Engagements : grands numéros et texte court, sans cadres. -->
+  <section class="bg-white py-16 md:py-24">
+    <div class="mx-auto grid max-w-7xl gap-12 px-4 md:grid-cols-3 md:gap-10">
+      {engagements.map((e, i) => (
+        <div>
+          <p class="text-6xl font-extrabold leading-none tracking-tight" style={`color:${theme.color}`}>
+            {String(i + 1).padStart(2, "0")}
+          </p>
+          <h2 class="mt-5 text-2xl font-bold !leading-tight text-slate-900">{e.title}</h2>
+          <p class="mt-3 leading-relaxed text-slate-600">{e.body}</p>
+        </div>
+      ))}
     </div>
-  </div>
   </section>
+
+  <!-- Schéma de fonctionnement animé au scroll. -->
+  <section class="border-t border-slate-200/80 bg-white pt-14 md:pt-20">
+    <div class="mx-auto max-w-7xl px-4">
+      <h2 class="text-3xl font-bold !leading-tight text-slate-900 md:text-4xl">Comment fonctionne un BESS ?</h2>
+      <p class="mt-3 max-w-2xl text-slate-600">
+        Faites défiler pour suivre l'énergie, de la production à sa restitution sur le réseau.
+      </p>
+    </div>
+    <BessScrollytelling client:visible />
+  </section>
+
+  <!-- À quoi ressemblera le terrain ? -->
+  <section class="bg-white py-16 md:py-24">
+    <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 md:grid-cols-2 md:gap-16">
+      <div>
+        <h2 class="text-3xl font-bold !leading-tight text-slate-900 md:text-4xl">À quoi ressemblera le terrain ?</h2>
+        <dl class="mt-10 flex flex-col divide-y divide-slate-200 border-y border-slate-200">
+          {terrain.map((t) => (
+            <div class="flex items-baseline gap-6 py-5">
+              <dt class="w-14 shrink-0 text-5xl font-extrabold leading-none" style={`color:${theme.color}`}>{t.value}</dt>
+              <dd class="text-lg text-slate-700">{t.label}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <img
+        src={photoUrl("bessTerrain", { w: 1200 })}
+        alt="Conteneurs industriels, illustration d'un site BESS"
+        loading="lazy"
+        class="aspect-[4/3] w-full rounded-3xl rounded-tr-none object-cover"
+      />
+    </div>
+  </section>
+
+  <StackedCards title="Les atouts du stockage" items={atouts} color={theme.color} />
+
+  <PriseEnChargePath title="Déroulement d'un projet" phases={deroulement} color={theme.color} />
 </BaseLayout>

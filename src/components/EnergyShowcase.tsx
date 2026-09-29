@@ -75,22 +75,28 @@ export default function EnergyShowcase({ items }: EnergyShowcaseProps) {
               onFocus={() => setActive(i)}
             >
               <a href={item.href} className="group block">
+                {/* Fond blanc retiré (logo directement sur le fond de la section) et agrandi —
+                    retour client : logos trop petits, cadre blanc jugé superflu. La rotation au
+                    survol reprend le même geste que ServiceRail (cf. src/components/ServiceRail.astro). */}
                 <span
-                  className="absolute -left-[69px] top-0 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white transition-transform duration-300"
-                  style={{
-                    outline: `2px solid ${isActive ? item.color : "#e2e8f0"}`,
-                    transform: isActive ? "scale(1.1)" : "scale(1)",
-                  }}
+                  className="absolute -left-[77px] top-0 flex h-16 w-16 items-center justify-center transition-transform duration-300"
+                  style={{ transform: isActive ? "scale(1.1)" : "scale(1)" }}
                 >
-                  <img src={item.logo} alt="" className="h-8 w-8 object-contain" />
+                  <img
+                    src={item.logo}
+                    alt=""
+                    className="h-12 w-12 object-contain transition-transform duration-700 ease-out group-hover:rotate-[360deg]"
+                  />
                 </span>
                 <h3
-                  className="text-xl font-bold transition-colors duration-300 md:text-2xl"
-                  style={{ color: isActive ? item.color : "#0f172a" }}
+                  className="font-bold transition-all duration-300"
+                  style={{
+                    color: isActive ? item.color : "#0f172a",
+                    fontSize: isActive ? "1.75rem" : "1.25rem",
+                  }}
                 >
                   {item.label}
                 </h3>
-                <p className="mt-2 text-base leading-relaxed text-neutral-600">{item.tagline}</p>
               </a>
             </li>
           );
@@ -113,11 +119,17 @@ export default function EnergyShowcase({ items }: EnergyShowcaseProps) {
               tabIndex={isActive ? undefined : -1}
               className="absolute inset-0 overflow-hidden rounded-2xl border border-slate-200 shadow-lg transition-all duration-500 ease-out"
               style={{
+                // Angle et décalage augmentés (retour client : plus d'espace visible entre les 4
+                // images) — l'éventail s'ouvre davantage derrière la carte active plutôt que de
+                // rester presque superposé.
                 transform: isActive
                   ? "translate(0, 0) scale(1) rotate(0deg)"
-                  : `translate(${offset * 16}px, ${Math.abs(offset) * 14}px) scale(${1 - Math.min(Math.abs(offset), 3) * 0.05}) rotate(${offset * 3}deg)`,
+                  : `translate(${offset * 34}px, ${Math.abs(offset) * 26}px) scale(${1 - Math.min(Math.abs(offset), 3) * 0.05}) rotate(${offset * 8}deg)`,
                 zIndex: items.length - Math.abs(offset),
-                opacity: Math.abs(offset) > 2 ? 0 : 1,
+                // Les 4 cartes doivent rester visibles quelle que soit celle active (retour
+                // client) — le seuil doit donc couvrir le offset max possible (items.length - 1),
+                // pas une valeur fixe qui masquait la carte la plus reculée de la pile.
+                opacity: Math.abs(offset) >= items.length ? 0 : 1,
               }}
             >
               <img src={item.image} alt="" className="h-full w-full object-cover" />

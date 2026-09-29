@@ -1,0 +1,168 @@
+---
+// Fonctionnement haute chute / basse chute : deux colonnes de cartes empilées (stacking cards) qui
+// défilent en simultané au scroll — remplace les cadres "Centrale haute chute / basse chute".
+// Textes repris de la maquette client retour_site_internet/cayrol-hydro-fonctionnement.html.
+// Pur CSS (position: sticky), pas de JS : chaque carte colle un peu plus bas que la précédente,
+// ce qui produit l'effet de pile. Les cartes sont pleines et foncent d'une étape à l'autre, pour
+// que la pile se lise comme une progression plutôt qu'une liste de boîtes identiques.
+
+import { photoUrl } from "../data/photos";
+
+interface Props {
+  /** Couleur de la colonne haute chute (couleur du thème hydro). */
+  color: string;
+}
+
+const { color } = Astro.props;
+
+// Colonne basse chute : bleu-vert "eau de rivière", distinct du bleu du thème tout en restant
+// dans la même famille (la maquette utilisait un marron, hors palette du site).
+const BASSE_COLOR = "#0e7490";
+
+const columns = [
+  {
+    key: "haute",
+    eyebrow: "Haute chute",
+    title: "Centrales de haute chute",
+    sub: "Fort dénivelé, débit plus modeste — typique des vallées de montagne.",
+    color,
+    photo: photoUrl("hydroHauteChute", { w: 300 }),
+    cards: [
+      {
+        title: "Un fort dénivelé, un débit plus modeste",
+        text: "Une centrale de haute chute exploite une différence d'altitude importante entre la prise d'eau et la turbine — de quelques dizaines à plusieurs centaines de mètres. La puissance produite dépend surtout de cette hauteur, bien plus que du débit du cours d'eau.",
+      },
+      {
+        title: "L'eau descend par une conduite forcée",
+        text: "Depuis un point haut — souvent une retenue en altitude — l'eau est canalisée vers la centrale, située plus bas, à travers une conduite forcée : une tuyauterie sous pression qui concentre toute l'énergie de la chute.",
+      },
+      {
+        title: "La turbine Pelton, à action",
+        text: "Un ou plusieurs jets d'eau à très haute pression viennent frapper les augets d'une roue Pelton, qui se met à tourner à grande vitesse. C'est une turbine à action, bien adaptée aux fortes chutes et aux débits plus faibles.",
+      },
+      {
+        title: "Un réservoir pour s'adapter à la demande",
+        text: "Ces centrales sont souvent associées à un barrage-réservoir qui stocke l'eau en altitude. Elles peuvent alors produire rapidement une grande quantité d'électricité, en s'ajustant en temps réel aux pics de consommation du réseau.",
+      },
+    ],
+  },
+  {
+    key: "basse",
+    eyebrow: "Basse chute",
+    title: "Centrales de basse chute",
+    sub: "Débit important, faible dénivelé — au fil des grands fleuves et rivières.",
+    color: BASSE_COLOR,
+    photo: photoUrl("hydroBasseChute", { w: 300 }),
+    cards: [
+      {
+        title: "Un débit important, une faible hauteur de chute",
+        text: "Une centrale de basse chute est installée sur un cours d'eau à fort débit — grand fleuve ou rivière — avec un dénivelé faible, généralement inférieur à 30 mètres. C'est le débit turbiné qui détermine principalement la puissance produite.",
+      },
+      {
+        title: "L'eau circule par un canal d'amenée",
+        text: "Plutôt que par une conduite forcée, l'eau est dirigée vers la centrale par un canal d'amenée ou un barrage construit directement au fil du cours d'eau, sans grande dénivellation à franchir.",
+      },
+      {
+        title: "La turbine Kaplan, à réaction",
+        text: "Une turbine à hélice — le plus souvent de type Kaplan — est immergée dans le flux. Ses pales orientables s'ajustent, même en fonctionnement, pour conserver le meilleur rendement possible selon le débit.",
+      },
+      {
+        title: "Une production continue, au fil de l'eau",
+        text: "Sans grande retenue, l'électricité est produite en continu, au rythme du débit naturel du cours d'eau. Ces aménagements intègrent parfois une écluse, pour permettre le passage des bateaux malgré la différence de niveau.",
+      },
+    ],
+  },
+];
+
+// Assombrissement progressif des cartes de la pile (% de noir mélangé à la couleur de la colonne).
+const SHADE_STEPS = [0, 14, 28, 40];
+
+// Décalages sous le header fixe : chaque carte colle STEP_PX plus bas que la précédente (laisse
+// dépasser le haut des cartes précédentes). L'en-tête de colonne, lui, défile normalement : collé,
+// il restait en place pendant que les cartes remontaient dessous en fin de section.
+const CARDS_OFFSET_PX = 24;
+const STEP_PX = 22;
+---
+
+<section class="bg-slate-50 py-16 md:py-24">
+  <div class="mx-auto max-w-7xl px-4">
+    <div class="mb-12 grid gap-6 md:mb-16 md:grid-cols-12 md:items-end">
+      <h2 class="text-3xl font-bold !leading-tight text-slate-900 md:col-span-5 md:text-4xl">
+        Comment fonctionne une centrale hydroélectrique ?
+      </h2>
+      <p class="leading-relaxed text-slate-600 md:col-span-7">
+        Dans les deux cas, l'énergie potentielle de l'eau — sa hauteur de chute et son débit — se transforme en
+        énergie cinétique, fait tourner une turbine couplée à un alternateur, puis l'eau est restituée au cours
+        d'eau. C'est le rapport entre hauteur de chute et débit qui distingue les deux grandes familles de centrales.
+      </p>
+    </div>
+
+    <div class="grid items-start gap-16 md:grid-cols-2 md:gap-10 lg:gap-14">
+      {columns.map((col) => (
+        <div>
+          <div class="mb-7" data-stack-row="head">
+            <div class="flex items-center gap-4">
+              <img
+                src={col.photo}
+                alt=""
+                loading="lazy"
+                class="h-16 w-16 shrink-0 rounded-2xl rounded-tr-none object-cover"
+              />
+              <div>
+                <p class="text-xs font-bold uppercase tracking-widest" style={`color:${col.color}`}>{col.eyebrow}</p>
+                <h3 class="mt-0.5 text-xl font-bold text-slate-900 md:text-2xl">{col.title}</h3>
+              </div>
+            </div>
+          </div>
+
+          {col.cards.map((card, i) => (
+            <article
+              data-stack-row={i}
+              class="sticky mb-6 overflow-hidden rounded-3xl rounded-tr-none p-7 text-white shadow-[0_-12px_30px_-18px_rgba(15,23,42,0.45)] md:p-8"
+              style={`top: calc(var(--header-h, 61px) + ${CARDS_OFFSET_PX + i * STEP_PX}px); z-index:${i + 1}; background-color: color-mix(in srgb, ${col.color}, #020617 ${SHADE_STEPS[i]}%);`}
+            >
+              <span
+                class="pointer-events-none absolute -right-2 -top-6 select-none text-[7rem] font-extrabold leading-none text-white/10"
+                aria-hidden="true"
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div class="relative pr-16">
+                <h4 class="text-lg font-bold md:text-xl">{card.title}</h4>
+                <p class="mt-3 text-sm leading-relaxed text-white/85 md:text-[15px]">{card.text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  // Les textes n'ont pas la même longueur d'une colonne à l'autre : on égalise la hauteur de
+  // chaque paire (en-têtes, carte 1 avec carte 1, etc.) pour que les deux piles avancent et se
+  // terminent au même niveau. Uniquement en affichage 2 colonnes.
+  function equalizeHydroStacks() {
+    const twoColumns = window.matchMedia("(min-width: 768px)").matches;
+    const rows = new Map<string, HTMLElement[]>();
+    document.querySelectorAll<HTMLElement>("[data-stack-row]").forEach((el) => {
+      el.style.minHeight = "";
+      const key = el.dataset.stackRow!;
+      rows.set(key, [...(rows.get(key) ?? []), el]);
+    });
+    if (!twoColumns) return;
+    rows.forEach((els) => {
+      const max = Math.max(...els.map((el) => el.offsetHeight));
+      els.forEach((el) => (el.style.minHeight = `${max}px`));
+    });
+  }
+
+  // Script module : exécuté une seule fois, les écouteurs ne sont donc pas dupliqués d'une
+  // navigation à l'autre (ClientRouter).
+  window.addEventListener("resize", equalizeHydroStacks);
+  document.addEventListener("astro:page-load", () => {
+    equalizeHydroStacks();
+    document.fonts?.ready.then(equalizeHydroStacks);
+  });
+</script>

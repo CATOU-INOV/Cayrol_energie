@@ -1,0 +1,149 @@
+---
+// Présentation de projets phares, images en mouvement au scroll (retour client, inspi NRG onglet
+// "site développement") : images resserrées, rétrécies et toutes du même côté, texte à droite,
+// puis bouton vers la page "Nos réalisations". Utilisé sur Hydro (2 projets : haute + basse
+// chute) et prévu pour le PV (4 projets, un par mode de pose).
+//
+// Mouvement : chaque photo est légèrement agrandie dans son cadre et glisse verticalement selon
+// sa position dans l'écran (parallaxe), le cadre lui-même glisse depuis la gauche à l'apparition.
+
+export interface ShowcaseProject {
+  name: string;
+  /** Type d'énergie / de centrale, affiché en surtitre (ex. "Centrale basse chute"). */
+  type: string;
+  commune: string;
+  power: string;
+  description: string;
+  image: string;
+  href?: string;
+}
+
+interface Props {
+  title: string;
+  color: string;
+  projects: ShowcaseProject[];
+}
+
+const { title, color, projects } = Astro.props;
+---
+
+<section class="bg-white py-16 md:py-24" data-project-showcase>
+  <div class="mx-auto max-w-7xl px-4">
+    <h2 class="mb-10 text-2xl font-bold text-slate-900 md:mb-14 md:text-3xl">{title}</h2>
+
+    <div class="flex flex-col gap-10 md:gap-12">
+      {projects.map((p) => (
+        <article class="grid items-center gap-6 md:grid-cols-12 md:gap-10">
+          <div
+            class="showcase-frame relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 md:col-span-5 lg:col-span-4"
+            data-showcase-frame
+          >
+            <img
+              src={p.image}
+              alt={p.name}
+              loading="lazy"
+              class="showcase-img absolute inset-0 h-full w-full object-cover"
+              data-parallax
+            />
+          </div>
+
+          <div class="md:col-span-7 lg:col-span-8">
+            <p class="text-xs font-semibold uppercase tracking-wide" style={`color:${color}`}>{p.type}</p>
+            <h3 class="mt-2 text-xl font-bold text-slate-900 md:text-2xl">{p.name}</h3>
+            <p class="mt-1 text-sm font-medium text-slate-500">{p.commune} · {p.power}</p>
+            <p class="mt-4 max-w-2xl leading-relaxed text-slate-600">{p.description}</p>
+            {p.href && (
+              <a href={p.href} class="mt-4 inline-block text-sm font-semibold" style={`color:${color}`}>
+                Voir le détail →
+              </a>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <div class="mt-12 text-center md:mt-16">
+      <a
+        href="/projets"
+        class="inline-block rounded-full px-7 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5"
+        style={`background-color:${color};`}
+      >
+        Voir toutes nos réalisations
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .showcase-frame {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .showcase-frame.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  .showcase-img {
+    transform: translateY(var(--parallax-y, 0px)) scale(1.25);
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-frame {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .showcase-img {
+      transform: scale(1.25);
+    }
+  }
+</style>
+
+<script>
+  // Amplitude max du glissement vertical de la photo dans son cadre (px, de part et d'autre).
+  const PARALLAX_PX = 40;
+
+  function initProjectShowcase() {
+    const frames = Array.from(document.querySelectorAll<HTMLElement>("[data-showcase-frame]"));
+    if (frames.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 },
+    );
+    frames.forEach((f) => observer.observe(f));
+
+    let ticking = false;
+    function update() {
+      ticking = false;
+      const vh = window.innerHeight;
+      frames.forEach((frame) => {
+        const rect = frame.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > vh) return;
+        // -1 quand le cadre entre par le bas de l'écran, +1 quand il sort par le haut.
+        const progress = (vh / 2 - (rect.top + rect.height / 2)) / (vh / 2 + rect.height / 2);
+        const img = frame.querySelector<HTMLElement>("[data-parallax]");
+        img?.style.setProperty("--parallax-y", `${(progress * PARALLAX_PX).toFixed(1)}px`);
+      });
+    }
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
+  document.addEventListener("astro:page-load", initProjectShowcase);
+</script>

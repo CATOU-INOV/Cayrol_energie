@@ -3,33 +3,36 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import AnimatedHero from "../components/AnimatedHero.astro";
 import OrganicImageHero from "../components/OrganicImageHero.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
+import HydroStacks from "../components/HydroStacks.astro";
+import ProjectScrollShowcase from "../components/ProjectScrollShowcase.astro";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
 import projects from "../data/projects.json";
 
 const theme = themes.hydroelectricite;
 
-// Un seul projet hydro référencé dans les données actuelles (site hybride hydro + solaire).
-// TODO-CONTENT : demander au client une liste de projets 100% hydroélectriques.
-const hydroProjects = projects
-  .filter((p) => p.energy === "hybride")
-  .map((p) => ({
-    name: p.name,
-    commune: p.commune,
-    power: p.power,
-    description: p.description,
+// 2 projets phares demandés par le client (un haute chute, un basse chute). Un seul projet hydro
+// référencé dans les données actuelles (La Combe, site hybride hydro + solaire).
+// TODO-CONTENT : demander au client ses 2 centrales phares (une haute chute, une basse chute) avec
+// photos, et préciser la famille de La Combe (Montartier).
+const laCombe = projects.find((p) => p.id === "la-combe")!;
+const featuredProjects = [
+  {
+    name: laCombe.name,
+    type: "Hydroélectricité + toiture solaire",
+    commune: laCombe.commune,
+    power: laCombe.power,
+    description: laCombe.description,
     image: photoUrl("hydroBasseChute", { w: 900 }),
-    tags: [p.type, p.power],
-  }));
-
-// TODO-CONTENT : déroulé type générique (par analogie avec le photovoltaïque), à faire valider
-// ou remplacer par le vrai processus hydroélectrique du client (étude hydraulique, autorisation
-// environnementale/loi sur l'eau, etc. probablement plus long qu'un projet PV).
-const timelineSteps = [
-  { date: "M0", label: "Étude hydraulique", description: "Analyse du débit, de la chute et du potentiel du site." },
-  { date: "M+3", label: "Autorisations", description: "Dossier loi sur l'eau et autorisations environnementales." },
-  { date: "M+12", label: "Construction", description: "Génie civil, turbines et raccordement électrique." },
-  { date: "M+15", label: "Mise en service", description: "Essais, réglages et démarrage de la production." },
+  },
+  {
+    name: "Centrale haute chute",
+    type: "Centrale haute chute",
+    commune: "TODO-CONTENT",
+    power: "—",
+    description: "TODO-CONTENT : projet haute chute phare à fournir par le client (nom, commune, puissance, courte description, photo).",
+    image: photoUrl("hydroHauteChute", { w: 900 }),
+  },
 ];
 ---
 
@@ -37,7 +40,12 @@ const timelineSteps = [
   <!-- Hero sticky : le titre se colore mot par mot et le logo tourne au fil du scroll, scroll
        retenu (wheel intercepté) tant que la coloration n'est pas terminée — cf. AnimatedHero.astro
        pour le détail du mécanisme (extrait de ce hero pour être réutilisé sur biogaz/BESS). -->
-  <AnimatedHero heroId="hydro-hero" title="Un savoir-faire historique au fil de l'eau." color={theme.color}>
+  <AnimatedHero
+    heroId="hydro-hero"
+    eyebrow={theme.name}
+    title="Un savoir-faire historique au fil de l'eau."
+    color={theme.color}
+  >
     <Fragment slot="lead">
       <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
         Pionnier de la production hydroélectrique, Cayrol Energie exploite aujourd'hui 11 centrales pour une
@@ -46,15 +54,15 @@ const timelineSteps = [
 
       <div class="mt-8 flex flex-col gap-5">
         <div>
-          <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>11</p>
+          <p class="text-3xl font-extrabold" style={`color:${theme.color}`} data-countup="11">11</p>
           <p class="text-sm text-slate-500">centrales hydroélectriques</p>
         </div>
         <div>
-          <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>19,15 MW</p>
+          <p class="text-3xl font-extrabold" style={`color:${theme.color}`} data-countup="19.15" data-decimals="2" data-suffix=" MW">19,15 MW</p>
           <p class="text-sm text-slate-500">de puissance installée</p>
         </div>
         <div>
-          <p class="text-3xl font-extrabold" style={`color:${theme.color}`}>4</p>
+          <p class="text-3xl font-extrabold" style={`color:${theme.color}`} data-countup="4">4</p>
           <p class="text-sm text-slate-500">générations au fil de l'eau</p>
         </div>
       </div>
@@ -64,13 +72,14 @@ const timelineSteps = [
       slot="image"
       src={photoUrl("hydroHauteChute", { w: 1800 })}
       alt="Barrage hydroélectrique en montagne"
-      logo="/logos/logo-bleu.png"
-      class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
+      logo={theme.logo}
+      variant="corner"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px] lg:h-[min(680px,calc(100vh-var(--header-h,61px)-4rem))]"
     />
   </AnimatedHero>
 
   <section class="bg-white">
-  <div class="mx-auto max-w-6xl px-4 pb-14">
+  <div class="mx-auto max-w-7xl px-4 pb-14">
     <ThematicTab
       client:visible
       color={theme.color}
@@ -84,23 +93,11 @@ const timelineSteps = [
           body: "TODO-CONTENT : détailler l'expérience technique (types de turbines, gammes de puissance maîtrisées, zones géographiques d'intervention), texte provisoire à valider par le client.",
         },
       ]}
-      categories={[
-        {
-          label: "Centrale haute chute",
-          image: photoUrl("hydroHauteChute", { w: 1400 }),
-          description: "Turbinage sous forte pression en montagne, pour une production concentrée sur un débit réduit.",
-        },
-        {
-          label: "Centrale basse chute",
-          image: photoUrl("hydroBasseChute", { w: 1400 }),
-          description: "Turbinage au fil de l'eau en vallée, pour une production continue sur un débit plus important.",
-        },
-      ]}
-      timelineSteps={timelineSteps}
-      timelineVariant="cards"
-      projects={hydroProjects}
-      projectsLayout="showcase"
     />
   </div>
   </section>
+
+  <HydroStacks color={theme.color} />
+
+  <ProjectScrollShowcase title="Nos centrales phares" color={theme.color} projects={featuredProjects} />
 </BaseLayout>

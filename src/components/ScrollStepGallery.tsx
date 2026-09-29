@@ -1,5 +1,5 @@
 // Déroulé d'étapes façon business.nrg.com/campaigns/build-your-data-center (onglet
-// "Site Development") : chaque étape est un bloc complet (icône + titre + texte à gauche, photo
+// "Site Development") : chaque étape est un bloc complet (grand numéro + titre + phrase, photo
 // à coins arrondis à droite) empilé dans le flux normal de la page. Chaque cadre image fait
 // volontairement moins qu'une pleine hauteur d'écran : sur une hauteur de viewport donnée, on voit
 // donc le bas de l'image précédente, l'image active en entier, et le haut de la suivante — comme
@@ -7,15 +7,14 @@
 // avec la page. Au scroll, l'image qui sort par le haut s'éclaircit progressivement (opacity → 0)
 // et glisse dans son cadre (parallax). Alternative à Timeline/TimelineVertical/TimelineProgress/
 // TimelineCards pour la frise "Déroulement d'un projet type" : posée en plus, aucune des frises
-// existantes n'est retirée.
+// existantes n'est retirée. Pas de durée par étape (retour client : "pas de temps indiqué par
+// étape"), ni pictogramme ni pastille "Étape N" : un grand numéro à la couleur du thème suffit.
 
 import { useEffect, useRef, useState } from "react";
-import type { TimelineStep } from "./Timeline";
-import { THEMATIC_ICONS, type ThematicIconName } from "./ThematicIcons";
-
-export interface ScrollStepGalleryStep extends TimelineStep {
+export interface ScrollStepGalleryStep {
+  label: string;
+  description?: string;
   image: string;
-  icon?: ThematicIconName;
 }
 
 export interface ScrollStepGalleryProps {
@@ -79,28 +78,13 @@ function StepBlock({ step, color, index }: { step: ScrollStepGalleryStep; color:
   return (
     <div ref={ref} className="relative grid grid-cols-1 gap-6 py-8 md:grid-cols-2 md:items-center md:gap-16 md:py-4">
       <div className={imageFirst ? "md:order-2" : undefined}>
-        <span
-          className="mb-4 inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-          style={{ backgroundColor: `${color}1a`, color }}
-        >
-          Étape {index + 1} — {step.date}
-        </span>
-        <div className="flex items-start gap-4">
-          {step.icon && (
-            <span
-              className="flex size-11 shrink-0 items-center justify-center rounded-xl"
-              style={{ backgroundColor: `${color}1a`, color }}
-            >
-              <span className="size-5">{THEMATIC_ICONS[step.icon]}</span>
-            </span>
-          )}
-          <div>
-            <h3 className="text-xl font-extrabold text-neutral-900 md:text-2xl">{step.label}</h3>
-            {step.description && (
-              <p className="mt-2 max-w-md text-sm leading-relaxed text-neutral-600">{step.description}</p>
-            )}
-          </div>
-        </div>
+        <p className="text-6xl font-extrabold leading-none tracking-tight md:text-7xl" style={{ color }}>
+          {String(index + 1).padStart(2, "0")}
+        </p>
+        <h3 className="mt-5 text-2xl font-bold text-neutral-900 md:text-3xl">{step.label}</h3>
+        {step.description && (
+          <p className="mt-3 max-w-md leading-relaxed text-neutral-600">{step.description}</p>
+        )}
       </div>
 
       {/* Cadre image à coins arrondis, hauteur volontairement < 100vh (62vh) : sur une hauteur

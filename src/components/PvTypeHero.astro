@@ -1,0 +1,176 @@
+---
+// Header des pages "type de pose" photovoltaïque — distinct du header des pages énergies
+// (AnimatedHero) pour ne pas faire doublon :
+// - à l'arrivée, la photo du type occupe tout l'écran, titre et accroche en blanc par-dessus ;
+// - au scroll (grand écran), la photo se resserre en carte arrondie sur la droite pendant que le
+//   texte d'explication apparaît à gauche ;
+// - une barre permet de passer d'un type de pose à l'autre.
+// La photo porte un view-transition-name partagé avec la carte correspondante de la grille
+// "Nos types d'installations" (page Photovoltaïque) : au clic, la carte se transforme en header
+// (ClientRouter d'Astro). Sur mobile, pas d'animation : photo puis texte empilés.
+
+import type { PhotovoltaiqueSolution } from "../data/photovoltaiqueSolutions";
+
+interface Props {
+  solution: PhotovoltaiqueSolution;
+  image: string;
+  color: string;
+  colorDark: string;
+  eyebrow: string;
+}
+
+const { solution, image, color, colorDark, eyebrow } = Astro.props;
+
+// Les 4 types présentés dans la grille de la page Photovoltaïque (Hangar n'y figure pas).
+const TYPE_LINKS = [
+  { slug: "toiture", label: "Toiture" },
+  { slug: "ombrieres", label: "Ombrières" },
+  { slug: "sol", label: "Au sol" },
+  { slug: "agrivoltaisme", label: "Agrivoltaïsme" },
+];
+
+---
+
+<section class="relative bg-white lg:h-[calc(100vh+70vh)]" data-pv-type-hero>
+  <div class="relative lg:sticky lg:top-[var(--header-h,61px)] lg:h-[calc(100vh-var(--header-h,61px))] lg:overflow-hidden">
+    <!-- Photo : plein écran à l'arrivée, resserrée en carte au scroll (clip-path posé en JS). -->
+    <div
+      class="relative h-[70vh] overflow-hidden lg:absolute lg:inset-0 lg:h-auto"
+      style={`view-transition-name: pv-type-${solution.slug};`}
+      data-hero-frame
+    >
+      <img src={image} alt={solution.label} class="h-full w-full object-cover" data-hero-img />
+
+      <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10" data-hero-overlay>
+        <div class="mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 md:pb-14">
+          <p class="text-sm font-semibold uppercase tracking-wider text-white/80">{eyebrow}</p>
+          <h1 class="mt-3 max-w-3xl text-4xl font-bold !leading-[1.05] text-white md:text-6xl">{solution.label}</h1>
+          <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl">{solution.tagline}</p>
+
+          <nav aria-label="Types d'installations" class="mt-8 flex flex-wrap gap-2">
+            {TYPE_LINKS.map((t) => (
+              <a
+                href={`/photovoltaique/${t.slug}`}
+                class:list={[
+                  "rounded-full px-4 py-2 text-sm font-semibold backdrop-blur transition",
+                  t.slug === solution.slug ? "bg-white text-slate-900" : "bg-white/15 text-white ring-1 ring-white/30 hover:bg-white/25",
+                ]}
+                aria-current={t.slug === solution.slug ? "page" : undefined}
+              >
+                {t.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Texte d'explication : sous la photo sur mobile, à gauche de la carte sur grand écran
+         (apparaît au fil du scroll). -->
+    <div class="mx-auto max-w-7xl px-4 py-10 lg:pointer-events-none lg:absolute lg:inset-0 lg:flex lg:items-center lg:py-0" data-hero-side>
+      <div class="lg:w-[38%] lg:opacity-0" data-hero-side-inner>
+        <a href="/photovoltaique" class="text-sm font-medium text-slate-500 transition-colors hover:text-[var(--theme-color)] lg:pointer-events-auto">
+          ← Tous nos types d'installations
+        </a>
+        <p class="mt-6 hidden text-3xl font-bold !leading-tight text-slate-900 lg:block" aria-hidden="true">{solution.label}</p>
+        {solution.badge && (
+          <span
+            class="mt-4 inline-block rounded-full px-3 py-1 text-xs font-semibold"
+            style={`background-color:${color}1a; color:${colorDark};`}
+          >
+            {solution.badge}
+          </span>
+        )}
+        <p class="mt-4 leading-relaxed text-slate-600">{solution.intro}</p>
+        {solution.knowMore && <p class="mt-4 leading-relaxed text-slate-600">{solution.knowMore}</p>}
+
+        <nav aria-label="Types d'installations" class="mt-8 hidden flex-wrap gap-2 lg:pointer-events-auto lg:flex">
+          {TYPE_LINKS.map((t) => (
+            <a
+              href={`/photovoltaique/${t.slug}`}
+              class:list={[
+                "rounded-full px-4 py-2 text-sm font-semibold transition",
+                t.slug === solution.slug ? "text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+              ]}
+              style={t.slug === solution.slug ? `background-color:${color}` : undefined}
+              aria-current={t.slug === solution.slug ? "page" : undefined}
+            >
+              {t.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Progression 0 → 1 sur les ANIM_VH premiers vh de scroll de la section (grand écran) :
+  // la photo passe de plein écran à une carte alignée sur la colonne droite du conteneur
+  // max-w-7xl, l'overlay (titre blanc) s'efface, le texte de gauche apparaît.
+  const ANIM_VH = 0.7;
+  const LG = "(min-width: 1024px)";
+  const RADIUS_PX = 28;
+  const CONTAINER_PX = 1280;
+  const GUTTER_PX = 16;
+  const CARD_LEFT_RATIO = 0.42;
+  const CARD_VERTICAL_INSET_RATIO = 0.07;
+
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1);
+
+  function update() {
+    const hero = document.querySelector<HTMLElement>("[data-pv-type-hero]");
+    if (!hero) return;
+    const frame = hero.querySelector<HTMLElement>("[data-hero-frame]")!;
+    const img = hero.querySelector<HTMLElement>("[data-hero-img]")!;
+    const overlay = hero.querySelector<HTMLElement>("[data-hero-overlay]")!;
+    const side = hero.querySelector<HTMLElement>("[data-hero-side-inner]")!;
+
+    if (!window.matchMedia(LG).matches) {
+      frame.style.clipPath = "";
+      img.style.transform = "";
+      overlay.style.opacity = "";
+      overlay.style.pointerEvents = "";
+      side.style.opacity = "";
+      side.style.transform = "";
+      return;
+    }
+
+    const p = clamp01(-hero.getBoundingClientRect().top / (window.innerHeight * ANIM_VH));
+    const eased = 1 - Math.pow(1 - p, 3);
+
+    const w = frame.offsetWidth;
+    const h = frame.offsetHeight;
+    const containerWidth = Math.min(w, CONTAINER_PX) - GUTTER_PX * 2;
+    const containerLeft = (w - containerWidth) / 2;
+    const left = lerp(0, containerLeft + containerWidth * CARD_LEFT_RATIO, eased);
+    const right = lerp(0, containerLeft, eased);
+    const vertical = lerp(0, h * CARD_VERTICAL_INSET_RATIO, eased);
+    const r = lerp(0, RADIUS_PX, eased);
+    frame.style.clipPath = `inset(${vertical}px ${right}px ${vertical}px ${left}px round ${r}px 0 ${r}px ${r}px)`;
+    img.style.transform = `scale(${lerp(1.08, 1, eased)})`;
+
+    // Suit la même courbe que la découpe, sinon le titre blanc se fait rogner par la carte.
+    overlay.style.opacity = String(clamp01(1 - eased * 2.2));
+    overlay.style.pointerEvents = eased > 0.4 ? "none" : "";
+    const sideP = clamp01((eased - 0.8) / 0.2);
+    side.style.opacity = String(sideP);
+    side.style.transform = `translateY(${lerp(24, 0, sideP)}px)`;
+  }
+
+  let ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      update();
+    });
+  }
+
+  // Script module : exécuté une seule fois, écouteurs non dupliqués entre navigations.
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  document.addEventListener("astro:page-load", update);
+</script>

@@ -2,8 +2,9 @@
 import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import { themes, energyThemeList } from "../data/themes";
-import { company } from "../data/company";
+import { company, partners } from "../data/company";
 import ServiceRail from "../components/ServiceRail.astro";
+import LogoMarquee from "../components/LogoMarquee.astro";
 
 // Maillage interne complet (SEO) : toutes les pages du site, utilisé en bas de footer — distinct
 // de `nav` (header) qui reste volontairement court pour ne pas surcharger la navigation.
@@ -50,6 +51,14 @@ const nav = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/logos/logo-orange.png" />
+    <!-- Polices : Open Sans pour tout le texte, Questrial pour le wordmark (.font-brand). Chargées ici
+         plutôt qu’en @import CSS, ignoré par le navigateur quand il suit d’autres règles. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Questrial&display=swap"
+    />
     <meta name="description" content={description} />
     <title>{title} · Cayrol Energie</title>
     <ClientRouter />
@@ -125,102 +134,106 @@ const nav = [
 
     {!hideServiceRail && <ServiceRail />}
 
-    <footer class="border-t border-slate-300 bg-slate-50">
-      <!-- Bandeau CTA : teinté par la couleur du thème de la page courante, cohérent avec la
-           bande d'accent du header plutôt qu'une couleur de marque figée. -->
-      <div class="mx-auto max-w-6xl px-4 pt-12">
-        <div
-          class="flex flex-col items-start gap-4 rounded-2xl border p-8 md:flex-row md:items-center md:justify-between md:p-10"
-          style="border-color: var(--theme-color-light); background-color: var(--theme-color-bg);"
-        >
-          <div>
-            <h2 class="text-2xl font-extrabold text-slate-900 md:text-3xl">
-              Cayrol Energie vous accompagne dans vos projets d'avenir
-            </h2>
-            <p class="mt-2 max-w-xl text-sm text-slate-600 md:text-base">
-              Un projet de production ou d'autoconsommation d'énergie renouvelable ? Parlons-en.
-            </p>
-          </div>
+    <!-- Footer (retours client : conserver le cadre "discutons de vos projets", partenaires
+         défilants, bulle d'infos permanentes, lien Google Maps pour l'adresse, sans rubrique "Nos
+         énergies"). Fond à la couleur foncée de l’énergie de la page (--theme-footer, themes.css). -->
+    <footer class="text-white" style="background-color: var(--theme-footer);">
+      <div class="mx-auto grid max-w-7xl gap-14 px-4 pb-14 pt-16 md:pt-20 lg:grid-cols-12 lg:gap-16">
+        <div class="lg:col-span-7">
+          <h2 class="text-4xl font-bold !leading-[1.05] tracking-tight md:text-5xl">
+            Cayrol Energie vous accompagne dans vos projets d'avenir.
+          </h2>
+          <p class="mt-6 max-w-xl text-lg text-white/70">
+            Un projet de production ou d'autoconsommation d'énergie renouvelable ? Parlons-en.
+          </p>
           <a
             href="/contact"
-            class="shrink-0 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5"
-            style="background-color: var(--theme-color);"
+            class="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+            style="color: var(--theme-footer);"
           >
-            Discutons de votre projet
+            Discutons de votre projet <span aria-hidden="true">→</span>
           </a>
         </div>
-      </div>
 
-      <div class="mx-auto max-w-6xl px-4 py-12">
-        <div class="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
-          <div>
-            <div class="flex items-center gap-2">
-              <img src="/logos/logo-horizontal-positif-C-removebg-preview.png" alt="Cayrol Energie" class="h-14 w-auto" />
-            </div>
-            <p class="mt-3 max-w-xs text-sm text-slate-500">
-              Producteur indépendant d'énergies renouvelables, à taille humaine et ancré dans ses territoires.
-            </p>
-            <div class="mt-4 flex flex-col gap-1.5 text-sm text-slate-600">
-              <a href={`tel:${company.telephone.replace(/[^+\d]/g, "")}`} class="hover:text-slate-900">
+        <dl class="flex flex-col divide-y divide-white/10 border-y border-white/10 lg:col-span-5 lg:self-end">
+          <div class="py-5">
+            <dt class="text-xs font-semibold uppercase tracking-widest text-white/50">Téléphone</dt>
+            <dd class="mt-1.5">
+              <a href={`tel:${company.telephone.replace(/[^+\d]/g, "").replace("+330", "+33")}`} class="text-2xl font-semibold transition-colors hover:text-[var(--theme-color-light)]">
                 {company.telephone}
               </a>
-              <a href={`mailto:${company.email}`} class="hover:text-slate-900">
+            </dd>
+          </div>
+          <div class="py-5">
+            <dt class="text-xs font-semibold uppercase tracking-widest text-white/50">Email</dt>
+            <dd class="mt-1.5">
+              <a href={`mailto:${company.email}`} class="text-2xl font-semibold transition-colors hover:text-[var(--theme-color-light)]">
                 {company.email}
               </a>
-            </div>
+            </dd>
           </div>
-
-          <div>
-            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-900">Nos énergies</h3>
-            <ul class="mt-4 flex flex-col gap-2.5 text-sm">
-              {energyThemeList.map((t) => (
-                <li>
-                  <a href={t.href} class="flex items-center gap-2 text-slate-600 hover:text-slate-900">
-                    <span class="h-1.5 w-1.5 shrink-0 rounded-full" style={`background-color:${t.color}`} />
-                    {t.name}
-                  </a>
-                </li>
-              ))}
-              <li>
-                <a href="/autoconsommation-collective" class="flex items-center gap-2 text-slate-600 hover:text-slate-900">
-                  <span class="h-1.5 w-1.5 shrink-0 rounded-full" style={`background-color:${themes.autoconsommation.color}`} />
-                  Autoconsommation collective
-                </a>
-              </li>
-            </ul>
+          <div class="py-5">
+            <dt class="text-xs font-semibold uppercase tracking-widest text-white/50">Adresse</dt>
+            <dd class="mt-1.5">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(company.adresse)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group text-lg text-white/85 transition-colors hover:text-[var(--theme-color-light)]"
+              >
+                {company.adresse}
+                <span class="mt-1 block text-sm text-white/50 group-hover:text-[var(--theme-color-light)]">Voir sur Google Maps ↗</span>
+              </a>
+            </dd>
           </div>
-
-          <div>
-            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-900">Entreprise</h3>
-            <ul class="mt-4 flex flex-col gap-2.5 text-sm">
-              <li><a href="/" class="text-slate-600 hover:text-slate-900">Accueil</a></li>
-              <li><a href="/societe" class="text-slate-600 hover:text-slate-900">Société</a></li>
-              <li><a href="/contact" class="text-slate-600 hover:text-slate-900">Contact</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-900">Adresse</h3>
-            <p class="mt-4 text-sm text-slate-600">{company.adresse}</p>
-          </div>
-        </div>
+        </dl>
       </div>
 
-      <!-- Maillage interne SEO : liste complète des pages, distincte de la navigation du header. -->
-      <div class="border-t border-slate-200">
-        <div class="mx-auto max-w-6xl px-4 py-5">
-          <nav aria-label="Plan du site" class="flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-400">
-            {allPages.map((p, i) => (
-              <>
-                <a href={p.href} class="hover:text-slate-600">{p.label}</a>
-                {i < allPages.length - 1 && <span aria-hidden="true">·</span>}
-              </>
+      <!-- Partenaires défilants : bande claire au milieu du footer sombre, pour garder les logos
+           dans leurs vraies couleurs (reconnaissables, fonds blancs invisibles). -->
+      <div class="bg-white py-8 text-slate-900">
+        <p class="mx-auto mb-5 max-w-7xl px-4 text-xs font-semibold uppercase tracking-widest text-slate-500">
+          Ils nous font confiance
+        </p>
+        <LogoMarquee items={partners} />
+      </div>
+
+      <!-- Infos permanentes Cayrol Energie (retour client) -->
+      <div class="border-t border-white/10">
+        <dl class="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-3">
+          <div>
+            <dt class="text-3xl font-bold" style="color: var(--theme-color-light);">+50 ans</dt>
+            <dd class="mt-1 text-white/60">d'expérience dans les énergies renouvelables</dd>
+          </div>
+          <div>
+            <dt class="text-3xl font-bold" style="color: var(--theme-color-light);">Ancrage territorial</dt>
+            <dd class="mt-1 text-white/60">des projets conçus avec et pour les territoires</dd>
+          </div>
+          <div>
+            <dt class="text-3xl font-bold" style="color: var(--theme-color-light);">Confiance</dt>
+            <dd class="mt-1 text-white/60">des partenariats bâtis sur la durée</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Bas de page : marque, plan du site (maillage interne), mentions. -->
+      <div class="border-t border-white/10">
+        <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:flex-row md:items-center md:justify-between">
+          <a href="/" class="flex items-center gap-3" aria-label="Cayrol Energie, accueil">
+            <img src="/logos/sigle-negatif-T-removebg-preview.png" alt="" class="h-9 w-auto" />
+            <span class="font-brand text-xl leading-none tracking-wide">
+              CAYROL <span class="text-white/60">ENERGIE</span>
+            </span>
+          </a>
+          <nav aria-label="Plan du site" class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/50">
+            {allPages.map((p) => (
+              <a href={p.href} class="transition-colors hover:text-white">{p.label}</a>
             ))}
           </nav>
-          <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-            <p>© {new Date().getFullYear()} Cayrol Energie. Tous droits réservés.</p>
-            <p>Prototype de démonstration — contenu et visuels provisoires (voir TODO-CONTENT.md).</p>
-          </div>
+        </div>
+        <div class="mx-auto flex max-w-7xl flex-wrap justify-between gap-2 px-4 pb-8 text-xs text-white/35">
+          <p>© {new Date().getFullYear()} Cayrol Energie. Tous droits réservés.</p>
+          <p>Prototype de démonstration — contenu et visuels provisoires (voir TODO-CONTENT.md).</p>
         </div>
       </div>
     </footer>
@@ -253,6 +266,31 @@ const nav = [
 
       window.addEventListener("resize", setHeaderHeightVar);
       document.addEventListener("astro:page-load", initHeader);
+    </script>
+
+    <script>
+      // Défilement fluide sur tout le site (Lenis) : même distance par cran de molette qu'en natif
+      // (WHEEL_MULTIPLIER = 1, le standard), lissée avec une légère inertie. Le tactile
+      // garde le défilement natif (option par défaut de Lenis). Désactivé si l'utilisateur a
+      // demandé moins d'animations. Les ancres (#…) défilent aussi via Lenis.
+      // Exposé sur window.__lenis : les heros qui calibraient eux-mêmes la molette (AnimatedHero,
+      // accueil) s'effacent quand Lenis est actif.
+      import Lenis from "lenis";
+      import "lenis/dist/lenis.css";
+
+      const WHEEL_MULTIPLIER = 1;
+      const LERP = 0.12;
+
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const lenis = new Lenis({ wheelMultiplier: WHEEL_MULTIPLIER, lerp: LERP, anchors: true, autoRaf: true });
+        (window as Window & { __lenis?: Lenis }).__lenis = lenis;
+        // Navigation ClientRouter : la nouvelle page repart de sa propre position (haut de page ou
+        // position restaurée au retour arrière) sans inertie résiduelle de la page précédente.
+        document.addEventListener("astro:after-swap", () => {
+          lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+          lenis.resize();
+        });
+      }
     </script>
   </body>
 </html>

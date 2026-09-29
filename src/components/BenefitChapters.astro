@@ -1,0 +1,130 @@
+---
+// Blocs de bénéfices d'un type de pose présentés en "chapitres" plein écran plutôt qu'en cartes à
+// puces : grand numéro + titre à gauche, points écrits en grandes lignes de texte à droite qui
+// s'éclairent (gris → foncé) une à une au fil du scroll, avec un rail vertical qui se remplit.
+// Pas de boîtes ni de puces. Sur mobile / sans JS : pas d'épinglage, lignes directement lisibles.
+
+import type { SolutionBlock } from "../data/photovoltaiqueSolutions";
+
+interface Props {
+  blocks: SolutionBlock[];
+  color: string;
+  title?: string;
+}
+
+const { blocks, color, title = "Ce que ça change pour vous" } = Astro.props;
+
+// Hauteur de scroll accordée à chaque ligne (en vh) pendant que le chapitre est épinglé.
+const VH_PER_LINE = 28;
+// Au-delà de ce volume de texte, lignes en taille réduite pour tenir dans un écran épinglé.
+const DENSE_CHARS = 280;
+---
+
+<section class="bg-white pt-16 md:pt-24">
+  <div class="mx-auto max-w-7xl px-4">
+    <h2 class="text-3xl font-bold !leading-tight text-slate-900 md:text-4xl">{title}</h2>
+  </div>
+
+  {blocks.map((block, i) => (
+    <div
+      class="relative"
+      style={`--chapter-h: calc(100vh + ${block.items.length * VH_PER_LINE}vh);`}
+      data-chapter
+    >
+      <div class="chapter-pin">
+        <div class="mx-auto grid w-full max-w-7xl gap-8 px-4 py-14 lg:grid-cols-12 lg:gap-16 lg:py-0">
+          <div class="lg:col-span-5">
+            <p class="text-7xl font-extrabold leading-none tracking-tight lg:text-[9rem]" style={`color:${color}`}>
+              {String(i + 1).padStart(2, "0")}
+            </p>
+            <h3 class="mt-5 text-3xl font-bold !leading-tight text-slate-900 lg:text-5xl">{block.title}</h3>
+            {block.intro && <p class="mt-5 max-w-md leading-relaxed text-slate-600">{block.intro}</p>}
+          </div>
+
+          <div class="relative lg:col-span-7 lg:pl-10">
+            <span class="absolute inset-y-0 left-0 hidden w-0.5 bg-slate-200 lg:block" aria-hidden="true">
+              <span class="chapter-rail block h-full w-full origin-top" style={`background-color:${color}`}></span>
+            </span>
+            <ul class="flex flex-col gap-5 lg:gap-7">
+              {block.items.map((item) => (
+                <li
+                  class:list={[
+                    "chapter-line text-xl font-semibold !leading-snug tracking-tight",
+                    block.items.join("").length > DENSE_CHARS ? "lg:text-2xl" : "lg:text-3xl",
+                  ]}
+                  data-chapter-line
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</section>
+
+<style>
+  @media (min-width: 1024px) {
+    [data-chapter] {
+      height: var(--chapter-h);
+    }
+    .chapter-pin {
+      position: sticky;
+      top: var(--header-h, 61px);
+      display: flex;
+      height: calc(100vh - var(--header-h, 61px));
+      align-items: center;
+    }
+    .chapter-rail {
+      transform: scaleY(var(--chapter-p, 0));
+    }
+  }
+  /* --lit : 0 (gris clair) → 1 (texte foncé). Valeur par défaut 1 : lisible sur mobile / sans JS. */
+  .chapter-line {
+    color: color-mix(in srgb, #0f172a calc(var(--lit, 1) * 100%), #cbd5e1);
+    transition: color 120ms linear;
+  }
+</style>
+
+<script>
+  const LG = "(min-width: 1024px)";
+
+  function update() {
+    const chapters = document.querySelectorAll<HTMLElement>("[data-chapter]");
+    const large = window.matchMedia(LG).matches;
+    chapters.forEach((chapter) => {
+      const lines = Array.from(chapter.querySelectorAll<HTMLElement>("[data-chapter-line]"));
+      if (!large) {
+        chapter.style.removeProperty("--chapter-p");
+        lines.forEach((l) => l.style.removeProperty("--lit"));
+        return;
+      }
+      const rect = chapter.getBoundingClientRect();
+      const travel = rect.height - window.innerHeight;
+      const p = Math.min(Math.max(-rect.top / travel, 0), 1);
+      chapter.style.setProperty("--chapter-p", String(p));
+      // Chaque ligne s'éclaire sur sa propre tranche de la progression.
+      lines.forEach((line, i) => {
+        const lit = Math.min(Math.max(p * (lines.length + 1) - i - 0.3, 0), 1);
+        line.style.setProperty("--lit", String(lit));
+      });
+    });
+  }
+
+  let ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      update();
+    });
+  }
+
+  // Script module : exécuté une seule fois, écouteurs non dupliqués entre navigations.
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  document.addEventListener("astro:page-load", update);
+</script>

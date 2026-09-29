@@ -1,191 +1,187 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PhotoBanner from "../components/PhotoBanner.astro";
+import AnimatedHero from "../components/AnimatedHero.astro";
+import OrganicImageHero from "../components/OrganicImageHero.astro";
 import ThematicTab from "../components/ThematicTab.tsx";
 import ScrollStepGallery from "../components/ScrollStepGallery.tsx";
-import { themes, energyThemeList } from "../data/themes";
-import { photoUrl } from "../data/photos";
+import ProjectScrollShowcase from "../components/ProjectScrollShowcase.astro";
+import { themes } from "../data/themes";
+import { photoUrl, photos } from "../data/photos";
 import projects from "../data/projects.json";
 
 const theme = themes.photovoltaique;
-const pvProjectsCount = projects.filter((p) => p.energy === "photovoltaique").length;
 
-const isType = (p: (typeof projects)[number], keyword: string) => p.type.toLowerCase().includes(keyword);
-
-// Deux exemples par méthode de pose, tirés des données réelles quand elles existent.
-// TODO-CONTENT : aucun projet "Au sol" ni "Agrivoltaïsme" dans les données fournies — à compléter par le client.
-const toiture = projects.filter((p) => isType(p, "toiture")).slice(0, 2);
-const ombrieres = projects.filter((p) => isType(p, "ombrières")).slice(0, 2);
-
-// Chaque carte "showcase" affiche la photo de la catégorie du projet (pas de photo par site
-// individuel dans les données actuelles) — cohérent avec les mêmes visuels que la grille
-// "Nos types d'installations" juste au-dessus, pour ne pas introduire une 3ᵉ source d'images.
-// Star Soleil a en plus une fiche détaillée en démo (photos + description complète) : voir
-// src/pages/projets/star-soleil.astro — les autres projets restent de simples encarts.
-const toProject = (p: (typeof projects)[number]) => ({
-  name: p.name,
-  commune: p.commune,
-  power: p.power,
-  description: p.description,
-  image: isType(p, "toiture") ? photoUrl("pvToiture", { w: 900 }) : photoUrl("pvOmbrieres", { w: 900 }),
-  tags: [p.type, p.power],
-  href: p.id === "star-soleil" ? "/projets/star-soleil" : undefined,
-});
-
-const timelineSteps = [
-  { date: "M0", label: "Étude de faisabilité", description: "Analyse technique et administrative du site." },
-  { date: "M+2", label: "Dépôt du permis de construire", description: "Constitution et dépôt du dossier." },
-  { date: "M+6", label: "Instruction & raccordement", description: "Instruction du permis, demande de raccordement." },
-  { date: "M+9", label: "Construction", description: "Installation des panneaux et du poste de livraison." },
-  { date: "M+10", label: "Mise en service", description: "Raccordement au réseau et démarrage de la production." },
+// Contenu repris de la maquette client retour_site_internet/cayrol-photovoltaique.html (textes issus
+// de cayrolenergie.com) : accroche, chiffres clés, paragraphe métier, descriptions des 4 types,
+// déroulé d'un projet type. Le contact est porté par le bandeau du footer (commun à tout le site).
+const keyFigures = [
+  { value: 64, suffix: "", label: "centrales photovoltaïques en exploitation" },
+  { value: 50, suffix: "+", label: "années d'expertise en énergies renouvelables" },
+  { value: 3, suffix: "", label: "générations à la tête d'une entreprise familiale" },
+  { value: 2, suffix: "", label: "départements d'ancrage territorial — 73 & 34" },
 ];
 
-// Même déroulé que timelineSteps, avec une photo par étape pour la démo ScrollStepGallery —
+// 4 projets phares, un par mode de pose (retour client), présentés comme sur la page Hydro.
+// Star Soleil a de vraies photos ; Aiton reprend la photo toiture.
+// TODO-CONTENT : aucun projet "Au sol" ni "Agrivoltaïsme" dans les données fournies — emplacements
+// à compléter par le client (nom, commune, puissance, description, photo).
+const project = (id: string) => projects.find((p) => p.id === id)!;
+const starSoleil = project("star-soleil");
+const aiton = project("aiton");
+const featuredProjects = [
+  {
+    name: aiton.name,
+    type: aiton.type,
+    commune: aiton.commune,
+    power: aiton.power,
+    description: aiton.description,
+    image: photoUrl("pvToiture", { w: 900 }),
+  },
+  {
+    name: starSoleil.name,
+    type: starSoleil.type,
+    commune: starSoleil.commune,
+    power: starSoleil.power,
+    description: starSoleil.description,
+    image: "/projets/star-soleil/principale.jpg",
+    href: "/projets/star-soleil",
+  },
+  {
+    name: "Centrale au sol",
+    type: "Au sol",
+    commune: "TODO-CONTENT",
+    power: "—",
+    description: "TODO-CONTENT : projet de centrale au sol phare à fournir par le client (nom, commune, puissance, courte description, photo).",
+    image: `${photos.pvAuSol}?w=900&h=675&q=80&auto=format&fit=crop`,
+  },
+  {
+    name: "Projet agrivoltaïque",
+    type: "Agrivoltaïsme",
+    commune: "TODO-CONTENT",
+    power: "—",
+    description: "TODO-CONTENT : projet agrivoltaïque phare à fournir par le client (nom, commune, puissance, courte description, photo).",
+    image: `${photos.pvAgrivoltaisme}?w=900&h=675&q=80&auto=format&fit=crop`,
+  },
+];
+
+// Déroulé d'un projet type : une phrase simple et une photo par étape, sans durée (retour client).
+const timelineSteps = [
+  { label: "Étude de faisabilité", description: "Analyse technique et administrative du site." },
+  { label: "Dépôt du permis de construire", description: "Constitution et dépôt du dossier." },
+  { label: "Instruction & raccordement", description: "Instruction du permis, demande de raccordement au réseau." },
+  { label: "Construction", description: "Installation des panneaux et du poste de livraison." },
+  { label: "Mise en service", description: "Raccordement au réseau et démarrage de la production." },
+];
+
 // TODO-CONTENT : réemploi des 4 photos de catégories + la photo hero faute de photos dédiées à
 // chaque étape du chantier dans les données actuelles ; à remplacer par de vraies photos de
 // chantier (étude terrain, dépôt de dossier, tranchée de raccordement, pose des panneaux, mise en
 // service) si le client peut en fournir.
 const scrollGallerySteps = [
-  { ...timelineSteps[0], image: photoUrl("pvAuSol", { w: 1400 }), icon: "idea" as const },
-  { ...timelineSteps[1], image: photoUrl("heroAccueil", { w: 1400 }), icon: "building" as const },
-  { ...timelineSteps[2], image: photoUrl("pvOmbrieres", { w: 1400 }), icon: "bolt" as const },
-  { ...timelineSteps[3], image: photoUrl("pvToiture", { w: 1400 }), icon: "shield" as const },
-  { ...timelineSteps[4], image: photoUrl("pvAgrivoltaisme", { w: 1400 }), icon: "chart" as const },
+  { ...timelineSteps[0], image: photoUrl("pvAuSol", { w: 1400 }) },
+  { ...timelineSteps[1], image: photoUrl("heroAccueil", { w: 1400 }) },
+  { ...timelineSteps[2], image: photoUrl("pvOmbrieres", { w: 1400 }) },
+  { ...timelineSteps[3], image: photoUrl("pvToiture", { w: 1400 }) },
+  { ...timelineSteps[4], image: photoUrl("pvAgrivoltaisme", { w: 1400 }) },
 ];
 ---
 
 <BaseLayout title="Photovoltaïque" theme="photovoltaique" hideServiceRail>
-  <PhotoBanner
-    src={photoUrl("pvAuSol")}
-    alt="Centrale photovoltaïque au sol"
-    height="h-[320px] md:h-[420px]"
-    rounded={false}
-  />
+  <!-- Même hero que Hydro / Biogaz / BESS (retour : harmoniser les pages métiers) : titre coloré
+       au scroll, photo découpée avec le logo dans l'encoche (bas-droite pour le photovoltaïque),
+       chiffres clés animés à l'arrivée sur la page. -->
+  <AnimatedHero
+    heroId="pv-hero"
+    eyebrow={theme.name}
+    title="Valoriser chaque toiture, chaque parking, chaque terrain inexploité."
+    color={theme.color}
+  >
+    <Fragment slot="lead">
+      <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
+        En source d'énergie renouvelable, à taille humaine : 64 centrales photovoltaïques conçues sur-mesure depuis
+        nos premières installations.
+      </p>
 
-  <!-- Hero secondaire : une seule grande carte blanche regroupant titre, accroche, chiffres clés
-       et photo, plutôt qu'un fond texturé avec du contenu qui flotte dessus. -->
-  <section class="bg-slate-50 py-14 lg:py-20">
-    <div class="mx-auto max-w-6xl rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl">
-      <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
-        <div class="lg:col-span-7">
-          <span class="mb-3 inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-800">
-            Énergie solaire
-          </span>
-          <h1 class="mb-4 text-3xl font-bold text-slate-900">Photovoltaïque</h1>
-          <p class="mb-6 text-base leading-relaxed text-slate-600">
-            Depuis nos premières installations, nous avons développé plus de 64 centrales photovoltaïques —
-            toitures, ombrières, centrales au sol et projets agrivoltaïques — conçues sur-mesure pour valoriser
-            chaque foncier, à taille humaine.
-          </p>
-
-          <div class="mb-6 grid grid-cols-2 gap-4">
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
-              <p class="text-2xl font-extrabold text-slate-900">64</p>
-              <p class="mt-1 text-xs text-slate-500">centrales photovoltaïques</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
-              <p class="text-2xl font-extrabold text-slate-900">{pvProjectsCount}</p>
-              <p class="mt-1 text-xs text-slate-500">projets détaillés sur ce site</p>
-            </div>
+      <div class="mt-8 grid grid-cols-2 gap-x-6 gap-y-5">
+        {keyFigures.map((f) => (
+          <div>
+            <p class="text-3xl font-extrabold" style={`color:${theme.color}`} data-countup={f.value} data-suffix={f.suffix}>
+              {f.value}{f.suffix}
+            </p>
+            <p class="text-sm text-slate-500">{f.label}</p>
           </div>
-
-          <a
-            href="#realisations"
-            class="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-700"
-          >
-            Découvrir nos réalisations
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
-        </div>
-
-        <div class="lg:col-span-5">
-          <div class="h-64 overflow-hidden rounded-2xl border border-slate-200 shadow-md lg:h-full">
-            <img
-              src={photoUrl("pvToiture", { w: 1200 })}
-              alt="Panneaux photovoltaïques installés sur une toiture industrielle"
-              class="h-full w-full object-cover"
-              loading="eager"
-            />
-          </div>
-
-          <!-- Barre d'onglets vers les 4 métiers, remplace le rail de cercles flottants
-               (ServiceRail, masqué sur cette page via hideServiceRail) -->
-          <nav aria-label="Nos autres métiers" class="mt-4 grid grid-cols-4 overflow-hidden rounded-xl border border-slate-200 text-xs font-semibold">
-            {energyThemeList.map((t) => (
-              <a
-                href={t.href}
-                class:list={[
-                  "px-2 py-2.5 text-center transition",
-                  t.key === "photovoltaique" ? "bg-orange-50 text-orange-800" : "bg-white text-slate-500 hover:bg-slate-50",
-                ]}
-              >
-                {t.shortName}
-              </a>
-            ))}
-          </nav>
-        </div>
+        ))}
       </div>
-    </div>
-  </section>
+    </Fragment>
+
+    <OrganicImageHero
+      slot="image"
+      src={photoUrl("pvAuSol", { w: 1800 })}
+      alt="Centrale photovoltaïque au sol"
+      logo={theme.logo}
+      variant="tab"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px] lg:h-[min(680px,calc(100vh-var(--header-h,61px)-4rem))]"
+    />
+  </AnimatedHero>
 
   <section id="realisations">
-  <div class="mx-auto max-w-6xl px-4 py-14">
+  <div class="mx-auto max-w-7xl px-4 py-14">
     <ThematicTab
       client:visible
       color={theme.color}
       explanations={[
         {
-          title: "Une expertise multi-supports",
-          body: "Cayrol Energie conçoit, construit et exploite des installations photovoltaïques adaptées à chaque foncier (toiture ou hangar agricole, ombrière de parking, centrale au sol ou projet agrivoltaïque) pour valoriser des surfaces inexploitées, à taille humaine.",
+          title: "Un savoir-faire photovoltaïque intégré",
+          body: "Cayrol Energie conçoit, construit et exploite des installations photovoltaïques adaptées à chaque foncier — toiture ou hangar agricole, ombrière de parking, centrale au sol ou projet agrivoltaïque. Nous intervenons depuis la prospection et la conception jusqu'à la mise en production, en travaillant avec plusieurs fournisseurs pour retenir la meilleure technologie selon chaque projet. Chaque installation est pensée en intégrant les enjeux locaux dès l'origine, pour s'inscrire durablement dans son environnement et générer une synergie avec l'activité du site. Une équipe dédiée assure ensuite un suivi quotidien de la production et des visites régulières, pour une exploitation fiable sur le long terme — l'esprit d'une entreprise familiale, à taille humaine, depuis trois générations.",
         },
       ]}
       categories={[
         {
           label: "Toiture",
           image: photoUrl("pvToiture", { w: 1400 }),
-          description: "Valorisez une surface inexploitée : toitures et hangars de bâtiments agricoles ou industriels équipés sans emprise au sol supplémentaire.",
+          description: "Toitures et hangars agricoles ou industriels équipés sans emprise au sol supplémentaire.",
+          href: "/photovoltaique/toiture",
+          transitionName: "pv-type-toiture",
         },
         {
           label: "Ombrières",
           image: photoUrl("pvOmbrieres", { w: 1400 }),
-          description: "Couvrez vos parkings et valorisez ces espaces délaissés, tout en protégeant vos visiteurs des intempéries.",
+          description: "Couvrez vos parkings et protégez vos visiteurs tout en produisant de l'énergie.",
+          href: "/photovoltaique/ombrieres",
+          transitionName: "pv-type-ombrieres",
         },
         {
           label: "Au sol",
           image: photoUrl("pvAuSol", { w: 1400 }),
-          description: "Valorisez des terrains inexploités ou dégradés (friches, carrières) en source d'énergie renouvelable.",
+          description: "Terrains dégradés, friches ou carrières valorisés en source d'énergie renouvelable.",
+          href: "/photovoltaique/sol",
+          transitionName: "pv-type-sol",
         },
         {
           label: "Agrivoltaïsme",
           image: photoUrl("pvAgrivoltaisme", { w: 1400 }),
-          description: "Serres et persiennes photovoltaïques : protégez vos cultures des aléas climatiques tout en produisant de l'énergie.",
+          description: "Serres et persiennes photovoltaïques pour protéger les cultures et produire de l'énergie.",
+          href: "/photovoltaique/agrivoltaisme",
+          transitionName: "pv-type-agrivoltaisme",
         },
       ]}
-      timelineSteps={timelineSteps}
-      timelineVariant="dots"
-      projects={[...toiture, ...ombrieres].map(toProject)}
-      projectsLayout="showcase-carousel"
+      categoriesIntro="Quatre façons de valoriser un foncier en source d'énergie renouvelable — chacune fait l'objet d'une page dédiée."
     />
 
-    <p class="mt-10 text-sm text-neutral-500">
-      TODO-CONTENT : les catégories "Au sol" et "Agrivoltaïsme" n'ont pas d'exemple dans les données transmises —
-      merci de fournir 2 projets par catégorie pour compléter cette page. Par ailleurs, le site actuel de Cayrol
-      Energie distingue "Hangar photovoltaïque" (stockage agricole, ~1500 m²) comme 5ᵉ catégorie à part entière —
-      ici elle a été fondue dans "Toiture" pour garder une grille à 4 cases ; à séparer si le client préfère la
-      structure d'origine.
-    </p>
   </div>
   </section>
 
-  <!-- Déroulé d'un projet type, variante scroll immersif façon business.nrg.com — posée en plus
-       de la frise "dots" ci-dessus (dans ThematicTab) le temps de comparer les deux rendus. -->
+  <!-- Déroulé d'un projet type au scroll (façon business.nrg.com) : une photo et une phrase par
+       étape, sans durée. Hangar photovoltaïque : page dédiée (/photovoltaique/hangar) sans carte
+       dans la grille ci-dessus, en attente de décision client sur une 5ᵉ catégorie. -->
   <section class="border-t border-slate-200/80 bg-white">
-    <div class="mx-auto max-w-6xl px-4 py-14">
-      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Déroulement d'un projet type (variante scroll)</h2>
-      <p class="mb-10 text-neutral-600">Faites défiler pour suivre les grandes étapes, de l'étude à la mise en service.</p>
+    <div class="mx-auto max-w-7xl px-4 py-14">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900">Déroulement d'un projet type</h2>
+      <p class="mb-10 text-neutral-600">De l'étude de faisabilité à la mise en service, cinq grandes étapes structurent chaque projet.</p>
       <ScrollStepGallery client:visible steps={scrollGallerySteps} color={theme.color} />
     </div>
   </section>
+
+
+  <ProjectScrollShowcase title="Présentation de projets" color={theme.color} projects={featuredProjects} />
 </BaseLayout>
