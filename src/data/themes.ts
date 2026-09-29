@@ -31,7 +31,7 @@ export const themes: Record<ThemeKey, ThemeConfig> = {
     colorDark: "#1e3a8a",
     colorLight: "#93c5fd",
     href: "/hydroelectricite",
-    logo: "/logos/logo-bleu.png",
+    logo: "/logos/sigle-bleu.png",
     tagline: "Un savoir-faire historique au fil de l'eau",
   },
   photovoltaique: {
@@ -42,7 +42,7 @@ export const themes: Record<ThemeKey, ThemeConfig> = {
     colorDark: "#c2410c",
     colorLight: "#fdba74",
     href: "/photovoltaique",
-    logo: "/logos/logo-orange.png",
+    logo: "/logos/sigle-orange.png",
     tagline: "Toiture, ombrières, sol et agrivoltaïsme",
   },
   "flexibilite-bess": {
@@ -53,7 +53,7 @@ export const themes: Record<ThemeKey, ThemeConfig> = {
     colorDark: "#991b1b",
     colorLight: "#fca5a5",
     href: "/flexibilite-bess",
-    logo: "/logos/logo-rouge.png",
+    logo: "/logos/sigle-rouge.png",
     tagline: "Stocker l'énergie pour mieux la restituer",
   },
   biogaz: {
@@ -64,7 +64,7 @@ export const themes: Record<ThemeKey, ThemeConfig> = {
     colorDark: "#14532d",
     colorLight: "#86efac",
     href: "/biogaz",
-    logo: "/logos/logo-vert.png",
+    logo: "/logos/sigle-vert.png",
     tagline: "Valoriser la matière organique locale",
   },
   autoconsommation: {
@@ -89,7 +89,7 @@ export const themes: Record<ThemeKey, ThemeConfig> = {
     colorDark: "#0f172a",
     colorLight: "#fdba74",
     href: "/societe",
-    logo: "/logos/logo-orange.png",
+    logo: "/logos/sigle-orange.png",
     tagline: "Des territoires et des Hommes au cœur de la transition énergétique",
   },
 };

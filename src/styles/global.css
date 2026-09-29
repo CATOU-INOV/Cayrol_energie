@@ -65,6 +65,184 @@ body {
   color: rgb(82 82 82); /* neutral-600 */
 }
 
+/* Menu ouvert : le header transparent de l'accueil passe en solide pour faire corps avec le
+   panneau blanc. Le flou est retiré car un backdrop-filter ferait du header le bloc conteneur du
+   menu mobile (position: fixed), qui ne ferait alors plus que la hauteur du header. */
+#site-header.mega-open,
+#site-header.mobile-open {
+  background-color: white;
+  backdrop-filter: none;
+  border-color: rgb(0 0 0 / 0.05);
+}
+
+#site-header.mega-open .hdr-text,
+#site-header.mobile-open .hdr-text {
+  color: rgb(23 23 23);
+}
+
+#site-header.mega-open .hdr-text-muted,
+#site-header.mobile-open .hdr-text-muted {
+  color: rgb(82 82 82);
+}
+
+/* Liens du header : la page courante prend la couleur du thème, avec un trait collé au bas du
+   header (le lien occupe toute la hauteur de la barre). */
+#site-header .nav-link {
+  position: relative;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  transition: color 200ms ease;
+}
+
+#site-header .nav-link::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 3px;
+  background-color: var(--theme-color);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#site-header .nav-link:hover,
+#site-header .nav-link[aria-current="page"],
+#site-header .nav-link[data-current="true"],
+#site-header.mega-open .nav-link[data-mega-trigger] {
+  color: var(--theme-color);
+}
+
+#site-header .nav-link:hover::after,
+#site-header .nav-link[aria-current="page"]::after,
+#site-header .nav-link[data-current="true"]::after,
+#site-header.mega-open .nav-link[data-mega-trigger]::after {
+  transform: scaleX(1);
+}
+
+/* Sur la photo de l'accueil (header transparent, non scrollé), le blanc reste plus lisible. */
+#site-header.header-transparent:not(.is-scrolled, .mega-open) .nav-link:hover {
+  color: white;
+}
+
+#site-header.header-transparent:not(.is-scrolled, .mega-open) .nav-link::after {
+  background-color: white;
+}
+
+#site-header .mega-chevron {
+  transition: transform 300ms ease;
+}
+
+#site-header.mega-open .mega-chevron {
+  transform: rotate(180deg);
+}
+
+/* Méga-menu : glisse légèrement vers le bas en apparaissant, cartes en léger décalé. */
+#site-header .mega-panel {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity 220ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 320ms;
+}
+
+#site-header.mega-open .mega-panel {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 220ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#site-header .mega-panel .mega-card {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 300ms ease,
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#site-header.mega-open .mega-panel .mega-card {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--i, 0) * 45ms);
+}
+
+/* Filière courante : cerclée de sa couleur dans le menu. */
+#site-header .mega-card[aria-current="page"] {
+  box-shadow:
+    0 0 0 3px white,
+    0 0 0 6px var(--card-color);
+}
+
+/* Menu mobile plein écran. */
+#site-header .mobile-menu {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 200ms ease,
+    visibility 0s linear 200ms;
+}
+
+#site-header.mobile-open .mobile-menu {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 200ms ease;
+}
+
+#site-header .mobile-link[aria-current="page"] {
+  color: var(--theme-color);
+}
+
+/* Burger à deux traits qui se croisent à l'ouverture. */
+#site-header .burger-lines {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 12px;
+}
+
+#site-header .burger-lines > span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background-color: currentColor;
+  transition:
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#site-header .burger-lines > span:first-child {
+  top: 0;
+}
+
+#site-header .burger-lines > span:last-child {
+  top: 10px;
+}
+
+#site-header.mobile-open .burger-lines > span:first-child {
+  top: 5px;
+  transform: rotate(45deg);
+}
+
+#site-header.mobile-open .burger-lines > span:last-child {
+  top: 5px;
+  transform: rotate(-45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #site-header .mega-panel,
+  #site-header .mega-panel .mega-card {
+    transform: none !important;
+  }
+}
+
 /* Bandeau logos "Ils nous font confiance" : défilement infini en boucle, pause au survol,
    fondu sur les bords pour un rendu propre plutôt qu'une coupure nette. */
 .marquee-mask {

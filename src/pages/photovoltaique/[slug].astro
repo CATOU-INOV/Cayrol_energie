@@ -72,7 +72,7 @@ const featuredProjects = (FEATURED_PROJECTS[solution.slug] ?? []).map(({ id, ima
 });
 ---
 
-<BaseLayout title={solution.label} theme="photovoltaique" description={solution.tagline} hideServiceRail>
+<BaseLayout title={solution.label} theme="photovoltaique" description={solution.tagline}>
   <PvTypeHero
     solution={solution}
     image={photoUrl(solution.image, { w: 2400 })}

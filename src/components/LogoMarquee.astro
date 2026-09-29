@@ -4,8 +4,8 @@
 // que soit le nombre d'éléments, sans calcul de largeur en dur (espacement porté par chaque
 // élément plutôt que par un gap, pour que la jonction entre les deux copies soit identique).
 // Logos en couleurs réelles (légèrement atténués, pleine couleur au survol) sur fond clair :
-// les partenaires restent reconnaissables et les logos à fond blanc s'y fondent. Tant qu'un
-// logo n'est pas fourni, le nom du partenaire s'affiche en texte.
+// les partenaires restent reconnaissables et les logos à fond blanc s'y fondent. Un partenaire
+// sans logo fourni n'apparaît pas dans le bandeau.
 
 import type { Partner } from "../data/company";
 
@@ -14,25 +14,21 @@ interface Props {
 }
 
 const { items } = Astro.props;
-const looped = [...items, ...items];
+// Seuls les partenaires dont le logo est fourni sont affichés (pas de nom en texte dans le bandeau).
+const withLogo = items.filter((partner) => partner.logo);
+const looped = [...withLogo, ...withLogo];
 ---
 
 <div class="marquee-mask relative overflow-hidden">
   <ul class="marquee-track flex w-max items-center py-2">
     {looped.map((partner, i) => (
-      <li class="flex h-16 shrink-0 items-center pr-16" aria-hidden={i >= items.length ? "true" : undefined}>
-        {partner.logo ? (
-          <img
-            src={partner.logo}
-            alt={partner.name}
-            loading="lazy"
-            class="h-full w-auto max-w-44 object-contain opacity-80 saturate-[.85] transition duration-300 hover:opacity-100 hover:saturate-100"
-          />
-        ) : (
-          <span class="whitespace-nowrap text-lg font-bold uppercase tracking-wide text-slate-400 transition-colors hover:text-[var(--theme-color)] md:text-xl">
-            {partner.name}
-          </span>
-        )}
+      <li class="flex h-20 shrink-0 items-center pr-16" aria-hidden={i >= withLogo.length ? "true" : undefined}>
+        <img
+          src={partner.logo}
+          alt={partner.name}
+          loading="lazy"
+          class:list={[partner.compact ? "h-20" : "h-14", "w-auto max-w-44 object-contain opacity-80 saturate-[.85] transition duration-300 hover:opacity-100 hover:saturate-100"]}
+        />
       </li>
     ))}
   </ul>

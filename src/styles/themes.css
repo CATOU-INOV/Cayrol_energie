@@ -9,7 +9,7 @@
   --theme-color-dark: #c2410c;
   --theme-color-light: #fdba74;
   --theme-color-bg: #fff7ed;
-  --theme-footer: #7c2d12;
+  --theme-footer: #c2410c;
 }
 
 .theme-hydroelectricite {
@@ -25,7 +25,7 @@
   --theme-color-dark: #c2410c;
   --theme-color-light: #fdba74;
   --theme-color-bg: #fff7ed;
-  --theme-footer: #9a3412;
+  --theme-footer: #c2410c;
 }
 
 .theme-flexibilite-bess {
@@ -59,5 +59,5 @@
   --theme-color-dark: #0f172a; /* slate-900, contraste/structure de marque */
   --theme-color-light: #fdba74;
   --theme-color-bg: #f8fafc;
-  --theme-footer: #7c2d12; /* slate-50 */
+  --theme-footer: #c2410c; /* orange-700 : orange du logo assombri, sans virer au marron */
 }

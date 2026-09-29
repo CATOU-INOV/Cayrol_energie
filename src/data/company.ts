@@ -10,24 +10,26 @@ export const company = {
 // Partenaires "Ils nous font confiance", affichés en bandeau défilant (footer global + accueil).
 // Liste reprise du site actuel cayrolenergie.com (page Société) et du cadrage PDF (onglet BESS).
 // `logo` : chemin d'un fichier dans public/partenaires/ (SVG de préférence, sinon PNG à fond
-// transparent) — tant qu'il est absent, le bandeau affiche le nom du partenaire.
+// transparent) — tant qu'il est absent, le partenaire n'apparaît pas dans le bandeau.
 // TODO-CONTENT : liste et autorisation d'affichage à valider avec le client, logos à récupérer.
 export interface Partner {
   name: string;
   logo?: string;
+  /** Logo carré ou haut (texte petit) : affiché plus grand pour peser autant qu'un logo en longueur. */
+  compact?: boolean;
 }
 
 export const partners: Partner[] = [
-  { name: "QualiPV" },
-  { name: "La French Tech Green" },
-  { name: "La French Lab" },
+  { name: "QualiPV", logo: "/partenaires/qualipv.png" },
+  { name: "La French Tech Green 20", logo: "/partenaires/french-tech-green.png", compact: true },
+  { name: "Le French Lab", logo: "/partenaires/french-lab.png", compact: true },
   { name: "Banque Populaire du Sud", logo: "/partenaires/banque-populaire-sud.png" },
-  { name: "Crédit Agricole des Savoie", logo: "/partenaires/credit-agricole-savoie.png" },
+  { name: "Crédit Agricole des Savoie", logo: "/partenaires/credit-agricole-savoie.png", compact: true },
   { name: "Territoire d'énergie Savoie Mont-Blanc" },
   { name: "Groupe Lauzière", logo: "/partenaires/groupe-lauziere.png" },
-  { name: "Communauté Val Cenis Savoie" },
+  { name: "Val Cenis", logo: "/partenaires/val-cenis.png", compact: true },
   { name: "CODEV Savoie" },
-  { name: "Savoiexpo" },
+  { name: "Savoiexpo", logo: "/partenaires/savoiexpo.png" },
   { name: "Terre de Maurienne" },
-  { name: "Porte de Maurienne" },
+  { name: "Communauté de Communes Porte de Maurienne", logo: "/partenaires/porte-de-maurienne.png", compact: true },
 ];

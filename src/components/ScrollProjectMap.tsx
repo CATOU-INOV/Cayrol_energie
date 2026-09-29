@@ -32,6 +32,8 @@ export interface ScrollProjectMapItem {
    * 5 projets maximum) — tous les projets restent affichés comme points sur la carte quel que
    * soit ce champ, seule la liste de droite est filtrée. */
   featured?: boolean;
+  /** Photo de fond de la carte projet dans la liste de droite. */
+  photo?: string;
 }
 
 export interface ScrollProjectMapProps {
@@ -70,7 +72,9 @@ const SPAN_Y = BOUNDS.maxY - BOUNDS.minY;
 function toViewBox({ x, y }: { x: number; y: number }) {
   const px = ((x - BOUNDS.minX) / SPAN_X) * (100 - 2 * PAD * 100) + PAD * 100;
   const py = (1 - (y - BOUNDS.minY) / SPAN_Y) * (100 - 2 * PAD * 100) + PAD * 100;
-  return { x: px, y: py };
+  // Arrondi au millième : sans lui, le dernier chiffre du calcul flottant peut différer entre le
+  // rendu serveur et le navigateur (avertissement d'hydratation React sur les points de la carte).
+  return { x: Math.round(px * 1000) / 1000, y: Math.round(py * 1000) / 1000 };
 }
 
 const OUTLINE_POINTS = PROJECTED_OUTLINE.map(toViewBox);
@@ -205,12 +209,10 @@ function MapCardContent({
 
 function StepText({
   item,
-  index,
   active,
   onActivate,
 }: {
   item: ScrollProjectMapItem;
-  index: number;
   active: boolean;
   onActivate: () => void;
 }) {
@@ -228,57 +230,51 @@ function StepText({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Carte photo (retour client : "photo projet en fond avec par-dessus type d'énergie, puissance
+  // et ville"). Dégradé teinté de la couleur de la filière, comme le fond de la carte à gauche.
+  // Les projets non actifs sont atténués : le regard suit celui dont le point est allumé.
+  // Toute la carte est cliquable quand une fiche projet existe (seul Star Soleil aujourd'hui).
+  const Wrapper = item.href ? "a" : "div";
+  const place = item.commune !== item.name ? item.commune : null;
   return (
-    <div
-      ref={ref}
-      className="group border-l-2 py-10 pl-6 transition-colors duration-300 md:py-16"
-      style={{ borderColor: active ? item.color : "#e2e8f0" }}
-    >
-      <span
-        className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-        style={{ backgroundColor: `${item.color}1a`, color: item.color }}
+    <div ref={ref} className="py-4 md:py-6">
+      <Wrapper
+        {...(item.href ? { href: item.href } : {})}
+        className={`group relative block h-[22rem] overflow-hidden rounded-3xl transition-all duration-500 ease-out md:h-[30rem] ${
+          active ? "opacity-100 shadow-xl" : "scale-[0.97] opacity-50"
+        }`}
       >
-        {item.energyLabel} · Projet {index + 1} — {item.commune}
-      </span>
-      <h3 className="text-xl font-extrabold text-neutral-900 md:text-2xl">
-        {item.href ? (
-          <a href={item.href} className="transition-colors hover:text-[var(--hover-color)]" style={{ "--hover-color": item.color } as React.CSSProperties}>
-            {item.name}
-          </a>
-        ) : (
-          item.name
-        )}
-      </h3>
-      <p className="mt-1 text-sm font-medium text-neutral-500">
-        {item.type} — {item.power}
-      </p>
-      <p className="mt-3 max-w-md text-sm leading-relaxed text-neutral-600">{item.description}</p>
-
-      {/* Bande de couleur dégradée (pleine à gauche vers transparente à droite) portant le bouton
-          "Voir le détail" — même couleur que la filière du projet, cohérente avec le badge et le
-          point actif sur la carte. href retombe sur "#" tant que la fiche projet dédiée n'existe
-          pas (seul Star Soleil en a une aujourd'hui) : lien visuel prêt, câblage réel à faire
-          projet par projet. Masquée par défaut et révélée au survol du bloc projet — uniquement
-          sur desktop (md:), car le hover n'a pas de sens sur tactile : là, la bande reste visible
-          en permanence pour ne pas cacher le CTA. Le fond (scale-x depuis origin-left) et le
-          contenu (opacité, légèrement retardée) sont animés séparément pour un vrai effet de
-          balayage gauche→droite plutôt qu'un simple fondu sur place. */}
-      <a
-        href={item.href ?? "#"}
-        className="relative mt-5 flex h-12 max-w-md items-center justify-end overflow-hidden rounded-full pr-1.5"
-      >
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 origin-left scale-x-100 transition-transform duration-500 ease-out md:scale-x-0 md:group-hover:scale-x-100 md:group-focus-within:scale-x-100"
-          style={{ background: `linear-gradient(to right, ${item.color}, ${item.color}00)` }}
+        <img
+          src={item.photo}
+          alt=""
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
-        <span className="group/cta relative flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold opacity-100 shadow-sm transition-opacity delay-150 duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100" style={{ color: item.color }}>
-          Voir le détail
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5">
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </span>
-      </a>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to top, color-mix(in srgb, ${item.color}, black 55%) 0%, color-mix(in srgb, ${item.color}, transparent 60%) 45%, transparent 75%)`,
+          }}
+        />
+        {/* Voile sombre en haut : garde l'énergie et le type lisibles sur un ciel clair. */}
+        <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/45 to-transparent" />
+        <div className="absolute inset-x-0 top-0 p-6 text-white md:p-8">
+          <p className="text-sm font-semibold tracking-[0.14em] uppercase drop-shadow">{item.energyLabel}</p>
+          <p className="mt-0.5 text-sm text-white/80 drop-shadow">{item.type}</p>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 text-white md:p-8">
+          <div>
+            <h3 className="text-3xl font-extrabold tracking-tight md:text-4xl">{item.name}</h3>
+            {place && <p className="mt-1 text-base text-white/85">{place}</p>}
+          </div>
+          <p className="shrink-0 text-right text-2xl font-bold tabular-nums md:text-3xl">{item.power}</p>
+        </div>
+        {item.href && (
+          <span className="absolute top-6 right-6 text-sm font-semibold text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:top-8 md:right-8">
+            Voir le détail →
+          </span>
+        )}
+      </Wrapper>
     </div>
   );
 }
@@ -312,6 +308,11 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
 
   const visibleItems = energyFilter ? items.filter((item) => item.energyKey === energyFilter) : items;
 
+  // Fond de la carte : couleur de la filière assombrie en OKLCH, qui garde la teinte au lieu de virer
+  // au marron comme un mélange RVB (la couleur pure, orange
+  // ou bleu vif sur une demi-page, était trop criarde), avec une transition lente entre projets.
+  const mapBg = active ? `color-mix(in oklch, ${active.color}, black 15%)` : "#0f172a";
+
   return (
     <div className="relative grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-16">
       {/* Fond couleur pleine, étiré jusqu'au bord gauche de l'écran (pas juste autour de la carte) :
@@ -324,8 +325,8 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
           (calc(-50vw) appliqué aussi à la carte elle-même, ce qui cassait le layout). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 hidden transition-colors duration-500 md:block"
-        style={{ left: "calc(-50vw + 50%)", width: "50vw", backgroundColor: active?.color ?? "#0f172a" }}
+        className="pointer-events-none absolute inset-y-0 hidden transition-colors duration-[1200ms] ease-in-out md:block"
+        style={{ left: "calc(-50vw + 50%)", width: "50vw", backgroundColor: mapBg }}
       />
 
       {/* Carte sticky : reste épinglée à l'écran pendant tout le défilement des projets à droite.
@@ -333,8 +334,8 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
           la garde alignée avec la colonne de texte à droite. Sur mobile (fond ci-dessus caché),
           garde son propre fond coloré contenu classique. */}
       <div
-        className="relative rounded-3xl transition-colors duration-500 md:sticky md:top-24 md:h-fit md:rounded-none md:bg-transparent"
-        style={{ backgroundColor: active?.color ?? "#0f172a" }}
+        className="relative rounded-3xl transition-colors duration-[1200ms] ease-in-out md:sticky md:top-24 md:h-fit md:rounded-none md:bg-transparent"
+        style={{ backgroundColor: mapBg }}
       >
         {/* Décalage vers la gauche sur desktop : la colonne de grid est centrée dans la moitié
             gauche du conteneur max-w-6xl (pas dans les 50vw réels du fond ci-dessus), donc son
@@ -362,13 +363,13 @@ export default function ScrollProjectMap({ items }: ScrollProjectMapProps) {
           par bloc, voir StepText). La carte, elle, continue d'afficher tous les projets (visibleItems
           dérive de `items`, pas de featuredItems) — seule cette liste de texte est raccourcie. */}
       <div className="relative">
-        {featuredItems.map((item, i) => (
-          <StepText key={item.id} item={item} index={i} active={item.id === activeId} onActivate={() => setActiveId(item.id)} />
+        {featuredItems.map((item) => (
+          <StepText key={item.id} item={item} active={item.id === activeId} onActivate={() => setActiveId(item.id)} />
         ))}
 
         {/* Bouton "voir tous nos projets" (retour client) — vers la page /projets qui liste
             l'ensemble du parc, puisque la liste ci-dessus se limite désormais à 5 projets phares. */}
-        <div className="border-l-2 border-transparent py-10 pl-6 md:py-16">
+        <div className="py-8 md:py-10">
           <a
             href="/projets"
             className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5"
