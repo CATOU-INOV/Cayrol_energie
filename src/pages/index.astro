@@ -218,7 +218,9 @@ const heroStats = [
     // il faut garder une marge avant la libération du sticky, sinon la pause figée disparaît. Ne
     // pas agrandir la section pour aller plus loin (ex. 260vh) : ça allongerait d'autant le temps
     // passé sur le hero avant d'atteindre le reste de la page, effet indésirable.
-    const HERO_COLOR_VH = 0.85;
+    // 0.3 : avec Lenis (molette au standard, voir BaseLayout), environ 3 crans suffisent à
+    // colorer le titre.
+    const HERO_COLOR_VH = 0.3;
 
     function initHeroColorReveal() {
       const section = document.getElementById("hero-section");
@@ -270,7 +272,8 @@ const heroStats = [
       const PX_PER_WHEEL_TURN = 110;
 
       function onWheel(e: WheelEvent) {
-        if (!section) return;
+        // Lenis (BaseLayout) gère déjà la molette : pas de double interception.
+        if (!section || (window as Window & { __lenis?: unknown }).__lenis) return;
         const colorEndY = window.innerHeight * HERO_COLOR_VH;
         if (window.scrollY >= colorEndY) return;
         e.preventDefault();

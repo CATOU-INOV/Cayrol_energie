@@ -50,6 +50,14 @@ const nav = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/logos/logo-orange.png" />
+    <!-- Polices : Open Sans pour tout le texte, Questrial pour le wordmark (.font-brand). Chargées ici
+         plutôt qu’en @import CSS, ignoré par le navigateur quand il suit d’autres règles. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Questrial&display=swap"
+    />
     <meta name="description" content={description} />
     <title>{title} · Cayrol Energie</title>
     <ClientRouter />
@@ -254,6 +262,31 @@ const nav = [
 
       window.addEventListener("resize", setHeaderHeightVar);
       document.addEventListener("astro:page-load", initHeader);
+    </script>
+
+    <script>
+      // Défilement fluide sur tout le site (Lenis) : même distance par cran de molette qu'en natif
+      // (WHEEL_MULTIPLIER = 1, le standard), lissée avec une légère inertie. Le tactile
+      // garde le défilement natif (option par défaut de Lenis). Désactivé si l'utilisateur a
+      // demandé moins d'animations. Les ancres (#…) défilent aussi via Lenis.
+      // Exposé sur window.__lenis : les heros qui calibraient eux-mêmes la molette (AnimatedHero,
+      // accueil) s'effacent quand Lenis est actif.
+      import Lenis from "lenis";
+      import "lenis/dist/lenis.css";
+
+      const WHEEL_MULTIPLIER = 1;
+      const LERP = 0.12;
+
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const lenis = new Lenis({ wheelMultiplier: WHEEL_MULTIPLIER, lerp: LERP, anchors: true, autoRaf: true });
+        (window as Window & { __lenis?: Lenis }).__lenis = lenis;
+        // Navigation ClientRouter : la nouvelle page repart de sa propre position (haut de page ou
+        // position restaurée au retour arrière) sans inertie résiduelle de la page précédente.
+        document.addEventListener("astro:after-swap", () => {
+          lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+          lenis.resize();
+        });
+      }
     </script>
   </body>
 </html>

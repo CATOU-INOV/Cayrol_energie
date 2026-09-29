@@ -1,14 +1,20 @@
 @import "tailwindcss";
 @import "./themes.css";
-@import url("https://fonts.googleapis.com/css2?family=Questrial&display=swap");
 
-html {
-  scroll-behavior: smooth;
+/* Police du texte (retour client : "police Open Sans plus fine pour le texte") : Open Sans pour
+   tout le site (chargée dans BaseLayout), en graisse légère (300) pour le texte courant ; titres
+   et libellés gardent leurs graisses explicites (font-medium, font-bold…). */
+@theme {
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-weight: 300;
 }
 
 /* Police du logo officiel Cayrol Energie (Questrial, le match libre le plus proche de la police
    maison du logo) — utilisée uniquement pour le wordmark "CAYROL ENERGIE" (header, PhotoBanner),
-   pas pour le reste du site qui garde la police système par défaut. */
+   le reste du site est en Open Sans (voir plus haut). */
 .font-brand {
   font-family: "Questrial", sans-serif;
 }

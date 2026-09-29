@@ -69,7 +69,8 @@ const wordClass = `${heroId}-word`;
   // (hauteur = 100vh + COLOR_VH*100vh) : progress passe de 0 à 1 sur les COLOR_VH premiers vh de
   // scroll de la section. Le wheel est intercepté et amorti tant que progress < 1, pour "retenir"
   // le scroll pendant la lecture du titre — au-delà, le scroll redevient natif.
-  const COLOR_VH = 0.3;
+  // 0.25 : environ 3 crans de molette au standard (Lenis, voir BaseLayout) colorent le titre.
+  const COLOR_VH = 0.25;
 
   function initHeroReveal() {
     const section = document.getElementById(heroId);
@@ -101,7 +102,8 @@ const wordClass = `${heroId}-word`;
     const PX_PER_WHEEL_TURN = 110;
 
     function onWheel(e) {
-      if (!section) return;
+      // Lenis (BaseLayout) gère déjà la molette : pas de double interception.
+      if (!section || window.__lenis) return;
       const rect = section.getBoundingClientRect();
       // En dehors de la plage [-colorEndY, 0] de rect.top, la section n'est pas en train de
       // traverser sa fenêtre de coloration (pas encore atteinte, ou déjà terminée) : on laisse
