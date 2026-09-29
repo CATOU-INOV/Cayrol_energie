@@ -32,6 +32,11 @@ export interface ThematicCategory {
   label: string;
   image: string;
   description?: string;
+  /** Lien vers une page dédiée à cette catégorie (ex: page par type de pose photovoltaïque) —
+   * optionnel, la carte reste non cliquable si absent. */
+  href?: string;
+  /** Voir ExpandingCardItem.transitionName. */
+  transitionName?: string;
 }
 
 export interface ThematicStat {
@@ -71,6 +76,15 @@ export interface ThematicTabProps {
   projectsLayout?: "list" | "showcase" | "showcase-carousel";
   atouts?: { title: string; body: string }[];
   extras?: ReactNode;
+  /** Phrases d'introduction optionnelles sous les titres de section (ex. page Photovoltaïque). */
+  categoriesIntro?: string;
+  timelineIntro?: string;
+  projectsIntro?: string;
+}
+
+function SectionIntro({ text }: { text?: string }) {
+  if (!text) return null;
+  return <p className="-mt-2 mb-5 max-w-3xl text-neutral-600">{text}</p>;
 }
 
 export default function ThematicTab({
@@ -88,6 +102,9 @@ export default function ThematicTab({
   projectsLayout = "list",
   atouts,
   extras,
+  categoriesIntro,
+  timelineIntro,
+  projectsIntro,
 }: ThematicTabProps) {
   // 2 ou 4 encarts se rangent naturellement en grille 2 colonnes (2×1 ou 2×2) sans espace vide.
   // 1 seul encart en grid-cols-2 laisserait une cellule vide à droite : pleine largeur à la place.
@@ -143,6 +160,7 @@ export default function ThematicTab({
           <h2 className="mb-4 text-xl font-bold" style={{ color }}>
             Nos types d'installations
           </h2>
+          <SectionIntro text={categoriesIntro} />
           {categoriesLayout === "orbit" && categoriesCenterImage ? (
             <OrbitGallery
               color={color}
@@ -157,6 +175,8 @@ export default function ThematicTab({
                 label: c.label,
                 image: c.image,
                 description: c.description,
+                href: c.href,
+                transitionName: c.transitionName,
                 color,
               }))}
               perRow={2}
@@ -175,6 +195,7 @@ export default function ThematicTab({
             <h2 className="mb-6 text-xl font-bold" style={{ color }}>
               Déroulement d'un projet type
             </h2>
+            <SectionIntro text={timelineIntro} />
             <TimelineComponent steps={timelineSteps} color={color} />
           </div>
         );
@@ -209,6 +230,7 @@ export default function ThematicTab({
           <h2 className="mb-4 text-xl font-bold" style={{ color }}>
             Présentation de projets
           </h2>
+          <SectionIntro text={projectsIntro} />
           {projectsLayout !== "list" && projects.every((p) => p.image) ? (
             <ProjectShowcase
               color={color}

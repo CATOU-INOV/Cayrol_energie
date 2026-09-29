@@ -2,45 +2,109 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AnimatedHero from "../components/AnimatedHero.astro";
 import OrganicImageHero from "../components/OrganicImageHero.astro";
-import ThematicTab from "../components/ThematicTab.tsx";
 import MethanisationScrollytelling from "../components/MethanisationScrollytelling.tsx";
 import { themes } from "../data/themes";
 import { photoUrl } from "../data/photos";
 
 const theme = themes.biogaz;
 
-// TODO-CONTENT : le cadrage PDF ne détaille que les titres de section pour le biogaz
-// (Explications / Déroulement projet / Stats / Schéma explicatif / atouts) — tout le texte
-// ci-dessous est un contenu provisoire, à faire valider par le client.
-const timelineSteps = [
-  { date: "M0", label: "Étude de gisement", description: "Analyse des intrants agricoles disponibles localement." },
-  { date: "M+4", label: "Dépôt des autorisations", description: "Permis de construire et dossier ICPE." },
-  { date: "M+10", label: "Construction", description: "Génie civil, digesteurs, unité d'injection ou de cogénération." },
-  { date: "M+14", label: "Mise en service", description: "Démarrage de la méthanisation et injection dans le réseau." },
+// Contenu transcrit du document client "Page_methanisation_site_web_V3.pdf" (retour_site_internet/),
+// photos extraites du même document (public/images/biogaz/). Sections texte + photo en alternance,
+// comme dans la mise en page du PDF.
+interface ContentSection {
+  title: string;
+  paragraphs: string[];
+  bullets?: string[];
+  /** Paragraphe affiché après la liste à puces. */
+  outro?: string;
+  /** Chiffres clés affichés sous le texte. */
+  figures?: { value: string; label: string }[];
+  image: string;
+  imageAlt: string;
+}
+
+const sectionsBefore: ContentSection[] = [
+  {
+    title: "La méthanisation : qu'est-ce que c'est ?",
+    paragraphs: ["Le procédé de méthanisation consiste à transformer les matières organiques du territoire en deux ressources essentielles :"],
+    bullets: ["Une énergie renouvelable locale, le biogaz", "Un fertilisant naturel, le digestat"],
+    outro: "Un procédé qui allie transition énergétique, économie circulaire et soutien à l'agriculture.",
+    image: "/images/biogaz/unite-methanisation.jpg",
+    imageAlt: "Unité de méthanisation au milieu des champs",
+  },
+  {
+    title: "Les matières valorisées",
+    paragraphs: [
+      "Les intrants proviennent essentiellement d'effluents d'élevage (fumier, lisier, résidus de récoltes…), de cultures intermédiaires ou autres déchets agricoles (déchets verts, lactosérum etc.).",
+    ],
+    image: "/images/biogaz/digesteurs-vue-aerienne.jpg",
+    imageAlt: "Vue aérienne de digesteurs de méthanisation",
+  },
+  {
+    title: "Qu'est-ce que le biogaz ?",
+    paragraphs: [
+      "Le biogaz, aussi appelé gaz renouvelable ou gaz vert, est l'énergie produite lors du processus de méthanisation.",
+      "Une fois épuré, il devient du biométhane pouvant être injecté dans le réseau de gaz afin d'alimenter les foyers, les entreprises et les collectivités en énergie renouvelable locale.",
+    ],
+    image: "/images/biogaz/digesteurs-passerelles.jpg",
+    imageAlt: "Digesteurs et passerelles vus du ciel",
+  },
+  {
+    title: "Transformer les déchets en énergie",
+    paragraphs: [
+      "En moyenne, une unité produit chaque année 1 000 000 Nm³ de biogaz. Cela correspond à 10 GWh de biométhane renouvelable, soit 10 000 MWh d'énergie verte, l'équivalent de la consommation annuelle d'environ 850 foyers ou 2 000 habitants.",
+    ],
+    figures: [
+      { value: "1 000 000 Nm³", label: "de biogaz par an" },
+      { value: "10 GWh", label: "de biométhane" },
+      { value: "≈ 850", label: "foyers alimentés" },
+    ],
+    image: "/images/biogaz/village.jpg",
+    imageAlt: "Village alimenté en énergie locale",
+  },
+  {
+    title: "Qu'est-ce que le digestat ?",
+    paragraphs: [
+      "Après la production de biométhane, la matière organique poursuit son cycle de valorisation sous forme de digestat. Cette ressource fertilisante locale nourrit les cultures, réduit le recours aux engrais de synthèse et renforce l'autonomie des exploitations. Elle participe également à la pérennisation du revenu des agriculteurs grâce à une meilleure valorisation de leurs ressources.",
+    ],
+    image: "/images/biogaz/digestat.jpg",
+    imageAlt: "Digestat, fertilisant naturel issu de la méthanisation",
+  },
 ];
 
-const atouts = [
+const sectionsAfter: ContentSection[] = [
   {
-    title: "Valorisation des déchets agricoles",
-    body: "Le biogaz transforme les effluents et résidus agricoles locaux en énergie renouvelable.",
+    title: "Cadre réglementaire",
+    paragraphs: [
+      "La méthanisation est encadrée par la réglementation ICPE (Installations Classées pour la Protection de l'Environnement). Selon la nature des intrants et les quantités traitées, les installations sont soumises à un régime de déclaration, d'enregistrement ou d'autorisation.",
+    ],
+    image: "/images/biogaz/chantier.jpg",
+    imageAlt: "Chantier de construction d'une unité",
   },
-  {
-    title: "Circuit court énergétique",
-    body: "Une production et une consommation ancrées sur le même territoire, au bénéfice des exploitations partenaires.",
-  },
-  {
-    title: "Complément de revenu agricole",
-    body: "Un modèle économique qui sécurise un revenu additionnel pour les agriculteurs partenaires.",
-  },
+];
+
+const filiereStats = [
+  { value: "800", label: "sites injectant du biométhane" },
+  { value: "13,5 TWh", label: "de biométhane injectés" },
+  { value: "3,9 %", label: "de la consommation nationale de gaz" },
 ];
 ---
 
 <BaseLayout title="Biogaz" theme="biogaz">
-  <AnimatedHero heroId="biogaz-hero" title="Valoriser la matière organique locale." color={theme.color}>
+  <AnimatedHero
+    heroId="biogaz-hero"
+    eyebrow="Biogaz · Méthanisation"
+    title="Valoriser les matières organiques pour produire du biogaz."
+    color={theme.color}
+  >
     <Fragment slot="lead">
+      <p class="mt-4 text-base font-medium text-slate-700 md:text-lg">
+        Une énergie locale, renouvelable et durable.
+      </p>
       <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
-        Cayrol Energie développe des unités de méthanisation qui transforment les effluents et résidus
-        agricoles du territoire en énergie renouvelable, au service des exploitations partenaires.
+        Fort de ses relations avec ses partenaires agricoles sur les territoires où sont implantées ses centrales
+        photovoltaïques, le Groupe Cayrol a décidé de compléter ses métiers en matière d'énergies renouvelables
+        territoriales avec le lancement d'une nouvelle filière : la méthanisation agricole.
       </p>
     </Fragment>
 
@@ -50,42 +114,108 @@ const atouts = [
       alt="Silos agricoles, illustration provisoire d'un site biogaz"
       logo={theme.logo}
       variant="chamfer"
-      class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px] lg:h-[min(680px,calc(100vh-var(--header-h,61px)-4rem))]"
     />
   </AnimatedHero>
 
-  <section class="bg-white">
-  <div class="mx-auto max-w-6xl px-4 pb-14">
-    <ThematicTab
-      client:visible
-      color={theme.color}
-      explanations={[
-        {
-          title: "Explications",
-          body: "TODO-CONTENT : présenter le principe de la méthanisation et son intérêt pour le territoire — texte à fournir par le client.",
-        },
-        {
-          title: "Déroulement projet",
-          body: "TODO-CONTENT : détailler les étapes clés du montage d'un projet biogaz (gisement, autorisations, construction, exploitation).",
-        },
-      ]}
-      timelineSteps={timelineSteps}
-      timelineVariant="progress"
-      atouts={atouts}
-    />
-
-    <p class="mt-10 text-sm text-neutral-500">
-      TODO-CONTENT : aucun projet biogaz référencé dans les données transmises — à compléter dès que des
-      réalisations seront disponibles.
-    </p>
-  </div>
+  <section class="bg-white py-16 md:py-24">
+    <div class="mx-auto flex max-w-7xl flex-col gap-16 px-4 md:gap-24">
+      {sectionsBefore.map((s, i) => (
+        <article class="grid items-center gap-8 md:grid-cols-2 md:gap-14 lg:gap-20">
+          <div class:list={[i % 2 === 1 && "md:order-2"]}>
+            <h2 class="text-2xl font-bold !leading-tight text-slate-900 md:text-3xl">{s.title}</h2>
+            <span class="mt-4 block h-1 w-12 rounded-full" style={`background-color:${theme.color}`} />
+            {s.paragraphs.map((p) => (
+              <p class="mt-5 leading-relaxed text-slate-600">{p}</p>
+            ))}
+            {s.bullets && (
+              <ul class="mt-4 flex flex-col gap-2">
+                {s.bullets.map((b) => (
+                  <li class="flex items-start gap-3 font-medium text-slate-800">
+                    <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full" style={`background-color:${theme.color}`} />
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {s.outro && <p class="mt-4 leading-relaxed text-slate-600">{s.outro}</p>}
+            {s.figures && (
+              <dl class="mt-8 grid grid-cols-3 gap-4 border-t border-slate-200 pt-6">
+                {s.figures.map((f) => (
+                  <div>
+                    <dt class="text-lg font-extrabold md:text-2xl" style={`color:${theme.color}`}>{f.value}</dt>
+                    <dd class="mt-1 text-xs text-slate-500 md:text-sm">{f.label}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
+          <img
+            src={s.image}
+            alt={s.imageAlt}
+            loading="lazy"
+            class:list={[
+              "aspect-[3/2] w-full rounded-3xl object-cover",
+              i % 2 === 1 ? "rounded-tl-none md:order-1" : "rounded-tr-none",
+            ]}
+          />
+        </article>
+      ))}
+    </div>
   </section>
 
-  <!-- Schéma explicatif du cycle de méthanisation : scrollytelling en 10 étapes (intrants →
+  <!-- Une filière en plein essor : bandeau pleine largeur, chiffres France 2025 du document client. -->
+  <section class="py-16 text-white md:py-20" style={`background-color:${theme.colorDark}`}>
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 md:grid-cols-12 md:items-center md:gap-14">
+      <div class="md:col-span-5">
+        <h2 class="text-2xl font-bold !leading-tight md:text-3xl">Une filière en plein essor</h2>
+        <p class="mt-5 leading-relaxed text-white/80">
+          En plein développement, la méthanisation contribue aujourd'hui à la transition énergétique française. Avec
+          13,5 TWh de biométhane injectés en 2025, la filière a déjà atteint près d'un tiers de l'objectif de 44 TWh
+          fixé par la PPE3 à l'horizon 2030.
+        </p>
+      </div>
+      <div class="md:col-span-7">
+        <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-white/60">En France en 2025</p>
+        <dl class="grid gap-4 sm:grid-cols-3">
+          {filiereStats.map((s) => (
+            <div class="rounded-3xl rounded-tr-none bg-white/10 p-6 ring-1 ring-white/15">
+              <dt class="text-3xl font-extrabold md:text-4xl">{s.value}</dt>
+              <dd class="mt-2 text-sm leading-snug text-white/75">{s.label}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white py-16 md:py-24">
+    <div class="mx-auto flex max-w-7xl flex-col gap-16 px-4">
+      {sectionsAfter.map((s) => (
+        <article class="grid items-center gap-8 md:grid-cols-2 md:gap-14 lg:gap-20">
+          <div class="md:order-2">
+            <h2 class="text-2xl font-bold !leading-tight text-slate-900 md:text-3xl">{s.title}</h2>
+            <span class="mt-4 block h-1 w-12 rounded-full" style={`background-color:${theme.color}`} />
+            {s.paragraphs.map((p) => (
+              <p class="mt-5 leading-relaxed text-slate-600">{p}</p>
+            ))}
+          </div>
+          <img
+            src={s.image}
+            alt={s.imageAlt}
+            loading="lazy"
+            class="aspect-[3/2] w-full rounded-3xl rounded-tl-none object-cover md:order-1"
+          />
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- Schéma global du cycle de méthanisation : scrollytelling en 10 étapes (intrants →
        digesteur → épandage/épuration → usages), porté depuis le prototype Claude Design fourni
        par le client (cf. handoff "Moderniser graphique énergie scrollytelling"). -->
   <section class="border-t border-slate-200/80 bg-white pt-14 pb-14 md:pb-20">
-    <div class="mx-auto max-w-6xl px-4">
+    <div class="mx-auto max-w-7xl px-4">
       <h2 class="mb-2 text-2xl font-bold text-neutral-900">Le cycle de la méthanisation</h2>
       <p class="mb-4 text-neutral-600">Faites défiler pour suivre le parcours de la matière organique jusqu'au biométhane.</p>
     </div>

@@ -51,7 +51,7 @@ const partenaires = [
 ---
 
 <BaseLayout title="Flexibilité / BESS" theme="flexibilite-bess">
-  <AnimatedHero heroId="bess-hero" title="Stocker l'énergie pour mieux la restituer." color={theme.color}>
+  <AnimatedHero heroId="bess-hero" eyebrow={theme.name} title="Stocker l'énergie pour mieux la restituer." color={theme.color}>
     <Fragment slot="lead">
       <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">
         Le Battery Energy Storage System (BESS) permet de stocker l'électricité produite par nos centrales
@@ -66,12 +66,12 @@ const partenaires = [
       alt="Conteneurs industriels, illustration d'un site BESS"
       logo={theme.logo}
       variant="step"
-      class="h-[340px] w-full sm:h-[420px] md:h-[520px]"
+      class="h-[340px] w-full sm:h-[420px] md:h-[520px] lg:h-[min(680px,calc(100vh-var(--header-h,61px)-4rem))]"
     />
   </AnimatedHero>
 
   <section class="bg-white">
-  <div class="mx-auto max-w-6xl px-4 pb-14">
+  <div class="mx-auto max-w-7xl px-4 pb-14">
     <ThematicTab
       client:visible
       color={theme.color}

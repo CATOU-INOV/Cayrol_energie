@@ -13,18 +13,26 @@ interface Props {
   title: string;
   /** Couleur cible du dégradé de coloration (couleur du thème de la page). */
   color: string;
+  /** Nom de l'énergie affiché au-dessus du titre (retour client : "afficher le nom de l'énergie
+   * sur la page"). */
+  eyebrow?: string;
 }
 
-const { heroId, title, color } = Astro.props;
+const { heroId, title, color, eyebrow } = Astro.props;
 const titleId = `${heroId}-title`;
 const wordClass = `${heroId}-word`;
 ---
 
-<section id={heroId} class="relative bg-white" style="height: calc(100vh + 60vh);">
-  <div class="sticky top-[var(--header-h,61px)] pt-6 pb-10 md:pt-8">
-    <div class="mx-auto w-full max-w-6xl px-4">
+<section id={heroId} class="relative bg-white" style="height: calc(100vh + 30vh);">
+  <!-- Sur grand écran, le bloc collant occupe toute la hauteur visible sous le header (contenu
+       centré) : sinon la zone de scroll retenu laisse une bande blanche sous le hero. -->
+  <div class="sticky top-[var(--header-h,61px)] pt-6 pb-10 md:pt-8 lg:flex lg:h-[calc(100vh-var(--header-h,61px))] lg:items-center lg:py-6">
+    <div class="mx-auto w-full max-w-7xl px-4">
       <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
         <div class="lg:col-span-4">
+          {eyebrow && (
+            <p class="mb-3 text-sm font-semibold uppercase tracking-wider" style={`color:${color}`}>{eyebrow}</p>
+          )}
           <h1 id={titleId} class="text-3xl font-bold !leading-[110%] text-slate-900 md:text-4xl">
             {title.split(" ").map((word) => (
               <span class={`${wordClass} mr-[0.3em] inline-block`} data-word>{word}</span>
@@ -61,7 +69,7 @@ const wordClass = `${heroId}-word`;
   // (hauteur = 100vh + COLOR_VH*100vh) : progress passe de 0 à 1 sur les COLOR_VH premiers vh de
   // scroll de la section. Le wheel est intercepté et amorti tant que progress < 1, pour "retenir"
   // le scroll pendant la lecture du titre — au-delà, le scroll redevient natif.
-  const COLOR_VH = 0.6;
+  const COLOR_VH = 0.3;
 
   function initHeroReveal() {
     const section = document.getElementById(heroId);
@@ -87,8 +95,9 @@ const wordClass = `${heroId}-word`;
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    // Un scroll "3 tours" de molette amène tout juste à la fin de la fenêtre de coloration.
-    const WHEEL_TURNS_TO_COLOR_END = 3;
+    // Un scroll "2 tours" de molette amène tout juste à la fin de la fenêtre de coloration (retour
+    // client : réduire le temps de scroll avant de passer au reste de la page).
+    const WHEEL_TURNS_TO_COLOR_END = 2;
     const PX_PER_WHEEL_TURN = 110;
 
     function onWheel(e) {
@@ -107,7 +116,38 @@ const wordClass = `${heroId}-word`;
     }
 
     window.addEventListener("wheel", onWheel, { passive: false });
+
+    // Chiffres clés (data-countup) animés dès l'arrivée sur la page, indépendamment du scroll.
+    // Léger délai de départ pour que l'animation ne se joue pas pendant le chargement des images.
+    const COUNT_DELAY_MS = 350;
+    const COUNT_MS = 2000;
+    section.querySelectorAll("[data-countup]").forEach((el) => {
+      const target = parseFloat(el.dataset.countup);
+      el.textContent = formatCount(el, 0);
+      setTimeout(() => {
+        const start = performance.now();
+        function tick(now) {
+          const t = Math.min((now - start) / COUNT_MS, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          el.textContent = formatCount(el, target * eased);
+          if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }, COUNT_DELAY_MS);
+    });
   }
+
+  function formatCount(el, value) {
+    const decimals = parseInt(el.dataset.decimals ?? "0", 10);
+    const text = value.toLocaleString("fr-FR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    return text + (el.dataset.suffix ?? "");
+  }
+
+  // Remise à zéro immédiate (le script s'exécute juste après le HTML du hero) : évite d'afficher
+  // brièvement la valeur finale avant le départ de l'animation.
+  document.getElementById(heroId)?.querySelectorAll("[data-countup]").forEach((el) => {
+    el.textContent = formatCount(el, 0);
+  });
 
   document.addEventListener("astro:page-load", initHeroReveal);
 </script>

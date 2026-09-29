@@ -20,6 +20,9 @@ export interface ExpandingCardItem {
   icon?: string;
   description?: string;
   href?: string;
+  /** view-transition-name de la carte : la carte se transforme en header de la page liée si
+   * celle-ci porte le même nom (ClientRouter d’Astro). */
+  transitionName?: string;
 }
 
 export interface ExpandingCardGridProps {
@@ -63,7 +66,7 @@ export default function ExpandingCardGrid({
                   onBlur={() => setHovered(null)}
                   tabIndex={item.href ? undefined : 0}
                   className="group relative min-w-0 overflow-hidden rounded-2xl transition-[flex-grow] duration-500 ease-out"
-                  style={{ flexGrow: isHovered ? 3 : 1, flexBasis: 0 }}
+                  style={{ flexGrow: isHovered ? 3 : 1, flexBasis: 0, viewTransitionName: item.transitionName }}
                 >
                   <img
                     src={item.image}

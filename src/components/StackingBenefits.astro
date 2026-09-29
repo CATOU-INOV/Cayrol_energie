@@ -1,0 +1,63 @@
+---
+// Blocs de bénéfices d'une page "type de pose" photovoltaïque présentés en cartes empilées au
+// scroll (retour client : carrousel type stacking-cards, maquette cayrol-photovoltaique.html) —
+// même langage visuel que les colonnes haute/basse chute de la page Hydro : cartes pleines à la
+// couleur du thème qui foncent d'une carte à l'autre, grand numéro en filigrane. Les points de
+// chaque bloc sont affichés en tuiles plutôt qu'en liste à puces.
+// Pur CSS (position: sticky), pas de JS.
+
+import type { SolutionBlock } from "../data/photovoltaiqueSolutions";
+
+interface Props {
+  blocks: SolutionBlock[];
+  color: string;
+  title?: string;
+}
+
+const { blocks, color, title = "Ce que ça change pour vous" } = Astro.props;
+
+// Assombrissement progressif (% de noir mélangé à la couleur) : dès la 1re carte pour garder un
+// texte blanc lisible sur l'orange, puis de plus en plus foncé.
+const shade = (i: number) => 14 + i * 9;
+
+// Chaque carte colle STEP_PX plus bas que la précédente sous le header fixe.
+const CARDS_OFFSET_PX = 24;
+const STEP_PX = 26;
+---
+
+<section class="bg-slate-50 py-16 md:py-24">
+  <div class="mx-auto max-w-7xl px-4">
+    <h2 class="mb-10 text-3xl font-bold !leading-tight text-slate-900 md:mb-14 md:text-4xl">{title}</h2>
+
+    <div>
+      {blocks.map((block, i) => (
+        <article
+          class="sticky mb-8 overflow-hidden rounded-3xl rounded-tr-none p-7 text-white md:min-h-[300px] shadow-[0_-12px_30px_-18px_rgba(15,23,42,0.45)] md:p-10"
+          style={`top: calc(var(--header-h, 61px) + ${CARDS_OFFSET_PX + i * STEP_PX}px); z-index:${i + 1}; background-color: color-mix(in srgb, ${color}, #0c0a09 ${shade(i)}%);`}
+        >
+          <span
+            class="pointer-events-none absolute -bottom-10 left-5 hidden select-none md:block text-[9rem] font-extrabold leading-none text-white/10 md:left-8"
+            aria-hidden="true"
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+
+          <div class="relative grid gap-8 md:grid-cols-12 md:gap-10">
+            <div class="md:col-span-5">
+              <h3 class="text-2xl font-bold !leading-tight md:text-3xl">{block.title}</h3>
+              {block.intro && <p class="mt-4 text-sm leading-relaxed text-white/85 md:text-[15px]">{block.intro}</p>}
+            </div>
+
+            <ul class="grid content-start gap-3 sm:grid-cols-2 md:col-span-7">
+              {block.items.map((item) => (
+                <li class="rounded-2xl bg-white/10 px-4 py-3.5 text-sm font-medium leading-snug ring-1 ring-white/15">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,114 @@
+---
+// Page dédiée par type de pose photovoltaïque (retour client : "faire une page dédiée pour
+// chaque type de pose"). Contenu réel transcrit du docx client + maquette cayrol-photovoltaique.html,
+// voir src/data/photovoltaiqueSolutions.ts. Header propre aux types de pose (PvTypeHero, distinct
+// de celui des pages énergies), puis les blocs de bénéfices en cartes empilées (StackingBenefits).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import StackingBenefits from "../../components/StackingBenefits.astro";
+import PvTypeHero from "../../components/PvTypeHero.astro";
+import BenefitChapters from "../../components/BenefitChapters.astro";
+import PriseEnChargePath from "../../components/PriseEnChargePath.astro";
+import ProjectScrollShowcase from "../../components/ProjectScrollShowcase.astro";
+import { themes } from "../../data/themes";
+import { photoUrl, photos } from "../../data/photos";
+import projects from "../../data/projects.json";
+import { photovoltaiqueSolutions, getSolutionBySlug } from "../../data/photovoltaiqueSolutions";
+
+export function getStaticPaths() {
+  return photovoltaiqueSolutions.map((s) => ({ params: { slug: s.slug } }));
+}
+
+const { slug } = Astro.params;
+const solution = getSolutionBySlug(slug!);
+if (!solution) {
+  return Astro.redirect("/photovoltaique");
+}
+
+const theme = themes.photovoltaique;
+
+// Prototype testé sur Toitures uniquement, à généraliser une fois validé : bénéfices en chapitres
+// plein écran (BenefitChapters), services regroupés en parcours 3 phases (PriseEnChargePath),
+// bloc "Transition énergétique" réduit à une phrase forte (le bandeau contact du footer suit). Le dernier bloc du
+// docx est toujours celui de la prise en charge / de l'accompagnement.
+const useChapters = solution.slug === "toiture";
+const serviceBlock = solution.blocks[solution.blocks.length - 1];
+const transitionBlock = solution.blocks.find((b) => /transition/i.test(b.title));
+const chapterBlocks = solution.blocks.filter((b) => b !== serviceBlock && b !== transitionBlock);
+
+// "Découvrir nos projets" : rappel concret de réalisations du type de pose, sous la phrase
+// "Transition énergétique". Pas de photo par projet dans les données : recadrages (zoom Unsplash
+// sur un point focal) de la photo du type, pour ne pas répéter trois fois la même image.
+// TODO-CONTENT : remplacer par les vraies photos de chaque site quand le client les fournira.
+const FEATURED_PROJECTS: Record<string, { id: string; crop: string }[]> = {
+  toiture: [
+    { id: "aiton", crop: "fp-x=0.5&fp-y=0.5&fp-z=1" },
+    { id: "besseges", crop: "fp-x=0.25&fp-y=0.75&fp-z=2" },
+    { id: "bizanet", crop: "fp-x=0.45&fp-y=0.72&fp-z=4" },
+  ],
+};
+const featuredProjects = (FEATURED_PROJECTS[solution.slug] ?? []).map(({ id, crop }) => {
+  const p = projects.find((project) => project.id === id)!;
+  return {
+    name: p.name,
+    type: p.type,
+    commune: p.commune,
+    power: p.power,
+    description: p.description,
+    image: `${photos[solution.image]}?w=900&h=675&q=80&auto=format&fit=crop&crop=focalpoint&${crop}`,
+  };
+});
+---
+
+<BaseLayout title={solution.label} theme="photovoltaique" description={solution.tagline} hideServiceRail>
+  <PvTypeHero
+    solution={solution}
+    image={photoUrl(solution.image, { w: 2400 })}
+    color={theme.color}
+    colorDark={theme.colorDark}
+    eyebrow={theme.name}
+  />
+
+  {useChapters ? (
+    <>
+      <BenefitChapters blocks={chapterBlocks} color={theme.color} />
+      <PriseEnChargePath block={serviceBlock} color={theme.color} />
+
+      <section class="bg-white pt-20 pb-4 md:pt-28 md:pb-6">
+        <div class="mx-auto max-w-4xl px-4 text-center">
+          {transitionBlock && (
+            <>
+              <p class="text-sm font-semibold uppercase tracking-widest" style={`color:${theme.color}`}>{transitionBlock.title}</p>
+              <p class="mt-6 text-2xl font-semibold !leading-snug tracking-tight text-slate-900 md:text-4xl">
+                {transitionBlock.items.join(". ")}.
+              </p>
+            </>
+          )}
+        </div>
+      </section>
+
+      {featuredProjects.length > 0 && (
+        <ProjectScrollShowcase title="Découvrir nos projets" color={theme.color} projects={featuredProjects} />
+      )}
+    </>
+  ) : (
+    <>
+    <StackingBenefits blocks={solution.blocks} color={theme.color} />
+  
+    <section class="bg-white py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="rounded-3xl rounded-tr-none border p-8 text-center md:p-12" style={`border-color:${theme.color}33; background-color:${theme.color}0d;`}>
+          <h2 class="text-xl font-bold text-slate-900 md:text-2xl">Cayrol Energie vous accompagne dans vos projets d'avenir</h2>
+          <p class="mt-2 text-neutral-600">Un interlocuteur unique, de l'étude à la mise en service.</p>
+          <a
+            href="/contact"
+            class="mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5"
+            style={`background-color:${theme.color};`}
+          >
+            Discutons de votre projet
+          </a>
+        </div>
+      </div>
+    </section>
+    </>
+  )}
+</BaseLayout>
