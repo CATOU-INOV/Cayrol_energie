@@ -1,17 +1,15 @@
-// "Hero Parallax" (pattern Aceternity UI, repris fidèlement de la démo officielle) : 3 rangées de
-// cartes projet qui défilent horizontalement en sens opposés pendant que toute la scène pivote en
-// 3D (rotateX/rotateZ) et remonte (translateY) au fil du scroll. Remplace le précédent essai
-// ContainerScroll (mosaïque de filières, jugée redondante avec EnergyShowcase juste au-dessus) :
-// ici les cartes montrent de vrais projets, contenu qui n'apparaît nulle part ailleurs sous cette
-// forme.
+// "Hero Parallax" (inspiré du pattern Aceternity UI) : 2 rangées de cartes projet qui défilent
+// horizontalement en sens opposés. La scène est épinglée (sticky) le temps que TOUS les projets
+// aient traversé l'écran : la hauteur de la section est calculée à partir de la largeur réelle des
+// rangées (1 px de scroll = 1 px de défilement horizontal), puis la page reprend son cours normal.
+// Légère bascule 3D (rotateX/rotateZ) à l'entrée de la section, avant l'épinglage.
 //
 // title/description sont des props string (pas un ReactNode construit côté .astro) : un fragment
 // JSX/Astro passé en prop à un composant client:visible ne se sérialise pas en HTML — le
 // compilateur Astro le garde comme objet interne, que React ne sait pas rendre côté SSR (déjà
-// rencontré sur ContainerScroll). Header reste donc un sous-composant interne, comme dans la démo
-// d'origine, mais son texte est injecté via props plutôt que codé en dur.
+// rencontré sur ContainerScroll).
 
-import { useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform, type MotionValue } from "motion/react";
 
 export interface HeroParallaxProduct {
@@ -26,79 +24,115 @@ export interface HeroParallaxProps {
   description: string;
 }
 
+// Scroll "à vide" ajouté en plus du défilement horizontal, pour que la scène reste un instant
+// immobile au début (lecture du titre) et à la fin (dernières cartes) avant de relâcher la page.
+const PAUSE_PX = 240;
+
 export function HeroParallax({ products, title, description }: HeroParallaxProps) {
-  const firstRow = products.slice(0, 5);
-  const secondRow = products.slice(5, 10);
+  const half = Math.ceil(products.length / 2);
+  const firstRow = products.slice(0, half);
+  const secondRow = products.slice(half);
+
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const row1Ref = useRef<HTMLDivElement>(null);
+  const row2Ref = useRef<HTMLDivElement>(null);
+  // Course horizontale de chaque rangée (largeur de la rangée - largeur visible), mesurée.
+  const [travel, setTravel] = useState({ row1: 0, row2: 0 });
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const vw = viewportRef.current?.clientWidth ?? 0;
+      setTravel({
+        row1: Math.max(0, (row1Ref.current?.scrollWidth ?? 0) - vw),
+        row2: Math.max(0, (row2Ref.current?.scrollWidth ?? 0) - vw),
+      });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    for (const el of [viewportRef.current, row1Ref.current, row2Ref.current]) if (el) ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const maxTravel = Math.max(travel.row1, travel.row2);
+
+  // Progression pendant l'épinglage (0 = scène calée en haut, 1 = fin de la section).
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  // Progression de l'entrée à l'écran, pour la bascule 3D.
+  const { scrollYProgress: enterProgress } = useScroll({ target: ref, offset: ["start end", "start start"] });
+
+  const pause = maxTravel > 0 ? PAUSE_PX / (maxTravel + 2 * PAUSE_PX) : 0;
+  const range = [pause, 1 - pause];
+  // Rangée 1 part calée à gauche et file vers la gauche ; rangée 2 part décalée et file vers la droite.
+  const x1 = useTransform(scrollYProgress, range, [0, -travel.row1]);
+  const x2 = useTransform(scrollYProgress, range, [-travel.row2, 0]);
 
   const springConfig = { stiffness: 300, damping: 30, bounce: 100 };
-
-  const translateX = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1000]), springConfig);
-  const translateXReverse = useSpring(useTransform(scrollYProgress, [0, 1], [0, -1000]), springConfig);
-  const rotateX = useSpring(useTransform(scrollYProgress, [0, 0.2], [15, 0]), springConfig);
-  const opacity = useSpring(useTransform(scrollYProgress, [0, 0.2], [0.2, 1]), springConfig);
-  const rotateZ = useSpring(useTransform(scrollYProgress, [0, 0.2], [20, 0]), springConfig);
-  // Plus de translateY : avec seulement 2 rangées (au lieu des 3 du calibrage d'origine), la scène
-  // est plus compacte et ce déplacement vertical de plusieurs centaines de px suffisait à faire
-  // sortir une rangée du cadre avant que le scroll de la section ne soit terminé, ou à laisser un
-  // grand vide en bas une fois la translation achevée — l'amplitude n'avait plus aucune valeur
-  // stable une fois le nombre de rangées changé. Les rangées restent maintenant à une position
-  // verticale fixe ; seuls le défilement horizontal croisé et la légère rotation 3D d'entrée
-  // suffisent à l'effet.
+  const rotateX = useSpring(useTransform(enterProgress, [0.3, 1], [15, 0]), springConfig);
+  const rotateZ = useSpring(useTransform(enterProgress, [0.3, 1], [12, 0]), springConfig);
+  const opacity = useSpring(useTransform(enterProgress, [0.2, 0.9], [0.2, 1]), springConfig);
 
   return (
     <div
       ref={ref}
-      className="relative flex min-h-[140vh] flex-col self-auto overflow-hidden py-20 antialiased [perspective:1000px] [transform-style:preserve-3d]"
+      className="relative [overflow-x:clip]"
+      // Avant la première mesure (SSR), une hauteur raisonnable évite un saut trop visible.
+      style={{ height: maxTravel > 0 ? `calc(100vh + ${maxTravel + 2 * PAUSE_PX}px)` : "250vh" }}
     >
-      <Header title={title} description={description} />
-      <motion.div style={{ rotateX, rotateZ, opacity }}>
-        <motion.div className="mb-20 flex flex-row-reverse space-x-20 space-x-reverse">
-          {firstRow.map((product) => (
-            <ProductCard product={product} translate={translateX} key={product.title} />
-          ))}
+      <div
+        ref={viewportRef}
+        className="sticky top-[var(--header-h,72px)] flex h-[calc(100vh-var(--header-h,72px))] flex-col justify-center overflow-hidden antialiased [perspective:1000px] [transform-style:preserve-3d]"
+      >
+        <Header title={title} description={description} />
+        <motion.div style={{ rotateX, rotateZ, opacity }} className="flex flex-col gap-6 md:gap-8">
+          <motion.div ref={row1Ref} style={{ x: x1 }} className="flex w-max gap-6 px-4 md:gap-8 md:px-8">
+            {firstRow.map((product) => (
+              <ProductCard product={product} key={product.title} />
+            ))}
+          </motion.div>
+          <motion.div ref={row2Ref} style={{ x: x2 }} className="flex w-max gap-6 px-4 md:gap-8 md:px-8">
+            {secondRow.map((product) => (
+              <ProductCard product={product} key={product.title} />
+            ))}
+          </motion.div>
         </motion.div>
-        <motion.div className="flex flex-row space-x-20">
-          {secondRow.map((product) => (
-            <ProductCard product={product} translate={translateXReverse} key={product.title} />
-          ))}
-        </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 function Header({ title, description }: { title: string; description: string }) {
   return (
-    <div className="relative left-0 top-0 mx-auto w-full max-w-7xl px-4 py-10 md:py-16">
-      <h1 className="text-2xl font-bold text-neutral-900 md:text-7xl">{title}</h1>
-      <p className="mt-8 max-w-2xl text-base text-neutral-600 md:text-xl">{description}</p>
+    <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:pb-10">
+      <h2 className="text-3xl font-bold tracking-tight text-neutral-900 md:text-6xl">{title}</h2>
+      <p className="mt-4 max-w-2xl text-base text-neutral-600 md:text-lg">{description}</p>
     </div>
   );
 }
 
-function ProductCard({ product, translate }: { product: HeroParallaxProduct; translate: MotionValue<number> }) {
+// Nom du projet toujours visible (y compris au tactile) : texte blanc sur dégradé sombre en bas de
+// la photo. Le titre "Nom — Commune" est éclaté sur deux lignes.
+function ProductCard({ product }: { product: HeroParallaxProduct }) {
+  const [name, place] = product.title.split(" — ");
   return (
-    <motion.div
-      style={{ x: translate }}
-      whileHover={{ y: -20 }}
-      key={product.title}
-      className="group/product relative h-96 w-[30rem] shrink-0"
+    <motion.a
+      href={product.link}
+      whileHover={{ y: -10 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="group relative block aspect-[4/3] h-[clamp(9rem,26vh,17rem)] shrink-0 overflow-hidden rounded-xl shadow-sm hover:shadow-2xl"
     >
-      <a href={product.link} className="block group-hover/product:shadow-2xl">
-        <img
-          src={product.thumbnail}
-          height={600}
-          width={600}
-          className="absolute inset-0 h-full w-full object-cover object-left-top"
-          alt={product.title}
-        />
-      </a>
-      <div className="pointer-events-none absolute inset-0 h-full w-full bg-black opacity-0 group-hover/product:opacity-80" />
-      <h2 className="absolute bottom-4 left-4 text-white opacity-0 group-hover/product:opacity-100">
-        {product.title}
-      </h2>
-    </motion.div>
+      <img
+        src={product.thumbnail}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-4 text-white md:p-5">
+        <p className="text-base font-bold leading-tight md:text-lg">{name}</p>
+        {/* Commune masquée quand le projet porte déjà son nom (ex. "Aiton — Aiton"). */}
+        {place && place !== name && <p className="mt-0.5 text-sm text-white/75">{place}</p>}
+      </div>
+    </motion.a>
   );
 }
