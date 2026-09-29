@@ -212,8 +212,10 @@ const onEnergyPage = energyThemeList.some((t) => isCurrent(t.href));
 
     <!-- Footer (retours client : conserver le cadre "discutons de vos projets", partenaires
          défilants, bulle d'infos permanentes, lien Google Maps pour l'adresse, sans rubrique "Nos
-         énergies"). Fond à la couleur foncée de l’énergie de la page (--theme-footer, themes.css). -->
-    <footer class="text-white" style="background-color: var(--theme-footer);">
+         énergies"). Fond à la couleur foncée de l’énergie de la page (--theme-footer, themes.css).
+         z-[45] : passe au-dessus du rail des énergies (ServiceRail, fixe en z-40), qui semble ainsi
+         glisser sous le footer quand celui-ci remonte ; reste sous le header (z-50). -->
+    <footer class="relative z-[45] text-white" style="background-color: var(--theme-footer);">
       <div class="mx-auto grid max-w-7xl gap-14 px-4 pb-14 pt-16 md:pt-20 lg:grid-cols-12 lg:gap-16">
         <div class="lg:col-span-7">
           <h2 class="text-4xl font-bold !leading-[1.05] tracking-tight md:text-5xl">

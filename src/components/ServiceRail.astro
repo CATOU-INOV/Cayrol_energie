@@ -11,7 +11,8 @@
 import { energyThemeList } from "../data/themes";
 
 const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
-const items = energyThemeList.filter((t) => t.href !== currentPath);
+// Sous-pages comprises (ex. /photovoltaique/toiture ne propose pas Photovoltaïque).
+const items = energyThemeList.filter((t) => currentPath !== t.href && !currentPath.startsWith(`${t.href}/`));
 ---
 
 {items.length > 0 && (
